@@ -17,6 +17,22 @@ Since we're judged on code style as well, I think we should all follow a style g
 	// public instance variables look like this
 	instanceVariable
 
+## Example class definition
+
+	class ExampleClass {
+	// public first
+	public:
+		ExampleClass();
+		void instanceMethod();
+	// then private
+	private:
+		// instance vars first
+		int _instanceVar;
+
+		// then instance methods
+		void _instanceMethod();
+	};
+
 ## Variables
 
 	// look like this
