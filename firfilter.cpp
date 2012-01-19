@@ -19,7 +19,7 @@ FIRFilter::FIRFilter(int ftype) {
     }
 }
 
-float FIRFilter::Filter(float val) {
+float FIRFilter::filter(float val) {
     float sum = 0;
     int i, j;
 
