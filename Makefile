@@ -21,9 +21,9 @@ firfilter.o: firfilter.cpp firfilter.h
 	g++ $(CFLAGS) -c firfilter.cpp
 
 gatherdata: gatherdata.o
-	g++ -o gatherdata gatherdata.o $(CPP_LIB_FLAGS) $(LIB_LINK)
+	g++ -o gatherdata gatherdata.o firfilter.o $(CPP_LIB_FLAGS) $(LIB_LINK)
 
-gatherdata.o: gatherdata.cpp
+gatherdata.o: gatherdata.cpp firfilter.h
 	g++ $(CFLAGS) -c gatherdata.cpp
 
 clean:
