@@ -6,16 +6,16 @@
 
 class Robot {
 public:
-	Robot(std::string address, int id);
-	void moveTo(int x, int y);
-	void turnTo(int theta);
-	void setFailLimit(int limit);
-	int getFailLimit();
+    Robot(std::string address, int id);
+    void moveTo(int x, int y);
+    void turnTo(int theta);
+    void setFailLimit(int limit);
+    int getFailLimit();
 private:
-	RobotInterface *_robotInterface;
-	int _failLimit;
+    RobotInterface *_robotInterface;
+    int _failLimit;
 
-	bool _update();
+    bool _update();
 };
 
 #endif
