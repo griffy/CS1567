@@ -20,6 +20,13 @@ robot.o: robot.cpp robot.h
 firfilter.o: firfilter.cpp firfilter.h
 	g++ $(CFLAGS) -c firfilter.cpp
 
+gatherdata: gatherdata.o
+	g++ -o gatherdata gatherdata.o $(CPP_LIB_FLAGS) $(LIB_LINK)
+
+gatherdata.o: gatherdata.cpp
+	g++ $(CFLAGS) -c gatherdata.cpp
+
 clean:
 	rm -rf *.o
 	rm -rf project
+	rm -rf gatherdata
