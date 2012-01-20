@@ -3,6 +3,7 @@
 
 #include <robot_if++.h>
 #include <string>
+#include "firfilter.h"
 
 class Robot {
 public:
@@ -14,8 +15,20 @@ public:
 private:
     RobotInterface *_robotInterface;
     int _failLimit;
+    FIRFilter *_nsXFilter;
+    FIRFilter *_nsYFilter;
+    FIRFilter *_nsThetaFilter;
+    FIRFilter *_weLeftFilter;
+    FIRFilter *_weRightFilter;
+    FIRFilter *_weRearFilter;
 
     bool _update();
+    float _getFilteredLeft();
+    float _getFilteredRight();
+    float _getFilteredRear();
+    float _getFilteredX();
+    float _getFilteredY();
+    float _getFilteredTheta();
 };
 
 #endif

@@ -3,13 +3,16 @@
 
 #define NUM_TAPS 8
 
-// TODO: use actual coefficients
 const float WE_COEFFICIENTS[NUM_TAPS] = {-.040798, .11034, .21151, .29248, .29248, .21151, .11034, -.040798};
-const float NS_COEFFICIENTS[NUM_TAPS] = {-.040798, .11034, .21151, .29248, .29248, .21151, .11034, -.040798};
+const float NS_X_COEFFICIENTS[NUM_TAPS] = {-.040798, .11034, .21151, .29248, .29248, .21151, .11034, -.040798};
+const float NS_Y_COEFFICIENTS[NUM_TAPS] = {-.040798, .11034, .21151, .29248, .29248, .21151, .11034, -.040798};
+const float NS_THETA_COEFFICIENTS[NUM_TAPS] = {-.040798, .11034, .21151, .29248, .29248, .21151, .11034, -.040798};
 
 enum FilterType { 
     WE, 
-    NS 
+    NS_X,
+    NS_Y,
+    NS_THETA 
 };
 
 class FIRFilter {

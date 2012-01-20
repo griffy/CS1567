@@ -5,13 +5,22 @@
 FIRFilter::FIRFilter(int ftype) {
     _nextSample = 0;
 
+    // FIXME: is the copying necessary when the coeff arrays are const?
     switch (ftype) {
     case WE:
         memcpy(_coefficients, WE_COEFFICIENTS, sizeof(_coefficients));
         break;
-    case NS:
-        memcpy(_coefficients, NS_COEFFICIENTS, sizeof(_coefficients));
+    case NS_X:
+        memcpy(_coefficients, NS_X_COEFFICIENTS, sizeof(_coefficients));
         break;
+    case NS_Y:
+        memcpy(_coefficients, NS_Y_COEFFICIENTS, sizeof(_coefficients));
+        break;
+    case NS_THETA:
+        memcpy(_coefficients, NS_THETA_COEFFICIENTS, sizeof(_coefficients));
+        break;
+    default:
+        memcpy(_coefficients, WE_COEFFICIENTS, sizeof(_coefficients));
     }
 
     for (int i = 0; i < NUM_TAPS; i++) {
