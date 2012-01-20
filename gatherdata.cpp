@@ -70,9 +70,9 @@ int main(int argc, char *argv[]) {
 		exit(-5);
 	}
 	
-	FIRFilter *filtX = new FIRFilter(NS);
-	FIRFilter *filtY = new FIRFilter(NS);
-	FIRFilter *filtTheta = new FIRFilter(NS);
+	FIRFilter *filtX = new FIRFilter(NS_X);
+	FIRFilter *filtY = new FIRFilter(NS_Y);
+	FIRFilter *filtTheta = new FIRFilter(NS_THETA);
 	
 	FIRFilter *wefiltL = new FIRFilter(WE);
 	FIRFilter *wefiltR = new FIRFilter(WE);
