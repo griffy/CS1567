@@ -6,10 +6,10 @@ LIB_LINK=-lhighgui -lcv -lcxcore
 LIB_LINK_NEW=-lopencv_core -lopencv_imgproc -lopencv_highgui -lm
 
 all: $(OBJS)
-	g++ $(CFLAGS) -o project $(OBJS) $(CPP_LIB_FLAGS) $(LIB_LINK)
+	g++ $(CFLAGS) -o project.out $(OBJS) $(CPP_LIB_FLAGS) $(LIB_LINK)
 
 new: $(OBJS)
-	g++ $(CFLAGS) -o project $(OBJS) $(CPP_LIB_FLAGS) $(LIB_LINK_NEW)
+	g++ $(CFLAGS) -o project.out $(OBJS) $(CPP_LIB_FLAGS) $(LIB_LINK_NEW)
 
 project.o: project.cpp robot.h firfilter.h
 	g++ $(CFLAGS) -c project.cpp
@@ -22,4 +22,4 @@ firfilter.o: firfilter.cpp firfilter.h
 
 clean:
 	rm -f *.o
-	rm -f project
+	rm -f project.out

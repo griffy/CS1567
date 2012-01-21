@@ -1,4 +1,9 @@
+# Backups
 *~
+
+# Executables
+*.exe
+*.out
 
 # Compiled Object files
 *.slo
