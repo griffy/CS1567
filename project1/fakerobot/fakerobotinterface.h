@@ -8,6 +8,7 @@
 class FakeRobotInterface {
 public:
     FakeRobotInterface(std::string address, int id);
+    void reset(); // custom method to start over
     int update(void);
     void reset_state(void);
     int Move(int movement, int speed);

@@ -1,9 +1,10 @@
 #ifndef CS1567_ROBOT_H
 #define CS1567_ROBOT_H
 
+#include "firfilter.h"
+
 #include <robot_if++.h>
 #include <string>
-#include "firfilter.h"
 
 class Robot {
 public:
@@ -13,9 +14,38 @@ public:
     void turnTo(int theta);
     void setFailLimit(int limit);
     int getFailLimit();
-private:
+    //RobotPose getPose();
+    //RobotPose getDeltaPose();
+
+    // FIXME: Temporarily public members (for testing)
+    //        below
     RobotInterface *_robotInterface;
-    int _failLimit;
+    bool _update();
+    float _getFilteredWELeft();
+    float _getFilteredWERight();
+    float _getFilteredWERear();
+    float _getFilteredNSX();
+    float _getFilteredNSY();
+    float _getFilteredNSTheta();
+
+    float _getWEDeltaXLeft();
+    float _getWEDeltaYLeft();
+    float _getWEDeltaXRight();
+    float _getWEDeltaYRight();
+    float _getWEDeltaXRear();
+    float _getWEDeltaYRear();
+    float _getWEDeltaX();
+    float _getWEDeltaY();
+    float _getWEDeltaTheta();
+    float _getTransWEDeltaX();
+    float _getTransWEDeltaY();
+    float _getTransWEDeltaTheta();
+    float _getTransNSX();
+    float _getTransNSY();
+    float _getTransNSTheta();
+private:
+    // RobotInterface *_robotInterface;
+
     FIRFilter *_nsXFilter;
     FIRFilter *_nsYFilter;
     FIRFilter *_nsThetaFilter;
@@ -23,13 +53,32 @@ private:
     FIRFilter *_weRightFilter;
     FIRFilter *_weRearFilter;
 
-    bool _update();
-    float _getFilteredLeft();
-    float _getFilteredRight();
-    float _getFilteredRear();
-    float _getFilteredX();
-    float _getFilteredY();
-    float _getFilteredTheta();
+    int _failLimit;
+
+    // bool _update();
+
+    // float _getFilteredWELeft();
+    // float _getFilteredWERight();
+    // float _getFilteredWERear();
+    // float _getFilteredNSX();
+    // float _getFilteredNSY();
+    // float _getFilteredNSTheta();
+
+    // float _getWEDeltaXLeft();
+    // float _getWEDeltaYLeft();
+    // float _getWEDeltaXRight();
+    // float _getWEDeltaYRight();
+    // float _getWEDeltaXRear();
+    // float _getWEDeltaYRear();
+    // float _getWEDeltaX();
+    // float _getWEDeltaY();
+    // float _getWEDeltaTheta();
+    // float _getTransWEDeltaX();
+    // float _getTransWEDeltaY();
+    // float _getTransWEDeltaTheta();
+    // float _getTransNSDeltaX();
+    // float _getTransNSDeltaY();
+    // float _getTransNSDeltaTheta();
 };
 
 #endif

@@ -11,6 +11,10 @@ FakeRobotInterface::FakeRobotInterface(std::string address, int id) {
     _curSample = 0;
 }
 
+void FakeRobotInterface::reset() {
+    _curSample = 0;
+}
+
 int FakeRobotInterface::update(void) {
     // move to the next sample point
     _curSample++;

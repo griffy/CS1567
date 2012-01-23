@@ -1,4 +1,5 @@
 #include "robot.h"
+#include "utilities.h"
 
 #define DEFAULT_NUM_FAILS 5
 
@@ -52,32 +53,114 @@ bool Robot::_update() {
     return true;
 }
 
-float Robot::_getFilteredLeft() {
+float Robot::_getFilteredWELeft() {
     int left = _robotInterface->getWheelEncoder(RI_WHEEL_LEFT);
     return _weLeftFilter->filter((float) left);
 }
 
-float Robot::_getFilteredRight() {
+float Robot::_getFilteredWERight() {
     int right = _robotInterface->getWheelEncoder(RI_WHEEL_RIGHT);
     return _weRightFilter->filter((float) right);
 }
 
-float Robot::_getFilteredRear() {
+float Robot::_getFilteredWERear() {
     int rear = _robotInterface->getWheelEncoder(RI_WHEEL_REAR);
     return _weRearFilter->filter((float) rear);
 }
 
-float Robot::_getFilteredX() {
+float Robot::_getFilteredNSX() {
     int x = _robotInterface->X();
     return _nsXFilter->filter((float) x);
 }
 
-float Robot::_getFilteredY() {
+float Robot::_getFilteredNSY() {
     int y = _robotInterface->Y();
     return _nsYFilter->filter((float) y);
 }
 
-float Robot::_getFilteredTheta() {
+float Robot::_getFilteredNSTheta() {
     float theta = _robotInterface->Theta();
     return _nsThetaFilter->filter(theta);
+}
+
+float Robot::_getWEDeltaXLeft() {
+    float deltaX = _getFilteredWELeft();
+    deltaX *= cos(DEGREE_150);
+    return deltaX;
+}
+
+float Robot::_getWEDeltaYLeft() {
+    float deltaY = _getFilteredWELeft();
+    deltaY *= sin(DEGREE_150);
+    return deltaY;
+}
+
+float Robot::_getWEDeltaXRight() {
+    float deltaX = _getFilteredWERight();
+    deltaX *= cos(DEGREE_30);
+    return deltaX;
+}
+
+float Robot::_getWEDeltaYRight() {
+    float deltaY = _getFilteredWERight();
+    deltaY *= sin(DEGREE_30);
+    return deltaY;
+}
+
+float Robot::_getWEDeltaXRear() {
+    return _getFilteredWERear();
+}
+
+float Robot::_getWEDeltaYRear() {
+    return 0;
+}
+
+float Robot::_getWEDeltaX() {
+    float leftDeltaX = _getWEDeltaXLeft();
+    float rightDeltaX = _getWEDeltaXRight();
+    float rearDeltaX = _getWEDeltaXRear();
+    // return the average
+    return (leftDeltaX + rightDeltaX + rearDeltaX) / 3;
+}
+
+float Robot::_getWEDeltaY() {
+    float leftDeltaY = _getWEDeltaYLeft();
+    float rightDeltaY = _getWEDeltaYRight();
+    // return the average
+    return (leftDeltaY + rightDeltaY) / 2;
+}
+
+float Robot::_getWEDeltaTheta() {
+    float rear = _getFilteredWERear();
+    return rear / (PI * Util::cmToWE(ROBOT_DIAMETER));
+}
+
+float Robot::_getTransWEDeltaX() {
+    float deltaX = _getWEDeltaX();
+    float scaledDeltaX = Util::weToCM(deltaX);
+    // TODO: finish
+}
+
+float Robot::_getTransWEDeltaY() {
+    float deltaY = _getWEDeltaY();
+    float scaledDeltaY = Util::weToCM(deltaY);
+    // TODO: finish
+}
+
+float Robot::_getTransWEDeltaTheta() {
+    float deltaTheta = _getWEDeltaTheta();
+    // TODO: finish
+    return deltaTheta;
+}
+
+float Robot::_getTransNSX() {
+    
+}
+
+float Robot::_getTransNSY() {
+    
+}
+
+float Robot::_getTransNSTheta() {
+    
 }
