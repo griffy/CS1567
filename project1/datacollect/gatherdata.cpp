@@ -131,20 +131,22 @@ int main(int argc, char *argv[]) {
 	}
 	
 	printf("Starting (zero'd) coordinate: %d,%d,%f\n",zero_x,zero_y,zero_theta);
-	
+    /*	
 	time_t seconds = time(NULL);
 	time_t last_seconds = seconds;
+    */
 	do {
 		// Update the robot's sensor information
 		if(robot->update() != RI_RESP_SUCCESS) {
 			std::cout << "Failed to update sensor information!" << std::endl;
 		}
 		else{
+            /*
 			seconds = time(NULL);
 			if (seconds < last_seconds + 1)
 				continue;
 			last_seconds = seconds;
-
+            */
 			float filtx=filtX->filter((float) robot->X());
 			float filty=filtY->filter((float) robot->Y());
 			float filtz=filtTheta->filter((float) robot->Theta());
@@ -181,7 +183,7 @@ int main(int argc, char *argv[]) {
 				else{
 					printf("ERROR: !!!!!!!!!!!!!!!!!!!!!!!!!!!!\n ROOM=%d\n",robot->RoomID());
 				}
-				//robot->Move(RI_MOVE_FORWARD, 1);
+				robot->Move(RI_TURN_LEFT, 1);
 				/*
 				if(0){}
 				else{
