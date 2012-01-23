@@ -53,62 +53,62 @@ bool Robot::_update() {
     return true;
 }
 
-float Robot::_getFilteredWELeft() {
+float Robot::_getWEDeltaLeft() {
     int left = _robotInterface->getWheelEncoder(RI_WHEEL_LEFT);
     return _weLeftFilter->filter((float) left);
 }
 
-float Robot::_getFilteredWERight() {
+float Robot::_getWEDeltaRight() {
     int right = _robotInterface->getWheelEncoder(RI_WHEEL_RIGHT);
     return _weRightFilter->filter((float) right);
 }
 
-float Robot::_getFilteredWERear() {
+float Robot::_getWEDeltaRear() {
     int rear = _robotInterface->getWheelEncoder(RI_WHEEL_REAR);
     return _weRearFilter->filter((float) rear);
 }
 
-float Robot::_getFilteredNSX() {
+float Robot::_getNSX() {
     int x = _robotInterface->X();
     return _nsXFilter->filter((float) x);
 }
 
-float Robot::_getFilteredNSY() {
+float Robot::_getNSY() {
     int y = _robotInterface->Y();
     return _nsYFilter->filter((float) y);
 }
 
-float Robot::_getFilteredNSTheta() {
+float Robot::_getNSTheta() {
     float theta = _robotInterface->Theta();
     return _nsThetaFilter->filter(theta);
 }
 
 float Robot::_getWEDeltaXLeft() {
-    float deltaX = _getFilteredWELeft();
+    float deltaX = _getWEDeltaLeft();
     deltaX *= cos(DEGREE_150);
     return deltaX;
 }
 
 float Robot::_getWEDeltaYLeft() {
-    float deltaY = _getFilteredWELeft();
+    float deltaY = _getWEDeltaLeft();
     deltaY *= sin(DEGREE_150);
     return deltaY;
 }
 
 float Robot::_getWEDeltaXRight() {
-    float deltaX = _getFilteredWERight();
+    float deltaX = _getWEDeltaRight();
     deltaX *= cos(DEGREE_30);
     return deltaX;
 }
 
 float Robot::_getWEDeltaYRight() {
-    float deltaY = _getFilteredWERight();
+    float deltaY = _getWEDeltaRight();
     deltaY *= sin(DEGREE_30);
     return deltaY;
 }
 
 float Robot::_getWEDeltaXRear() {
-    return _getFilteredWERear();
+    return _getWEDeltaRear();
 }
 
 float Robot::_getWEDeltaYRear() {
@@ -130,8 +130,9 @@ float Robot::_getWEDeltaY() {
     return (leftDeltaY + rightDeltaY) / 2;
 }
 
+// FIXME: does this really work?
 float Robot::_getWEDeltaTheta() {
-    float rear = _getFilteredWERear();
+    float rear = _getWEDeltaRear();
     return rear / (PI * Util::cmToWE(ROBOT_DIAMETER));
 }
 

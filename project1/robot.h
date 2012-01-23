@@ -21,12 +21,12 @@ public:
     //        below
     RobotInterface *_robotInterface;
     bool _update();
-    float _getFilteredWELeft();
-    float _getFilteredWERight();
-    float _getFilteredWERear();
-    float _getFilteredNSX();
-    float _getFilteredNSY();
-    float _getFilteredNSTheta();
+    float _getWEDeltaLeft();
+    float _getWEDeltaRight();
+    float _getWEDeltaRear();
+    float _getNSX();
+    float _getNSY();
+    float _getNSTheta();
 
     float _getWEDeltaXLeft();
     float _getWEDeltaYLeft();
@@ -37,6 +37,7 @@ public:
     float _getWEDeltaX();
     float _getWEDeltaY();
     float _getWEDeltaTheta();
+    
     float _getTransWEDeltaX();
     float _getTransWEDeltaY();
     float _getTransWEDeltaTheta();
@@ -57,12 +58,12 @@ private:
 
     // bool _update();
 
-    // float _getFilteredWELeft();
-    // float _getFilteredWERight();
-    // float _getFilteredWERear();
-    // float _getFilteredNSX();
-    // float _getFilteredNSY();
-    // float _getFilteredNSTheta();
+    // float _getWEDeltaLeft();
+    // float _getWEDeltaRight();
+    // float _getWEDeltaRear();
+    // float _getNSX();
+    // float _getNSY();
+    // float _getNSTheta();
 
     // float _getWEDeltaXLeft();
     // float _getWEDeltaYLeft();
@@ -73,12 +74,13 @@ private:
     // float _getWEDeltaX();
     // float _getWEDeltaY();
     // float _getWEDeltaTheta();
+    
     // float _getTransWEDeltaX();
     // float _getTransWEDeltaY();
     // float _getTransWEDeltaTheta();
-    // float _getTransNSDeltaX();
-    // float _getTransNSDeltaY();
-    // float _getTransNSDeltaTheta();
+    // float _getTransNSX();
+    // float _getTransNSY();
+    // float _getTransNSTheta();
 };
 
 #endif
