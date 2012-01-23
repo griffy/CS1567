@@ -115,7 +115,7 @@ int main(int argc, char *argv[]) {
 	zero_theta=robot->Theta();
 
 	for(int i=0; i<15; i++){
-		if(robot->update()!= RI_RESP_SUCCESS){
+		if(robot->update()== RI_RESP_SUCCESS){
 			zero_x=filtX->filter((float) robot->X());
 			zero_y=filtY->filter((float) robot->Y());
 			zero_theta=filtTheta->filter((float) robot->Theta());
