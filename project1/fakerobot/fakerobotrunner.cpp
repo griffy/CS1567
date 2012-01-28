@@ -32,9 +32,9 @@ void printWE(FakeRobotInterface *robot) {
 }
 
 void printWEFiltered(FakeRobotInterface *robot) {
-    FIRFilter *weLeftFilter = new FIRFilter(WE);
-    FIRFilter *weRightFilter = new FIRFilter(WE);
-    FIRFilter *weRearFilter = new FIRFilter(WE);
+    FIRFilter *weLeftFilter = new FIRFilter("../filters/we.ffc");
+    FIRFilter *weRightFilter = new FIRFilter("../filters/we.ffc");
+    FIRFilter *weRearFilter = new FIRFilter("../filters/we.ffc");
     
     float totalX = 0;
     float totalY = 0;
@@ -71,9 +71,9 @@ void printNS(FakeRobotInterface *robot) {
 }
 
 void printNSFiltered(FakeRobotInterface *robot) {
-    FIRFilter *nsXFilter = new FIRFilter(NS_X);
-    FIRFilter *nsYFilter = new FIRFilter(NS_Y);
-    FIRFilter *nsThetaFilter = new FIRFilter(NS_THETA);
+    FIRFilter *nsXFilter = new FIRFilter("../filters/ns_x.ffc");
+    FIRFilter *nsYFilter = new FIRFilter("../filters/ns_y.ffc");
+    FIRFilter *nsThetaFilter = new FIRFilter("../filters/ns_theta.ffc");
 
     robot->reset();
     while (robot->update() == RI_RESP_SUCCESS) {

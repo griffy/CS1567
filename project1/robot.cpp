@@ -6,12 +6,12 @@
 Robot::Robot(std::string address, int id) {
     _robotInterface = new RobotInterface(address, id);
 
-    _nsXFilter = new FIRFilter(NS_X);
-    _nsYFilter = new FIRFilter(NS_Y);
-    _nsThetaFilter = new FIRFilter(NS_THETA);
-    _weLeftFilter = new FIRFilter(WE);
-    _weRightFilter = new FIRFilter(WE);
-    _weRearFilter = new FIRFilter(WE);
+    _nsXFilter = new FIRFilter("filters/ns_x.ffc");
+    _nsYFilter = new FIRFilter("filters/ns_y.ffc");
+    _nsThetaFilter = new FIRFilter("filters/ns_theta.ffc");
+    _weLeftFilter = new FIRFilter("filters/we.ffc");
+    _weRightFilter = new FIRFilter("filters/we.ffc");
+    _weRearFilter = new FIRFilter("filters/we.ffc");
 
     setFailLimit(DEFAULT_NUM_FAILS);
 }
