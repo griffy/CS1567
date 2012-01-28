@@ -71,13 +71,13 @@ int main(int argc, char *argv[]) {
 		exit(-5);
 	}
 	
-	FIRFilter *filtX = new FIRFilter(NS_X);
-	FIRFilter *filtY = new FIRFilter(NS_Y);
-	FIRFilter *filtTheta = new FIRFilter(NS_THETA);
+	FIRFilter *filtX = new FIRFilter("../filters/ns_x.ffc");
+	FIRFilter *filtY = new FIRFilter("../filters/ns_y.ffc");
+	FIRFilter *filtTheta = new FIRFilter("../filters/ns_theta.ffc");
 	
-	FIRFilter *wefiltL = new FIRFilter(WE);
-	FIRFilter *wefiltR = new FIRFilter(WE);
-	FIRFilter *wefiltRear = new FIRFilter(WE);
+	FIRFilter *wefiltL = new FIRFilter("../filters/we.ffc");
+	FIRFilter *wefiltR = new FIRFilter("../filters/we.ffc");
+	FIRFilter *wefiltRear = new FIRFilter("../filters/we.ffc");
 	
 	printf("Battery level constants: max=%d \t home=%d \t off=%d\n",RI_ROBOT_BATTERY_MAX,RI_ROBOT_BATTERY_HOME,RI_ROBOT_BATTERY_OFF);
 	
