@@ -1,5 +1,5 @@
 #include "robot.h"
-
+#include<stdio.h>
 #include <string>
 
 int main() {

@@ -18,6 +18,8 @@ namespace Util {
 	float cmToNS(float cm);
 
 	float cmToWE(float cm);
+
+	void mMult(float (*mA), int lA, int hA, float (*mB), int lB, int hB, float (*mC));
 };
 
 #endif
