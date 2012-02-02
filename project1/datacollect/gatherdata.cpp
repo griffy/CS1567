@@ -9,20 +9,12 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include "../firfilter.h"
+#include "../utilities.h"
 
 int zero_x;
 int zero_y;
 float zero_theta;
 int starting_room_ID;
-
-float tick_to_cm(int ticks){
-	//1 cm ~= 45 ticks
-	return ticks/45.0;
-}
-
-int cm_to_ticks(float cm){
-	return 45*cm;
-}
 
 int main(int argc, char *argv[]) {
 	if(argc<3){
@@ -30,38 +22,40 @@ int main(int argc, char *argv[]) {
 		exit(-1);
 	}
 	printf("Name of robot: %s\n",argv[1]);
-	
+
 	std::string baseFilename(argv[2]);
-	
+
 	std::string pwd(getcwd(NULL,0));
 	pwd+="/data_logs/";
 	pwd+=+argv[2];
 	pwd+="/";
 	printf("Current working dir: %s\n",pwd.c_str());
-	
+
 	if(mkdir(pwd.c_str(),S_IREAD|S_IWRITE|S_IEXEC)!=0){
 		printf("ERROR CREATING DIRECTORY FOR SAVED DATA\n");
 		exit(-2);
 	}
-	
+
 	std::string filenameNorthStarData(pwd);
 	std::string filenameNorthStarDataFiltered;
 	filenameNorthStarDataFiltered=pwd+baseFilename+"_ns_filtered";
 	std::string filenameNorthStarDataRaw;
 	filenameNorthStarDataRaw=pwd+baseFilename+"_ns_raw";
-	
+	std::string filenameNorthStarDataGlobal;
+	filenameNorthStarDataGlobal=pwd+baseFilename+"_ns_global";
+
 	std::string filenameWheelData(pwd);
 	std::string filenameWheelDataFiltered;
-	filenameWheelDataFiltered=pwd+baseFilename+"_we__filtered";
+	filenameWheelDataFiltered=pwd+baseFilename+"_we_filtered";
 	std::string filenameWheelDataRaw;
-	filenameWheelDataRaw=pwd+baseFilename+"_we__raw";
-	
+	filenameWheelDataRaw=pwd+baseFilename+"_we_raw";
+
 	std::string filenameTimeData(pwd);
 	filenameTimeData=pwd+baseFilename+"_time";
-	
+
 	std::string filenameSignalStrength(pwd);
 	filenameSignalStrength=pwd+baseFilename+"_signal";
-	
+
 	std::string filenameRoomData(pwd);
 	filenameRoomData=pwd+baseFilename+"_room";
 
@@ -97,7 +91,7 @@ int main(int argc, char *argv[]) {
 		printf("FILE: %s\n",filenameRoomData.c_str());
 		exit(-5);
 	}
-	
+
 	printf("Successfully named log files\n");
 	printf("Northstar full path: %d\n",filenameNorthStarData.c_str());
 	
@@ -108,15 +102,14 @@ int main(int argc, char *argv[]) {
 	FIRFilter *wefiltL = new FIRFilter("../filters/we.ffc");
 	FIRFilter *wefiltR = new FIRFilter("../filters/we.ffc");
 	FIRFilter *wefiltRear = new FIRFilter("../filters/we.ffc");
-	
-	
+
 	RobotInterface *robot = new RobotInterface(argv[1],0);
 	robot->reset_state();
 	while(robot->update()!=RI_RESP_SUCCESS){
 		printf("ERROR: Could not update robot\n");
 		sleep(1);
 	}
-	
+
 	printf("Battery level constants: max=%d \t home=%d \t off=%d\n",RI_ROBOT_BATTERY_MAX,RI_ROBOT_BATTERY_HOME,RI_ROBOT_BATTERY_OFF);
 	printf("Battery Level: %d\n",robot->Battery());
 	
@@ -137,9 +130,9 @@ int main(int argc, char *argv[]) {
 			exit(-2);
 			break;
 	}
-	
+
 	starting_room_ID=robot->RoomID();
-	
+
 	robot->update();
 	zero_x=robot->X();
 	zero_y=robot->Y();
@@ -154,24 +147,36 @@ int main(int argc, char *argv[]) {
 			wefiltL->filter((float) robot->getWheelEncoder(RI_WHEEL_LEFT));
 			wefiltR->filter((float) robot->getWheelEncoder(RI_WHEEL_RIGHT));
 			wefiltRear->filter((float) robot->getWheelEncoder(RI_WHEEL_REAR));
+			printf("Added data to filters\n");
 		}
 		else{
 			printf("ERROR: Initialization failed (%d)\n",i);
 			//sleep(1);
 		}
 	}
-	
+
 	printf("Starting (zero'd) coordinate: %d,%d,%f\n",zero_x,zero_y,zero_theta);
     /*	
 	time_t seconds = time(NULL);
 	time_t last_seconds = seconds;
     */
-	
+
 	timeval tv;
 	tv.tv_usec=0;
 	tv.tv_sec=0;
 	gettimeofday(&tv,0);
 	long startTime=(1000000*tv.tv_sec+tv.tv_usec)/1000;
+
+	// Open log files for writing
+	// Logs exist for: time, signal strength, room number, filtered and unfiltered NorthStar and wheel encoder data
+	FILE * timefile=fopen(filenameTimeData.c_str(),"a");
+	FILE * signalfile=fopen(filenameSignalStrength.c_str(),"a");
+	FILE * roomfile=fopen(filenameRoomData.c_str(),"a");
+	FILE * outfile=fopen(filenameNorthStarDataFiltered.c_str(),"a");
+	FILE * outfileraw=fopen(filenameNorthStarDataRaw.c_str(),"a");
+// 	FILE * outfileglobal=fopen(filenameNorthStarDataGlobal.c_str(),"a");
+	FILE * wheelfile=fopen(filenameWheelDataFiltered.c_str(),"a");
+	FILE * wheelfileraw=fopen(filenameWheelDataRaw.c_str(),"a");
 	
 	do {
 		// Update the robot's sensor information
@@ -184,22 +189,13 @@ int main(int argc, char *argv[]) {
 			time=time/1000;
 			
 			// write to time file
-			FILE * timefile=fopen(filenameTimeData.c_str(),"a");
 			fprintf(timefile,"%ld\n",time);
-			fflush(timefile);
-			fclose(timefile);
 			
 			// write to signal strength file
-			FILE * signalfile=fopen(filenameSignalStrength.c_str(),"a");
 			fprintf(signalfile,"%d\n",robot->NavStrengthRaw());
-			fflush(signalfile);
-			fclose(signalfile);
 			
 			// write to room file
-			FILE * roomfile=fopen(filenameRoomData.c_str(),"a");
 			fprintf(roomfile,"%d\n",robot->RoomID());
-			fflush(roomfile);
-			fclose(roomfile);
 			
 			float filtx=filtX->filter((float) robot->X());
 			float filty=filtY->filter((float) robot->Y());
@@ -211,29 +207,26 @@ int main(int argc, char *argv[]) {
 			
 			// Move unless there's something in front of the robot
 			//if(!robot->IR_Detected()){
-			FILE * outfile=fopen(filenameNorthStarDataFiltered.c_str(),"a");
+				
+			// write to NS position file
 			fprintf(outfile,"%f,%f,%f\n",filtx,filty,filtz);
-			fflush(outfile);
-			fclose(outfile);
-			
-			FILE * outfileraw=fopen(filenameNorthStarDataRaw.c_str(),"a");
+
+			// write to NS raw position file
 			fprintf(outfileraw,"%d,%d,%f\n",robot->X(),robot->Y(),robot->Theta());
-			fflush(outfileraw);
-			fclose(outfileraw);
-			
-			FILE * wheelfile=fopen(filenameWheelDataFiltered.c_str(),"a");
+
+			// write to global position file
+// 			fprintf(outfileglobal,"%f,%f,%f\n",global_x,global_y,global_z);
+
+			// write to WE data file
 			fprintf(wheelfile,"%f,%f,%f\n",wfiltl,wfiltr,wfiltrear);
-			fflush(wheelfile);
-			fclose(wheelfile);
-			
-			FILE * wheelfileraw=fopen(filenameWheelDataRaw.c_str(),"a");
+
+			// write to WE raw data file
 			fprintf(wheelfileraw,"%d,%d,%d\n",robot->getWheelEncoder(RI_WHEEL_LEFT),robot->getWheelEncoder(RI_WHEEL_RIGHT),robot->getWheelEncoder(RI_WHEEL_REAR));
-			fflush(wheelfileraw);
-			fclose(wheelfileraw);
-			
+
 			printf("Current Position (room %d): %d, %d, %f\n",robot->RoomID(),robot->X(),robot->Y(), robot->Theta());
-			printf("\t\t\t\t\t\tFiltered Position Position (room %d): %f, %f, %f\n",robot->RoomID(),filtx,filty,filtz);
-			//robot->Move(RI_TURN_LEFT, 1);
+			printf("\t\t\t\t\t\tFiltered Position (room %d): %f, %f, %f\n",robot->RoomID(),filtx,filty,filtz);
+			printf("\t\t\t\t\t\t\t\t\t\t\t\t\tSignal Strength: %d\n",robot->NavStrengthRaw());
+// 			printf("\t\t\t\t\t\t\t\t\t\t\t\tGlobal Position (room %d): %f, %f, %f\n",global_x,global_y,global_z);
 			/*
 			if(0){}
 			else{
@@ -244,10 +237,28 @@ int main(int argc, char *argv[]) {
 			//else{
 			//	printf("Detected IR\n");
 			//}
+			robot->Move(RI_MOVE_FORWARD, 1);
 		}
 	} while(1);
 	
-	// Clean up
+	// Clean up and close files
+	fflush(timefile);
+	fclose(timefile);
+	fflush(signalfile);
+	fclose(signalfile);
+	fflush(roomfile);
+	fclose(roomfile);
+	fflush(outfile);
+	fclose(outfile);
+	fflush(outfileraw);
+	fclose(outfileraw);
+// 	fflush(outfileglobal);
+// 	fclose(outfileglobal);
+	fflush(wheelfile);
+	fclose(wheelfile);
+	fflush(wheelfileraw);
+	fclose(wheelfileraw);
+			
 	delete(robot);
 	return 0;
 }

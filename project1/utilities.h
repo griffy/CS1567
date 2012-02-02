@@ -20,6 +20,10 @@ namespace Util {
 	float cmToWE(float cm);
 
 	void mMult(float (*mA), int lA, int hA, float (*mB), int lB, int hB, float (*mC));
+
+	float tick_to_cm(int ticks);
+
+	int cm_to_ticks(float cm);
 };
 
 #endif

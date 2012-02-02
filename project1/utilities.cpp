@@ -40,4 +40,13 @@ namespace Util {
 	    //return *mC;
 	}
 
+	float tick_to_cm(int ticks){
+		//1 cm ~= 45 ticks
+		return ticks/45.0;
+	}
+
+	int cm_to_ticks(float cm){
+		return 45*cm;
+	}
+
 };
