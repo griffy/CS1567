@@ -21,7 +21,7 @@ namespace Util {
 
 	void mMult(float *mA, int lA, int hA, float *mB, int lB, int hB, float *mC) {
 	    if(hA != lB) {
-	    	printf("Inner matrix dimensions do no match!\n");
+	    	printf("Inner matrix dimensions do not match!\n");
 		return;
 	    }
 		
@@ -39,14 +39,4 @@ namespace Util {
 	    }
 	    //return *mC;
 	}
-
-	float tick_to_cm(int ticks){
-		//1 cm ~= 45 ticks
-		return ticks/45.0;
-	}
-
-	int cm_to_ticks(float cm){
-		return 45*cm;
-	}
-
 };
