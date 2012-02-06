@@ -1,4 +1,4 @@
-OBJS=project.o robot.o firfilter.o utilities.o
+OBJS=project.o robot.o pose.o firfilter.o utilities.o
 CFLAGS=-ggdb -g3
 LIB_FLAGS=-L. -lrobot_if
 CPP_LIB_FLAGS=$(LIB_FLAGS) -lrobot_if++
@@ -11,12 +11,15 @@ all: $(OBJS)
 new: $(OBJS)
 	g++ $(CFLAGS) -o project.out $(OBJS) $(CPP_LIB_FLAGS) $(LIB_LINK_NEW)
 
-project.o: project.cpp robot.h firfilter.h
+project.o: project.cpp robot.h pose.h firfilter.h
 	g++ $(CFLAGS) -c project.cpp
 
-robot.o: robot.cpp robot.h firfilter.h utilities.h
+robot.o: robot.cpp robot.h pose.h firfilter.h utilities.h
 	g++ $(CFLAGS) -c robot.cpp
 
+pose.o: pose.cpp pose.h
+	g++ $(CFLAGS) -c pose.cpp
+	
 firfilter.o: firfilter.cpp firfilter.h
 	g++ $(CFLAGS) -c firfilter.cpp
 

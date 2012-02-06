@@ -38,6 +38,16 @@ int Robot::getFailLimit() {
     return _failLimit;
 }
 
+// Returns: the new robot pose in terms of the global coordinate system
+//          as the best estimate of its position
+// TODO
+Pose* Robot::getPose() {
+    return new Pose(0, 0, 0);
+}
+
+// Attempts to update the robot
+// Returns: true if update succeeded
+//          false if update fail limit was reached
 bool Robot::_update() {
     int failCount = 0;
     int failLimit = getFailLimit();
@@ -53,68 +63,88 @@ bool Robot::_update() {
     return true;
 }
 
+// Returns: filtered wheel encoder (delta) ticks for the left wheel
 float Robot::_getWEDeltaLeft() {
     int left = _robotInterface->getWheelEncoder(RI_WHEEL_LEFT);
     return _weLeftFilter->filter((float) left);
 }
 
+// Returns: filtered wheel encoder (delta) ticks for the right wheel
 float Robot::_getWEDeltaRight() {
     int right = _robotInterface->getWheelEncoder(RI_WHEEL_RIGHT);
     return _weRightFilter->filter((float) right);
 }
 
+// Returns: filtered wheel encoder (delta) ticks for the rear wheel
 float Robot::_getWEDeltaRear() {
     int rear = _robotInterface->getWheelEncoder(RI_WHEEL_REAR);
     return _weRearFilter->filter((float) rear);
 }
 
+// Returns: filtered north star x in ticks
 float Robot::_getNSX() {
     int x = _robotInterface->X();
     return _nsXFilter->filter((float) x);
 }
 
+// Returns: filtered north star y in ticks
 float Robot::_getNSY() {
     int y = _robotInterface->Y();
     return _nsYFilter->filter((float) y);
 }
 
+// Returns: filtered north star theta
 float Robot::_getNSTheta() {
     float theta = _robotInterface->Theta();
     return _nsThetaFilter->filter(theta);
 }
 
+// Returns: filtered wheel encoder delta x for left wheel in ticks 
+//          in terms of robot axis
 float Robot::_getWEDeltaXLeft() {
     float deltaX = _getWEDeltaLeft();
     deltaX *= cos(DEGREE_150);
     return deltaX;
 }
 
+// Returns: filtered wheel encoder delta y for left wheel in ticks 
+//          in terms of robot axis
 float Robot::_getWEDeltaYLeft() {
     float deltaY = _getWEDeltaLeft();
     deltaY *= sin(DEGREE_150);
     return deltaY;
 }
 
+// Returns: filtered wheel encoder delta x for right wheel in ticks 
+//          in terms of robot axis
 float Robot::_getWEDeltaXRight() {
     float deltaX = _getWEDeltaRight();
     deltaX *= cos(DEGREE_30);
     return deltaX;
 }
 
+// Returns: filtered wheel encoder delta y for right wheel in ticks 
+//          in terms of robot axis
 float Robot::_getWEDeltaYRight() {
     float deltaY = _getWEDeltaRight();
     deltaY *= sin(DEGREE_30);
     return deltaY;
 }
 
+// Returns: filtered wheel encoder delta x for rear wheel in ticks
+//          in terms of robot axis
 float Robot::_getWEDeltaXRear() {
     return _getWEDeltaRear();
 }
 
+// Returns: filtered wheel encoder delta y for rear wheel in ticks 
+//          in terms of robot axis
 float Robot::_getWEDeltaYRear() {
     return 0;
 }
 
+// Returns: filtered wheel encoder overall delta x in ticks
+//          in terms of robot axis
 float Robot::_getWEDeltaX() {
     float leftDeltaX = _getWEDeltaXLeft();
     float rightDeltaX = _getWEDeltaXRight();
@@ -123,6 +153,8 @@ float Robot::_getWEDeltaX() {
     return (leftDeltaX + rightDeltaX + rearDeltaX) / 3;
 }
 
+// Returns: filtered wheel encoder overall delta y in ticks
+//          in terms of robot axis
 float Robot::_getWEDeltaY() {
     float leftDeltaY = _getWEDeltaYLeft();
     float rightDeltaY = _getWEDeltaYRight();
@@ -130,38 +162,69 @@ float Robot::_getWEDeltaY() {
     return (leftDeltaY + rightDeltaY) / 2;
 }
 
-// FIXME: does this really work?
+// Returns: filtered wheel encoder overall delta theta
+//          in terms of robot axis
 float Robot::_getWEDeltaTheta() {
     float rear = _getWEDeltaRear();
+    // FIXME: does this given formula really work?
     return rear / (PI * Util::cmToWE(ROBOT_DIAMETER));
 }
 
-float Robot::_getTransWEDeltaX() {
+// Returns: transformed wheel encoder x estimate in cm of where
+//          robot should now be in global coordinate system
+float Robot::_getWETransX() {
     float deltaX = _getWEDeltaX();
     float scaledDeltaX = Util::weToCM(deltaX);
     // TODO: finish
 }
 
-float Robot::_getTransWEDeltaY() {
+// Returns: transformed wheel encoder y estimate in cm of where
+//          robot should now be in global coordinate system
+float Robot::_getWETransY() {
     float deltaY = _getWEDeltaY();
     float scaledDeltaY = Util::weToCM(deltaY);
     // TODO: finish
 }
 
-float Robot::_getTransWEDeltaTheta() {
+// Returns: transformed wheel encoder theta estimate of where
+//          robot should now be in global coordinate system
+float Robot::_getWETransTheta() {
     float deltaTheta = _getWEDeltaTheta();
     // TODO: finish
     return deltaTheta;
 }
 
-float Robot::_getTransNSX() {
+// Returns: transformed north star x estimate of where
+//          robot should now be in global coordinate system
+// TODO
+float Robot::_getNSTransX() {
     
 }
 
-float Robot::_getTransNSY() {
+// Returns: transformed north star y estimate of where
+//          robot should now be in global coordinate system
+// TODO
+float Robot::_getNSTransY() {
     
 }
 
-float Robot::_getTransNSTheta() {
+// Returns: transformed north star theta estimate of where
+//          robot should now be in global coordinate system
+// TODO
+float Robot::_getNSTransTheta() {
+    
+}
+
+// Returns: transformed wheel encoder pose estimate of where
+//          robot should now be in global coordinate system
+// TODO
+Pose* Robot::_getWEPose() {
+    
+}
+
+// Returns: transformed north star pose estimate of where
+//          robot should now be in global coordinate system
+// TODO
+Pose* Robot::_getNSPose() {
     
 }

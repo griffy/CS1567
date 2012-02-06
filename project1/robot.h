@@ -1,6 +1,7 @@
 #ifndef CS1567_ROBOT_H
 #define CS1567_ROBOT_H
 
+#include "pose.h"
 #include "firfilter.h"
 
 #include <robot_if++.h>
@@ -14,8 +15,7 @@ public:
     void turnTo(int theta);
     void setFailLimit(int limit);
     int getFailLimit();
-    //RobotPose getPose();
-    //RobotPose getDeltaPose();
+    Pose* getPose();
 
     // FIXME: Temporarily public members (for testing)
     //        below
@@ -38,12 +38,15 @@ public:
     float _getWEDeltaY();
     float _getWEDeltaTheta();
     
-    float _getTransWEDeltaX();
-    float _getTransWEDeltaY();
-    float _getTransWEDeltaTheta();
-    float _getTransNSX();
-    float _getTransNSY();
-    float _getTransNSTheta();
+    float _getWETransX();
+    float _getWETransY();
+    float _getWETransTheta();
+    float _getNSTransX();
+    float _getNSTransY();
+    float _getNSTransTheta();
+
+    Pose* _getWEPose();
+    Pose* _getNSPose();
 private:
     // RobotInterface *_robotInterface;
 
@@ -56,6 +59,8 @@ private:
 
     int _failLimit;
 
+    // FIXME: Temporarily not private members (for testing)
+    //        below
     // bool _update();
 
     // float _getWEDeltaLeft();
@@ -75,12 +80,15 @@ private:
     // float _getWEDeltaY();
     // float _getWEDeltaTheta();
     
-    // float _getTransWEDeltaX();
-    // float _getTransWEDeltaY();
-    // float _getTransWEDeltaTheta();
-    // float _getTransNSX();
-    // float _getTransNSY();
-    // float _getTransNSTheta();
+    // float _getWETransX();
+    // float _getWETransY();
+    // float _getWETransTheta();
+    // float _getNSTransX();
+    // float _getNSTransY();
+    // float _getNSTransTheta();
+
+    // Pose* _getWEPose();
+    // Pose* _getNSPose();
 };
 
 #endif
