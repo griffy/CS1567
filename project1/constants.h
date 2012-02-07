@@ -32,15 +32,30 @@ ROOM_SCALE[1][3]=45;
 
 
 // ROTATION is angle relative to room 2's base where 0 degrees is parallel to far wall
-ROOM_ROTATION[0]=45;
-ROOM_ROTATION[1]=45;
-ROOM_ROTATION[2]=45;
-ROOM_ROTATION[3]=45;
+//                                       |
+//                     _4_               |
+//                    |   |              |
+//                  3 |___| 5            |
+//                      2                |
+//     theta = 90                        |
+//     ^                                 |
+//     |                                 |
+//     y                                 |
+//     |                                 |
+//     *-x--> theta = 0                  |
+//________________________________________
+ROOM_ROTATION[0]=350.7;
+ROOM_ROTATION[1]=263.1;
+ROOM_ROTATION[2]=5.7;
+ROOM_ROTATION[3]=273.4;
 
-#define NUMBASES 5
+//Base locations within the global coordinate system
+#define NUMBASES 7
 Pose * bases[NUMBASES];
 Pose[0] = new Pose(0,0,0);
-Pose[1] = new Pose(0,0,0);
-Pose[2] = new Pose(0,0,0);
-Pose[3] = new Pose(0,0,0);
-Pose[4] = new Pose(0,0,0);
+Pose[1] = new Pose(3.41,0,0);
+Pose[2] = new Pose(2.40,1.86,0);
+Pose[3] = new Pose(3.20,1.86,0);
+Pose[4] = new Pose(4.02,3.03,0);
+Pose[5] = new Pose(4.02,3.53,0);
+Pose[6] = new Pose(0.69,4.19,0);
