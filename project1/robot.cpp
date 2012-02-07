@@ -265,23 +265,51 @@ float Robot::_getWETransDeltaTheta() {
 
 // Returns: transformed north star x estimate of where
 //          robot should now be in global coordinate system
-// TODO
+// TODO?
 float Robot::_getNSTransX() {
-    
+   float result;
+   int room = _robotInterface->RoomID();
+   float x = _getNSX();
+   float transform = {cos(ROOM_ROTATION[room-2]), sin(ROOM_ROTATION[room-2])};
+
+   mMult(&transform, 2, 1, &x, 1, 1, &result);   
+
+   //scale
+
+   //move
+
+   return result; 
 }
 
 // Returns: transformed north star y estimate of where
 //          robot should now be in global coordinate system
-// TODO
-float Robot::_getNSTransY() {
-    
+// TODO?
+float Robot::_getNSTransY() { 
+   float result;
+   int room = _robotInterface->RoomID();
+   float y = _getNSY();
+   float transform = {sin(ROOM_ROTATION[room-2]), -cos(ROOM_ROTATION[room-2])};
+
+   mMult(&transform, 2, 1, &y, 1, 1, &result);   
+   
+   //scale
+
+   //move
+
+   return result; 
 }
 
 // Returns: transformed north star theta estimate of where
 //          robot should now be in global coordinate system
-// TODO
+// TODO?
 float Robot::_getNSTransTheta() {
-    
+    float result = _getNSTheta();
+    int room = _robotInterface->RoomID();
+    result -= (ROOM_ROTATION[room-2]*(PI/180.0));
+    if(result < -PI) {
+    	result += 2*PI;
+    }
+    return result;
 }
 
 // Updates transformed wheel encoder pose estimate of where
