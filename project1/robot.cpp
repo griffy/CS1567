@@ -18,6 +18,9 @@ Robot::Robot(std::string address, int id) {
     _wePose = new Pose(0, 0, 0);
     _nsPose = new Pose(0, 0, 0);
     _pose = new Pose(0, 0, 0);
+
+    // bind _pose to the kalman filter
+    _kalmanFilter = new KalmanFilter(_pose);
 }
 
 Robot::~Robot() {
@@ -55,8 +58,8 @@ void Robot::update() {
     // update each pose estimate
     _updateWEPose();
     _updateNSPose();
-    // TODO: pass updated poses to kalman filter
-    //       and set new pose
+    // pass updated poses to kalman filter and update main pose
+    _kalmanFilter->filter(_nsPose, _wePose);
 }
 
 Pose* Robot::getPose() {

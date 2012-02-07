@@ -61,10 +61,11 @@ private:
 
     int _failLimit;
 
-    Pose* _wePose;
-    Pose* _nsPose;
-    Pose* _pose;
+    Pose *_wePose;
+    Pose *_nsPose;
+    Pose *_pose;
 
+    KalmanFilter *_kalmanFilter;
     // FIXME: Temporarily not private members (for testing)
     //        below
     // bool _update();

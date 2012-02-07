@@ -1,6 +1,6 @@
 #include "kalmanfilter.h"
 
-KalmanFilter::KalmanFilter(Pose* initialPose) {
+KalmanFilter::KalmanFilter(Pose *initialPose) {
 	_curPose = initialPose;
 	// TODO: does _kf need to be explicitly initialized?
 	float initialPoseArr[3];
@@ -11,13 +11,13 @@ KalmanFilter::KalmanFilter(Pose* initialPose) {
 
 KalmanFilter::~KalmanFilter() {}
 
-void KalmanFilter::filter(Pose* nsPose, Pose* wePose) {
+void KalmanFilter::filter(Pose *nsPose, Pose *wePose) {
 	float nsPoseArr[3];
 	float wePoseArr[3];
 	nsPose->toArray(nsPoseArr);
 	wePose->toArray(wePoseArr);
 	rovioKalmanFilter(&_kf, nsPoseArr, wePoseArr, _track);
-	_curPose.setX(_track[0]);
-	_curPose.setY(_track[1]);
-	_curPose.setTheta(_track[2]);
+	_curPose->setX(_track[0]);
+	_curPose->setY(_track[1]);
+	_curPose->setTheta(_track[2]);
 }
