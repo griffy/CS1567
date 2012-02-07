@@ -5,7 +5,10 @@ class Pose {
 public:
     Pose(float x, float y, float theta);
     ~Pose();
-    Pose* plus(float deltaX, float deltaY, float deltaTheta);
+    void setX(float x);
+    void setY(float y);
+    void setTheta(float theta);
+    void add(float deltaX, float deltaY, float deltaTheta);
     void toArray(float *arr);
 private:
 	float _x;

@@ -15,12 +15,13 @@ public:
     void turnTo(int theta);
     void setFailLimit(int limit);
     int getFailLimit();
+    void update();
     Pose* getPose();
 
     // FIXME: Temporarily public members (for testing)
     //        below
     RobotInterface *_robotInterface;
-    bool _update();
+    bool _updateInterface();
     float _getWEDeltaLeft();
     float _getWEDeltaRight();
     float _getWEDeltaRear();
@@ -38,15 +39,16 @@ public:
     float _getWEDeltaY();
     float _getWEDeltaTheta();
     
-    float _getWETransX();
-    float _getWETransY();
-    float _getWETransTheta();
+    float _getWETransDeltaX();
+    float _getWETransDeltaY();
+    float _getWETransDeltaTheta();
+
     float _getNSTransX();
     float _getNSTransY();
     float _getNSTransTheta();
 
-    Pose* _getWEPose();
-    Pose* _getNSPose();
+    void _updateWEPose();
+    void _updateNSPose();
 private:
     // RobotInterface *_robotInterface;
 
@@ -58,6 +60,10 @@ private:
     FIRFilter *_weRearFilter;
 
     int _failLimit;
+
+    Pose* _wePose;
+    Pose* _nsPose;
+    Pose* _pose;
 
     // FIXME: Temporarily not private members (for testing)
     //        below
@@ -80,15 +86,16 @@ private:
     // float _getWEDeltaY();
     // float _getWEDeltaTheta();
     
-    // float _getWETransX();
-    // float _getWETransY();
-    // float _getWETransTheta();
+    // float _getWETransDeltaX();
+    // float _getWETransDeltaY();
+    // float _getWETransDeltaTheta();
+
     // float _getNSTransX();
     // float _getNSTransY();
     // float _getNSTransTheta();
 
-    // Pose* _getWEPose();
-    // Pose* _getNSPose();
+    // void _updateWEPose();
+    // void _updateNSPose();
 };
 
 #endif

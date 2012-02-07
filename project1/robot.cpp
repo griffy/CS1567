@@ -14,16 +14,25 @@ Robot::Robot(std::string address, int id) {
     _weRearFilter = new FIRFilter("filters/we.ffc");
 
     setFailLimit(DEFAULT_NUM_FAILS);
+
+    _wePose = new Pose(0, 0, 0);
+    _nsPose = new Pose(0, 0, 0);
+    _pose = new Pose(0, 0, 0);
 }
 
 Robot::~Robot() {
     delete _robotInterface;
+
     delete _nsXFilter;
     delete _nsYFilter;
     delete _nsThetaFilter;
     delete _weLeftFilter;
     delete _weRightFilter;
     delete _weRearFilter;
+
+    delete _wePose;
+    delete _nsPose;
+    delete _pose;
 }
 
 void Robot::moveTo(int x, int y) {}
@@ -38,17 +47,26 @@ int Robot::getFailLimit() {
     return _failLimit;
 }
 
-// Returns: the new robot pose in terms of the global coordinate system
-//          as the best estimate of its position
-// TODO
+// Updates the robot pose in terms of the global coordinate system
+// with the best estimate of its position (using kalman filter)
+void Robot::update() {
+    // update the robot interface
+    _updateInterface();
+    // update each pose estimate
+    _updateWEPose();
+    _updateNSPose();
+    // TODO: pass updated poses to kalman filter
+    //       and set new pose
+}
+
 Pose* Robot::getPose() {
-    return new Pose(0, 0, 0);
+    return _pose;
 }
 
 // Attempts to update the robot
 // Returns: true if update succeeded
 //          false if update fail limit was reached
-bool Robot::_update() {
+bool Robot::_updateInterface() {
     int failCount = 0;
     int failLimit = getFailLimit();
 
@@ -172,7 +190,7 @@ float Robot::_getWEDeltaTheta() {
 
 // Returns: transformed wheel encoder x estimate in cm of where
 //          robot should now be in global coordinate system
-float Robot::_getWETransX() {
+float Robot::_getWETransDeltaX() {
     float deltaX = _getWEDeltaX();
     float scaledDeltaX = Util::weToCM(deltaX);
     // TODO: finish
@@ -180,7 +198,7 @@ float Robot::_getWETransX() {
 
 // Returns: transformed wheel encoder y estimate in cm of where
 //          robot should now be in global coordinate system
-float Robot::_getWETransY() {
+float Robot::_getWETransDeltaY() {
     float deltaY = _getWEDeltaY();
     float scaledDeltaY = Util::weToCM(deltaY);
     // TODO: finish
@@ -188,7 +206,7 @@ float Robot::_getWETransY() {
 
 // Returns: transformed wheel encoder theta estimate of where
 //          robot should now be in global coordinate system
-float Robot::_getWETransTheta() {
+float Robot::_getWETransDeltaTheta() {
     float deltaTheta = _getWEDeltaTheta();
     // TODO: finish
     return deltaTheta;
@@ -215,16 +233,22 @@ float Robot::_getNSTransTheta() {
     
 }
 
-// Returns: transformed wheel encoder pose estimate of where
-//          robot should now be in global coordinate system
-// TODO
-Pose* Robot::_getWEPose() {
-    
+// Updates transformed wheel encoder pose estimate of where
+// robot should now be in global coordinate system
+void Robot::_updateWEPose() {
+    float deltaX = _getWETransDeltaX();
+    float deltaY = _getWETransDeltaY();
+    float deltaTheta = _getWETransDeltaTheta();
+    _wePose->add(deltaX, deltaY, deltaTheta);
 }
 
-// Returns: transformed north star pose estimate of where
-//          robot should now be in global coordinate system
-// TODO
-Pose* Robot::_getNSPose() {
-    
+// Updates transformed north star pose estimate of where
+// robot should now be in global coordinate system
+void Robot::_updateNSPose() {
+    float newX = _getNSTransX();
+    float newY = _getNSTransY();
+    float newTheta = _getNSTransTheta();
+    _nsPose->setX(newX);
+    _nsPose->setY(newY);
+    _nsPose->setTheta(newTheta);
 }

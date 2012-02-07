@@ -10,11 +10,22 @@ Pose::~Pose() {
 	
 }
 
-Pose* Pose::plus(float deltaX, float deltaY, float deltaTheta) {
-	float newX = _x + deltaX;
-	float newY = _y + deltaY;
-	float newTheta = _theta + deltaTheta;
-	return new Pose(newX, newY, newTheta);
+void Pose::setX(float x) {
+	_x = x;
+}
+
+void Pose::setY(float y) {
+	_y = y;
+}
+
+void Pose::setTheta(float theta) {
+	_theta = theta;
+}
+
+void Pose::add(float deltaX, float deltaY, float deltaTheta) {
+	_x += deltaX;
+	_y += deltaY;
+	_theta += deltaTheta;
 }
 
 void Pose::toArray(float *arr) {

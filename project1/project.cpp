@@ -4,11 +4,11 @@
 
 int main() {
     Robot *robot = new Robot("192.168.1.44", 0);
-    robot->_update();
+    robot->update();
     float y = 0;
     while (y < 300 * 4) {
     	robot->_robotInterface->Move(RI_MOVE_FORWARD, 1);
-    	robot->_update();
+    	robot->update();
     	float deltaY = robot->_getWEDeltaY();
     	y += deltaY;
     	printf("%f\n", y);
