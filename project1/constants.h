@@ -53,9 +53,9 @@ ROOM_ROTATION[3]=273.4;
 #define NUMBASES 7
 Pose * bases[NUMBASES];
 Pose[0] = new Pose(0,0,0);
-Pose[1] = new Pose(3.41,0,0);
-Pose[2] = new Pose(2.40,1.86,0);
-Pose[3] = new Pose(3.20,1.86,0);
-Pose[4] = new Pose(4.02,3.03,0);
-Pose[5] = new Pose(4.02,3.53,0);
-Pose[6] = new Pose(0.69,4.19,0);
+Pose[1] = new Pose(341,0,0);
+Pose[2] = new Pose(240,186,0);
+Pose[3] = new Pose(320,186,0);
+Pose[4] = new Pose(402,303,0);
+Pose[5] = new Pose(402,353,0);
+Pose[6] = new Pose(069,419,0);
