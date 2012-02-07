@@ -21,6 +21,20 @@ Robot::Robot(std::string address, int id) {
 
     // bind _pose to the kalman filter
     _kalmanFilter = new KalmanFilter(_pose);
+	
+	PIDConstants distancePIDConstants;
+	PIDConstants thetaPIDConstants;
+	
+	distancePIDConstants.ki=.001;
+	distancePIDConstants.kp=1;
+	distancePIDConstants.kd=1;
+	
+	thetaPIDConstants.ki=.001;
+	thetaPIDConstants.kp=1;
+	thetaPIDConstants.kd=1;
+
+	distancePID=new PID(&distancePIDConstants);
+	thetaPID=new PID(&thetaPIDConstants);
 }
 
 Robot::~Robot() {
@@ -38,9 +52,43 @@ Robot::~Robot() {
     delete _pose;
 }
 
-void Robot::moveTo(int x, int y) {}
+void Robot::moveTo(int x, int y) {
+	//find current total magnitude of the error.  Then, if we are not going straight towards the target, we will turn
+	
+	float yError=y-currPose->getY();
+	float xError=x-currPose->getX();
 
-void Robot::turnTo(int theta) {}
+	float error=sqrt(pow(yError,2.0)+pow(xError,2.0));
+	printf("Error = %f\n",error);
+	
+	float distGain = distancePID->updatePID(error);
+	
+	float thetaError=atan(yError/xError);
+	printf("Theta Error = %f\n",thetaError);
+	
+	float thetaGain = thetaPID->updatePID(thetaError);
+
+	
+	if(abs(thetaError)>0.1){
+		//don't move, just turn
+		bool turnRight=true;
+		if(thetaError>0){
+			turnRight=false;
+			_robotInterface->Move(RI_TURN_RIGHT,5);
+		}
+		else{
+			_robotInterface->Move(RI_TURN_LEFT,5);
+		}
+	}
+	else{
+		// going relatively straight
+		_robotInterface->Move(RI_MOVE_FORWARD, distGain*10);
+	}
+}
+
+void Robot::turnTo(int theta) {
+	
+}
 
 void Robot::setFailLimit(int limit) {
     _failLimit = limit;

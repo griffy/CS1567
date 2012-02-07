@@ -3,6 +3,10 @@
 
 #include "pose.h"
 #include "firfilter.h"
+#include "PID.h"
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include <robot_if++.h>
 #include <string>
@@ -49,6 +53,9 @@ public:
 
     void _updateWEPose();
     void _updateNSPose();
+	
+	PID* distancePID;
+	PID* thetaPID;
 private:
     // RobotInterface *_robotInterface;
 
