@@ -1,3 +1,8 @@
+/**
+ * @author Shawn Hanna
+ * @group_number 1
+ * @date 2/7/2012
+**/
 
 #ifndef CS1567_PID_H
 #define CS1567_PID_H
@@ -17,6 +22,8 @@ class PID {
 public:
 	PID(PIDConstants* constants, float max_value, float min_value);
 	PID(PIDConstants* constants);
+	
+	void flushPID();
 	
 	void setConstants(PIDConstants* newConstants);
 	

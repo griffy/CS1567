@@ -55,8 +55,8 @@ Robot::~Robot() {
 void Robot::moveTo(int x, int y) {
 	//find current total magnitude of the error.  Then, if we are not going straight towards the target, we will turn
 	
-	float yError=y-currPose->getY();
-	float xError=x-currPose->getX();
+	float yError=y-_pose->getY();
+	float xError=x-_pose->getX();
 
 	float error=sqrt(pow(yError,2.0)+pow(xError,2.0));
 	printf("Error = %f\n",error);
@@ -267,12 +267,13 @@ float Robot::_getWETransDeltaTheta() {
 //          robot should now be in global coordinate system
 // TODO?
 float Robot::_getNSTransX() {
+using namespace Util;
    float result;
    int room = _robotInterface->RoomID();
    float x = _getNSX();
-   float transform = {cos(ROOM_ROTATION[room-2]), sin(ROOM_ROTATION[room-2])};
+   float transform[2] = {cos(ROOM_ROTATION[room-2]), sin(ROOM_ROTATION[room-2])};
 
-   mMult(&transform, 2, 1, &x, 1, 1, &result);   
+   mMult(transform, 2, 1, &x, 1, 1, &result);   
 
    //scale
 
@@ -285,12 +286,13 @@ float Robot::_getNSTransX() {
 //          robot should now be in global coordinate system
 // TODO?
 float Robot::_getNSTransY() { 
+using namespace Util;
    float result;
    int room = _robotInterface->RoomID();
    float y = _getNSY();
-   float transform = {sin(ROOM_ROTATION[room-2]), -cos(ROOM_ROTATION[room-2])};
+   float transform[2] = {sin(ROOM_ROTATION[room-2]), -cos(ROOM_ROTATION[room-2])};
 
-   mMult(&transform, 2, 1, &y, 1, 1, &result);   
+   mMult(transform, 2, 1, &y, 1, 1, &result);   
    
    //scale
 

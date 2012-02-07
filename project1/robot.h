@@ -3,7 +3,10 @@
 
 #include "pose.h"
 #include "firfilter.h"
+#include "kalmanfilter.h"
 #include "PID.h"
+#include "utilities.h"
+#include "constants.h"
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
