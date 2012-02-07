@@ -22,3 +22,15 @@ void Pose::toArray(float *arr) {
 	arr[1] = _y;
 	arr[2] = _theta;
 }
+
+float Pose::getX(){
+	return _x;
+}
+
+float Pose::getY(){
+	return _y;
+}
+
+float Pose::getTheta(){
+	return _theta;
+}

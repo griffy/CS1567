@@ -7,6 +7,10 @@ public:
     ~Pose();
     Pose* plus(float deltaX, float deltaY, float deltaTheta);
     void toArray(float *arr);
+
+	float getX();
+	float getY();
+	float getTheta();
 private:
 	float _x;
 	float _y;
