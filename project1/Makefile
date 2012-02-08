@@ -2,7 +2,7 @@ OBJS=project.o robot.o pose.o firfilter.o kalmanfilter.o rovioKalmanFilter.o uti
 CFLAGS=-ggdb -g3
 LIB_FLAGS=-L. -lrobot_if
 CPP_LIB_FLAGS=$(LIB_FLAGS) -lrobot_if++
-LIB_LINK=-lhighgui -lcv -lcxcore -lm -L/usr/lib64/atlas -lclapack -lgslcblas
+LIB_LINK=-lhighgui -lcv -lcxcore -lm -lgslcblas -L/usr/lib64/atlas -lclapack
 LIB_LINK_NEW=-lopencv_core -lopencv_imgproc -lopencv_highgui -lm
 
 
