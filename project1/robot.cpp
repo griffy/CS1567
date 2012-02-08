@@ -218,7 +218,7 @@ float Robot::_getWEDeltaX() {
     float leftDeltaX = _getWEDeltaXLeft();
     float rightDeltaX = _getWEDeltaXRight();
     // return the average
-    return ((leftDeltaX + rightDeltaX) / 2) * cos(_wePose.getTheta());
+    return ((leftDeltaX + rightDeltaX) / 2) * cos(_wePose->getTheta());
 }
 
 // Returns: filtered wheel encoder overall delta y in ticks
@@ -227,7 +227,7 @@ float Robot::_getWEDeltaY() {
     float leftDeltaY = _getWEDeltaYLeft();
     float rightDeltaY = _getWEDeltaYRight();
     // return the average
-    return ((leftDeltaY + rightDeltaY) / 2) * sin(_wePose.getTheta());
+    return ((leftDeltaY + rightDeltaY) / 2) * sin(_wePose->getTheta());
 }
 
 // Returns: filtered wheel encoder overall delta theta

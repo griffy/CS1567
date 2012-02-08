@@ -1,5 +1,6 @@
 #ifndef CS1567_POSE_H
 #define CS1567_POSE_H
+#include <math.h>
 
 class Pose {
 public:
@@ -10,6 +11,12 @@ public:
     void setTheta(float theta);
     void add(float deltaX, float deltaY, float deltaTheta);
     void toArray(float *arr);
+
+	//gets the pose difference between the 2 poses
+	Pose* difference(Pose* pose1, Pose* pose2);
+	
+	//gets the distance (x/y) between the 2 poses
+	float distance(Pose* pose1, Pose* pose2);
 
 	float getX();
 	float getY();

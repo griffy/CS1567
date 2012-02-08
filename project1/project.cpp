@@ -18,7 +18,7 @@ int starting_room_ID;
 
 int main(int argc, char *argv[]) {
     //Base locations within the global coordinate system
-	Pose *bases[NUMBASES];
+	Pose * bases[NUMBASES];
 	bases[0] = new Pose(0, 0, 0);
 	bases[1] = new Pose(3.41, 0, 0);
 	bases[2] = new Pose(2.40, 1.86, 0);
@@ -44,11 +44,16 @@ int main(int argc, char *argv[]) {
                robot->_getNSTransTheta());
 		
 		//robot->Move(RI_MOVE_FORWARD, 1);
+		for(int i=0; i<NUMBASES; i++){
+			robot->moveTo(bases[i]->getX(), bases[i]->getY());
+		}
 	} while (true);
 
 	delete(robot);
     // FIXME: Should this be delete[] ?
-    delete(bases);
+	for(int i=0; i<NUMBASES; i++){
+		delete bases[i];
+	}
 
 	return 0;
 }

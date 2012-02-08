@@ -17,3 +17,4 @@ gatherdata.o: gatherdata.cpp
 clean:
 	rm -f *.o
 	rm -f gatherdata.out
+	rm -f gatherdata
