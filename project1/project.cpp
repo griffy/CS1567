@@ -17,6 +17,10 @@ float zero_theta;
 int starting_room_ID;
 
 int main(int argc, char *argv[]) {
+	if(argc<2){
+		printf("ERROR: need argument for robot name\n");
+		exit(-1);
+	}
     //Base locations within the global coordinate system
 	Pose * bases[NUMBASES];
 	bases[0] = new Pose(0, 0, 0);
@@ -38,14 +42,14 @@ int main(int argc, char *argv[]) {
 		// Update the robot's sensor information
 		robot->update();
 		
-		printf("X global: %d\t\tY global: %d\t\tTheta global: %d\n",
+		printf("X global: %f\t\tY global: %f\t\tTheta global: %f\n",
                robot->_getNSTransX(), 
                robot->_getNSTransY(),
                robot->_getNSTransTheta());
 		
 		//robot->Move(RI_MOVE_FORWARD, 1);
 		for(int i=0; i<NUMBASES; i++){
-			robot->moveTo(bases[i]->getX(), bases[i]->getY());
+			//robot->moveTo(bases[i]->getX(), bases[i]->getY());
 		}
 	} while (true);
 
