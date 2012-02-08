@@ -2,10 +2,10 @@
 #define CS1567_CONSTANTS_H
 
 // ROOM 2 stuff
-float ROOM_X_SHIFT[4]= {199, 48, 229, 375};
-float ROOM_Y_SHIFT[4]= {154, 281, 449, 303};
-float ROOM_SCALE[2][4]= {{45, 45, 45, 45}, {45, 45, 45, 45}};
-float ROOM_ROTATION[4]= {350.7, 263.1, 5.7, 273.4};
+const float ROOM_X_SHIFT[4]= {199, 48, 229, 375};
+const float ROOM_Y_SHIFT[4]= {154, 281, 449, 303};
+const float ROOM_SCALE[2][4]= {{45, 45, 45, 45}, {45, 45, 45, 45}};
+const float ROOM_ROTATION[4]= {350.7, 263.1, 5.7, 273.4};
 
 // ROOM_X_SHIFT[0]=199;
 // ROOM_Y_SHIFT[0]=154;

@@ -237,7 +237,7 @@ int main(int argc, char *argv[]) {
 			//else{
 			//	printf("Detected IR\n");
 			//}
-			robot->Move(RI_MOVE_FORWARD, 1);
+			//robot->Move(RI_MOVE_FORWARD, 1);
 		}
 	} while(1);
 	

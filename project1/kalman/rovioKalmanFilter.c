@@ -1,8 +1,11 @@
 /* Kalman Redundant Sensors, C Version */
 
-#include <clapack.h>
-#include "rovioKalmanFilter.h"
-#include "kalmanFilterDef.h"
+
+extern "C" {
+	#include <clapack.h>
+	#include "rovioKalmanFilter.h"
+	#include "kalmanFilterDef.h"
+}
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -78,9 +81,9 @@ void rovioKalmanFilter(kalmanFilter *kf, float *meas_S1, float *meas_S2, float *
 	memset(eye, 0, sizeof(float) * FILTER_SIZE * FILTER_SIZE);
 
 	/* Allocate ipiv and work */
-	ipiv = malloc(mtrx_sz * sizeof(int));
+	ipiv = (int *) malloc(mtrx_sz * sizeof(int));
 	lwork = FILTER_SIZE * FILTER_SIZE;
-	work = malloc(sizeof(float) * lwork);
+	work = (float *)malloc(sizeof(float) * lwork);
 	if(!ipiv || !work) {
 		if(ipiv)
 			free(ipiv);
