@@ -1,7 +1,9 @@
 #ifndef CS1567_KALMANFILTER_H
 #define CS1567_KALMANFILTER_H
 
-#include "kalman/kalmanFilterDef.h"
+extern "C" {
+	#include "kalman/kalmanFilterDef.h"
+}
 #include "pose.h"
 
 class KalmanFilter {

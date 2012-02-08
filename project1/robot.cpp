@@ -1,5 +1,4 @@
 #include "robot.h"
-#include "utilities.h"
 
 #define DEFAULT_NUM_FAILS 5
 

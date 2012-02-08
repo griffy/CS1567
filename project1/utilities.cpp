@@ -1,6 +1,6 @@
 #include "utilities.h"
-#include<stdio.h>
-#include<stdlib.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 namespace Util {
 	float nsToCM(float ticks) {

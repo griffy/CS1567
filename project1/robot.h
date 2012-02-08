@@ -57,8 +57,8 @@ public:
     void _updateWEPose();
     void _updateNSPose();
 	
-	PID* distancePID;
-	PID* thetaPID;
+	PID* _distancePID;
+	PID* _thetaPID;
 private:
     // RobotInterface *_robotInterface;
 
