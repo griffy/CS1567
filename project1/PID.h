@@ -20,12 +20,12 @@ typedef struct {
 
 class PID {
 public:
-	PID(PIDConstants* constants, float max_value, float min_value);
-	PID(PIDConstants* constants);
+	PID(PIDConstants *constants, float max_value, float min_value);
+	PID(PIDConstants *constants);
 	
 	void flushPID();
 	
-	void setConstants(PIDConstants* newConstants);
+	void setConstants(PIDConstants *newConstants);
 	
 	// gets the speed you want to travel at based on your current Pose and the destination Pose
 	float updatePID(float error);

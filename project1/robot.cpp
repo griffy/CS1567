@@ -268,7 +268,7 @@ float Robot::_getWETransDeltaTheta() {
 //          robot should now be in global coordinate system
 // TODO?
 float Robot::_getNSTransX() {
-using namespace Util;
+   using namespace Util;
    float result;
    int room = _robotInterface->RoomID();
    float x = _getNSX();
@@ -287,7 +287,8 @@ using namespace Util;
 //          robot should now be in global coordinate system
 // TODO?
 float Robot::_getNSTransY() { 
-using namespace Util;
+   using namespace Util;
+   
    float result;
    int room = _robotInterface->RoomID();
    float y = _getNSY();
@@ -308,9 +309,9 @@ using namespace Util;
 float Robot::_getNSTransTheta() {
     float result = _getNSTheta();
     int room = _robotInterface->RoomID();
-    result -= (ROOM_ROTATION[room-2]*(PI/180.0));
+    result -= (ROOM_ROTATION[room-2] * (PI/180.0));
     if(result < -PI) {
-    	result += 2*PI;
+    	result += 2 * PI;
     }
     return result;
 }
