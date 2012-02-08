@@ -25,16 +25,16 @@ Robot::Robot(std::string address, int id) {
 	PIDConstants distancePIDConstants;
 	PIDConstants thetaPIDConstants;
 	
-	distancePIDConstants.ki=.001;
-	distancePIDConstants.kp=1;
-	distancePIDConstants.kd=1;
+	distancePIDConstants.ki = .001;
+	distancePIDConstants.kp = 1;
+	distancePIDConstants.kd = 1;
 	
-	thetaPIDConstants.ki=.001;
-	thetaPIDConstants.kp=1;
-	thetaPIDConstants.kd=1;
+	thetaPIDConstants.ki = .001;
+	thetaPIDConstants.kp = 1;
+	thetaPIDConstants.kd = 1;
 
-	distancePID=new PID(&distancePIDConstants);
-	thetaPID=new PID(&thetaPIDConstants);
+	_distancePID = new PID(&distancePIDConstants);
+	_thetaPID = new PID(&thetaPIDConstants);
 }
 
 Robot::~Robot() {
@@ -50,37 +50,38 @@ Robot::~Robot() {
     delete _wePose;
     delete _nsPose;
     delete _pose;
+
+    delete _distancePID;
+    delete _thetaPID;
 }
 
+// Moves to a location in the global coordinate system (in cm)
 void Robot::moveTo(int x, int y) {
 	//find current total magnitude of the error.  Then, if we are not going straight towards the target, we will turn
 	
-	float yError=y-_pose->getY();
-	float xError=x-_pose->getX();
+	float yError = y - _pose->getY();
+	float xError = x - _pose->getX();
 
-	float error=sqrt(pow(yError,2.0)+pow(xError,2.0));
-	printf("Error = %f\n",error);
+	float error = sqrt(pow(yError, 2.0) + pow(xError, 2.0));
+	printf("Error = %f\n", error);
 	
-	float distGain = distancePID->updatePID(error);
+	float distGain = _distancePID->updatePID(error);
 	
-	float thetaError=atan(yError/xError);
-	printf("Theta Error = %f\n",thetaError);
+	float thetaError = atan(yError/xError);
+	printf("Theta Error = %f\n", thetaError);
 	
-	float thetaGain = thetaPID->updatePID(thetaError);
+	float thetaGain = _thetaPID->updatePID(thetaError);
 
-	
-	if(abs(thetaError)>0.1){
+	if (abs(thetaError) > 0.1) {
 		//don't move, just turn
-		bool turnRight=true;
-		if(thetaError>0){
-			turnRight=false;
-			_robotInterface->Move(RI_TURN_RIGHT,5);
+		if (thetaError > 0){
+			_robotInterface->Move(RI_TURN_RIGHT, 5);
+		} 
+        else{
+			_robotInterface->Move(RI_TURN_LEFT, 5);
 		}
-		else{
-			_robotInterface->Move(RI_TURN_LEFT,5);
-		}
-	}
-	else{
+	} 
+    else{
 		// going relatively straight
 		_robotInterface->Move(RI_MOVE_FORWARD, distGain*10);
 	}

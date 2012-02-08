@@ -1,6 +1,5 @@
-#ifndef CONSTANTS_H
-#define CONSTANTS_H
-
+#ifndef CS1567_CONSTANTS_H
+#define CS1567_CONSTANTS_H
 
 // ROOM 2 stuff
 float ROOM_X_SHIFT[4]={199,48,229,375};
