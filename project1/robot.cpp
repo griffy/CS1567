@@ -166,7 +166,11 @@ float Robot::_getNSY() {
 // Returns: filtered north star theta
 float Robot::_getNSTheta() {
     float theta = _robotInterface->Theta();
-    return _nsThetaFilter->filter(theta);
+    
+    //Don't filter the theta value, weighted average is bad
+    //return _nsThetaFilter->filter(theta);
+    
+    return theta;
 }
 
 // Returns: filtered wheel encoder delta x for left wheel in ticks 
