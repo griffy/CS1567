@@ -20,6 +20,7 @@ public:
     ~Robot();
     void moveTo(int x, int y);
     void turnTo(int theta);
+    void moveForward(int speed);
     void setFailLimit(int limit);
     int getFailLimit();
     void update();

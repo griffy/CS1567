@@ -70,7 +70,7 @@ void Robot::moveTo(int x, int y) {
     float error = sqrt(yError*yError + xError*xError);
 
     while (error > 50) {
-        _robotInterface->Move(RI_MOVE_FORWARD, 1);
+        moveForward(1);
 
         update();
 
@@ -111,7 +111,7 @@ void Robot::moveTo(int x, int y) {
         } 
         else{
             // going relatively straight
-            _robotInterface->Move(RI_MOVE_FORWARD, distGain*10);
+            moveForward(distGain*10);
         }
 
         update();
@@ -138,6 +138,12 @@ void Robot::moveTo(int x, int y) {
 
 void Robot::turnTo(int theta) {
 	
+}
+
+void Robot::moveForward(int speed) {
+    if (!_robotInterface->IR_Detected()) {
+        _robotInterface->Move(RI_MOVE_FORWARD, speed);
+    }
 }
 
 void Robot::setFailLimit(int limit) {
