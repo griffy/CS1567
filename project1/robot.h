@@ -3,7 +3,7 @@
 
 #include "pose.h"
 #include "firfilter.h"
-#include "kalmanfilter.h"
+#include "kalman.h"
 #include "PID.h"
 #include "utilities.h"
 #include "constants.h"
@@ -75,7 +75,7 @@ private:
     Pose *_nsPose;
     Pose *_pose;
 
-    KalmanFilter *_kalmanFilter;
+    Kalman *_kalmanFilter;
     // FIXME: Temporarily not private members (for testing)
     //        below
     // bool _update();

@@ -1,6 +1,7 @@
-#include "kalmanfilter.h"
+#include "kalman.h"
+#include <stdio.h>
 
-KalmanFilter::KalmanFilter(Pose *initialPose) {
+Kalman::Kalman(Pose *initialPose) {
     // make the current pose point to the initial pose
     // such that any modifications made to the value
     // will also update the reference outside this class
@@ -13,17 +14,25 @@ KalmanFilter::KalmanFilter(Pose *initialPose) {
 	float velocity[3] = {0, 0, 0};
     // initialize the kalman filter
 	initKalmanFilter(&_kf, initialPoseArr, velocity, 1);
+    // initialize the track to zero'd state
+    for (int i = 0; i < 9; i++) {
+        _track[0] = 0;
+    }
 }
 
-KalmanFilter::~KalmanFilter() {}
+Kalman::~Kalman() {}
 
-void KalmanFilter::filter(Pose *nsPose, Pose *wePose) {
+void Kalman::filter(Pose *nsPose, Pose *wePose) {
     // convert the poses to 3-element arrays
 	float nsPoseArr[3];
 	float wePoseArr[3];
 	nsPose->toArray(nsPoseArr);
 	wePose->toArray(wePoseArr);
+    printf("%f %f %f\n", nsPoseArr[0], nsPoseArr[1], nsPoseArr[2]);
+    printf("%f %f %f\n", wePoseArr[0], wePoseArr[1], wePoseArr[2]);
     // update the kalman filter with the new data
+    // FIXME: We have issues here. This causes "Parameter 14 incorrect"
+    //        issue
 	rovioKalmanFilter(&_kf, nsPoseArr, wePoseArr, _track);
     // update the current pose to its new estimate
 	_curPose->setX(_track[0]);
