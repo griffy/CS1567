@@ -19,6 +19,7 @@ public:
     Robot(std::string address, int id);
     ~Robot();
 	//moves to the given x/y coordinates, without stopping
+    bool moveToFull(int x, int y);
     void moveTo(int x, int y);
 	
 	//incrementally moves towards given theta
@@ -29,6 +30,12 @@ public:
     int getFailLimit();
     void update();
     Pose* getPose();
+	
+	/// Self explanatory
+	//TODO: FINDBITCHES
+	bool isThereABitchInMyWay();
+	
+	std::string name;
 
     // FIXME: Temporarily public members (for testing)
     //        below

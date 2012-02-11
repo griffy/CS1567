@@ -10,8 +10,8 @@ PID::PID(PIDConstants *newConstants) {
 	_constants.kp = newConstants->kp;
 	_constants.ki = newConstants->ki;
 	_constants.kd = newConstants->kd;
-	_maxValue = 1/3.0;
-	_minValue = -1/3.0;
+	_maxValue = 1/20.0;
+	_minValue = -1/20.0;
 }
 
 /** constructor with arguments for the constants structure, and min/max values for the iTerm **/
@@ -31,6 +31,21 @@ float PID::updatePID(float error) {
 
 	float pTerm, iTerm, dTerm;
 
+	/**
+	 * total term should = 1 at error = 10
+	 * 
+	 * pTerm should almost max out when error > 10
+	 * suggested value: 0.9
+	 * 
+	 * iTerm should max out at maxValue/minValue and should affect the speed by that much
+	 * 	i.e. if the sum is greater than 100 (the last 10 reads have been greater than 10)
+	 * then the value that we get should be maxValue for iTerm
+	 * suggested value: 0.5
+	 * 
+	 * dTerm shouldn't really do much, since the bot probably won't jump around too much and so the robot should not take too much of this into account
+	 * suggested value = 0.05
+	 */
+
 	pTerm = _constants.kp * error;						//get proportional term of the PID control
 	iTerm = _constants.ki * currentIntegratorError();	//get integral term of the PID control
 	if (iTerm > _maxValue) {							//check that the integrator is not too high 
@@ -48,7 +63,7 @@ float PID::updatePID(float error) {
 	printf("dTerm = %f\n", dTerm);
 
 	float gain = pTerm+iTerm+dTerm;
-	if(gain>1.0){
+	if(gain>1.0) {
 		gain=1.0;
 	}
 
