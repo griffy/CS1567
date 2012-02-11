@@ -15,7 +15,7 @@ Robot::Robot(std::string address, int id) {
     _weRearFilter = new FIRFilter("filters/we.ffc");
 
 	name=address;
-	
+
     setFailLimit(DEFAULT_NUM_FAILS);
 
     _wePose = new Pose(0, 0, 0);
@@ -44,6 +44,66 @@ Robot::Robot(std::string address, int id) {
 	_thetaPID = new PID(&thetaPIDConstants, maxThetaIntGain, minThetaIntGain);
 
     printf("pid controllers initialized\n");
+}
+
+void Robot::printOpeningDialog(){
+	printf("\n\n\n");
+	switch (name){
+		case "Optimus":
+		case "optimus":
+			printf("Transformers, robots in disguise\n");
+			break;
+		case "Rosie":
+		case "rosie":
+			printf("I swear on my mother's rechargable batteries\n");
+			break;
+		case default:
+			printf("This is done\n");
+			break;
+	}
+	printf("\n\n\n");
+}
+void Robot::printFailureDialog(){
+	printf("\n\n\n");
+	switch (name){
+		case "Optimus":
+		case "optimus":
+			printf("In war, there are calms between storms.\nThere will be days when we lose faith, days when our allies turn against us.");
+			break;
+		case "Rosie":
+		case "rosie":
+			printf("Again?");
+			break;
+		case "Bender":
+		case "bender":
+			printf("");
+			break;
+		case default:
+			printf("This sucks");
+			break;
+	}
+	printf("\n\n\n");
+}
+void Robot::printSuccessDialog(){
+	printf("\n\n\n");
+	switch (name){
+		case "Optimus":
+		case "optimus":
+			printf("There's more than meets the eye");
+			break;
+		case "Rosie":
+		case "rosie":
+			printf("Again?");
+			break;
+		case "Bender":
+		case "bender":
+			printf("");
+			break;
+		case default:
+			printf("Good JOB!!!!!!!!!!!!!!!");
+			break;
+	}
+	printf("\n\n\n");
 }
 
 Robot::~Robot() {

@@ -35,6 +35,10 @@ public:
 	//TODO: FINDBITCHES
 	bool isThereABitchInMyWay();
 	
+	void printOpeningDialog();
+	void printSuccessDialog();
+	void printFailureDialog();
+	
 	std::string name;
 
     // FIXME: Temporarily public members (for testing)
