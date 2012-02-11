@@ -11,16 +11,12 @@
 
 #define NUMBASES 7
 
-int zero_x;
-int zero_y;
-float zero_theta;
-int starting_room_ID;
-
 int main(int argc, char *argv[]) {
-	if(argc<2){
+	if (argc < 2) {
 		printf("ERROR: need argument for robot name\n");
-		exit(-1);
+		return -1;
 	}
+
     //Base locations within the global coordinate system
 	Pose * bases[NUMBASES];
 	bases[0] = new Pose(0, 0, 0);
@@ -33,12 +29,13 @@ int main(int argc, char *argv[]) {
 
 	Robot *robot = new Robot(argv[1], 0);
 
+	printf("prefilling data\n");
 	for (int i = 0; i < 15; i++) {
-		printf("prefilling data\n");
 		robot->update();
 	}
 
     for (int i = 0; i < NUMBASES; i++) {
+    	printf("moving to base %d", i+1);
         if(!robot->moveToFull(bases[i]->getX(),bases[i]->getY())) {
 			if(robot->name=="Optimus"){
 				printf("No No No No NO!!!!\n");
@@ -46,9 +43,10 @@ int main(int argc, char *argv[]) {
 		}
     }
 
+    printf("done!");
+
 	delete(robot);
-    // FIXME: Should this be delete[] ?
-	for(int i = 0; i < NUMBASES; i++) {
+	for (int i = 0; i < NUMBASES; i++) {
 		delete bases[i];
 	}
 
