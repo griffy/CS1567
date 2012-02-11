@@ -39,6 +39,7 @@ float PID::updatePID(float error) {
 	else if (iTerm < _minValue) {
 		iTerm = _minValue;
     }
+
     // multiply by the change in error (this one minus the previous)
 	dTerm = _constants.kd * (error - prevError);
 

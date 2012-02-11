@@ -23,6 +23,7 @@ public:
 	
 	//incrementally moves towards given theta
     float turnTo(int theta);
+	
     void moveForward(int speed);
     void setFailLimit(int limit);
     int getFailLimit();
