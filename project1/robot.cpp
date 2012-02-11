@@ -295,7 +295,8 @@ float Robot::_getWEDeltaY() {
 float Robot::_getWEDeltaTheta() {
     float rear = _getWEDeltaRear();
     // FIXME: does this given formula really work?
-    return rear / (PI * Util::cmToWE(ROBOT_DIAMETER));
+    //return rear / (PI * Util::cmToWE(ROBOT_DIAMETER));
+    return 2 * rear / Util::cmToWE(ROBOT_DIAMETER);
 }
 
 // Returns: transformed wheel encoder x estimate in cm of where
