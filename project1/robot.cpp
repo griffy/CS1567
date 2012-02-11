@@ -70,78 +70,70 @@ void Robot::moveTo(int x, int y) {
 
     float error = sqrt(yError*yError + xError*xError);
 
-    while (error > 50) {
-        moveForward(1);
-
-        update();
-
-		printf("X global: %f\t\tY global: %f\t\tTheta global: %f\n",
-               _pose->getX(), 
-               _pose->getY(),
-               _pose->getTheta());
-
-        yError = y - _pose->getY();
-        xError = x - _pose->getX();
-
-        error = sqrt(yError*yError + xError*xError);
-    }
-
-    update();
-
-    yError = y - _pose->getY();
-    xError = x - _pose->getX();
-
-    error = sqrt(yError*yError + xError*xError);
-
     float distGain = _distancePID->updatePID(error);
-    
+
     float thetaError = atan(yError/xError);
-    
-    float thetaGain = _thetaPID->updatePID(thetaError);
+
 
     do {
+		update();
+
+		yError = y - _pose->getY();
+		xError = x - _pose->getX();
+		thetaError = atan(yError/xError);
+		error = sqrt(yError*yError + xError*xError);
+		
+		distGain = _distancePID->updatePID(error);
+		
         if (abs(thetaError) > 0.1) {
-            // TODO: Move this into turnTo
-            //don't move, just turn
-            if (thetaError > 0){
-                _robotInterface->Move(RI_TURN_RIGHT, 5);
-            } 
-            else{
-                _robotInterface->Move(RI_TURN_LEFT, 5);
-            }
-        } 
-        else{
-            // going relatively straight
-            moveForward(distGain*10);
+			turnTo((_pose->getTheta()-thetaError));
         }
+        else{
 
-        update();
+			printf("X global: %f\t\tY global: %f\t\tTheta global: %f\n",
+				_pose->getX(),
+				_pose->getY(),
+				_pose->getTheta());
 
-		printf("X global: %f\t\tY global: %f\t\tTheta global: %f\n",
-               _pose->getX(), 
-               _pose->getY(),
-               _pose->getTheta());
+			yError = y - _pose->getY();
+			xError = x - _pose->getX();
 
-        yError = y - _pose->getY();
-        xError = x - _pose->getX();
+			error = sqrt(yError*yError + xError*xError);
+			printf("Distance Error = %f\n", error);
 
-        error = sqrt(yError*yError + xError*xError);
-        printf("Error = %f\n", error);
-	
-        distGain = _distancePID->updatePID(error);
-        
-        thetaError = atan(yError/xError);
-        printf("Theta Error = %f\n", thetaError);
-        
-        thetaGain = _thetaPID->updatePID(thetaError);
+            // going relatively straight
+            moveForward((int)1.0/(distGain));
+        }
     } while (error > 10);
 
     _distancePID->flushPID();
     _thetaPID->flushPID();
 }
 
-void Robot::turnTo(int theta) {
+/// returns the error (in radians) of theta
+float Robot::turnTo(int theta) {
+	update();
+
+    float error = theta - _pose->getTheta();
+	printf("Theta Error = %f\n", error);
 	
+    float thetaGain = _thetaPID->updatePID(error);
+	
+	if(theta >= 2*PI){
+		theta -= 2*PI;
+	}
+	else if(theta<= -1*2*PI){
+		theta += 2*PI;
+	}
+
+	//don't move, just turn
+	if (error > 0){
+		_robotInterface->Move(RI_TURN_RIGHT, 5);
+	}
+	else{
+		_robotInterface->Move(RI_TURN_LEFT, 5);
+	}
+	return error;
 }
 
 void Robot::moveForward(int speed) {
@@ -277,25 +269,45 @@ float Robot::_getWEDeltaYRear() {
 float Robot::_getWEDeltaX() {
     float leftDeltaX = _getWEDeltaXLeft();
     float rightDeltaX = _getWEDeltaXRight();
+	float weOld=_getWEDeltaRear();
+
+	int w2=rightDeltaX;
+	int w1=leftDeltaX;
+
+	float dx=(w2*cos(DEGREE_30) - w1*cos(DEGREE_30))*cos(_wePose->getTheta());
+
+
     // return the average
-    return ((leftDeltaX + rightDeltaX) / 2.0) * cos(_wePose->getTheta());
+    return dx;
 }
 
 // Returns: filtered wheel encoder overall delta y in ticks
 //          in terms of robot axis
 float Robot::_getWEDeltaY() {
-    float leftDeltaY = _getWEDeltaYLeft();
-    float rightDeltaY = _getWEDeltaYRight();
+    float leftDeltaX = _getWEDeltaXLeft();
+    float rightDeltaX = _getWEDeltaXRight();
+	float weOld=_getWEDeltaRear();
+
+	int w2=rightDeltaX;
+	int w1=leftDeltaX;
+
+	float dy=(w2*sin(DEGREE_30) - w1*sin(DEGREE_30))*sin(_wePose->getTheta());
     // return the average
-    return ((leftDeltaY + rightDeltaY) / 2.0) * sin(_wePose->getTheta());
+    return dy;
 }
 
 // Returns: filtered wheel encoder overall delta theta
 //          in terms of robot axis
 float Robot::_getWEDeltaTheta() {
-    float rear = _getWEDeltaRear();
-    // FIXME: does this given formula really work?
-    return rear / (PI * Util::cmToWE(ROBOT_DIAMETER));
+//    float rear = _getWEDeltaRear();
+	float thetaWheelLeft=(_getWEDeltaLeft());
+	float thetaWheelRight=(_getWEDeltaRight());
+	float thetaWheelRear=(_getWEDeltaRear());
+	
+	float thetaNew=((-thetaWheelLeft+thetaWheelRight)+thetaWheelRear)/(PI*Util::cmToWE(ROBOT_DIAMETER));
+    // TODO: verify that this works
+    //return rear / (PI * Util::cmToWE(ROBOT_DIAMETER));
+	return thetaNew;
 }
 
 // Returns: transformed wheel encoder x estimate in cm of where
@@ -332,7 +344,7 @@ float Robot::_getNSTransX() {
    float x = _getNSX();
    float transform[2] = {cos(ROOM_ROTATION[room-2]), sin(ROOM_ROTATION[room-2])};
 
-   mMult(transform, 2, 1, &x, 1, 1, &result);   
+   mMult(transform, 2, 1, &x, 1, 1, &result);
 
    //scale
 

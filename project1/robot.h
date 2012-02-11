@@ -18,8 +18,11 @@ class Robot {
 public:
     Robot(std::string address, int id);
     ~Robot();
+	//moves to the given x/y coordinates, without stopping
     void moveTo(int x, int y);
-    void turnTo(int theta);
+	
+	//incrementally moves towards given theta
+    float turnTo(int theta);
     void moveForward(int speed);
     void setFailLimit(int limit);
     int getFailLimit();

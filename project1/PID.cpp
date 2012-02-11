@@ -31,7 +31,7 @@ float PID::updatePID(float error) {
 
 	float pTerm, iTerm, dTerm;
 
-	pTerm = _constants.kp * error;					//get proportional term of the PID control
+	pTerm = _constants.kp * error;						//get proportional term of the PID control
 	iTerm = _constants.ki * currentIntegratorError();	//get integral term of the PID control
 	if (iTerm > _maxValue) {							//check that the integrator is not too high 
 		iTerm = _maxValue;
@@ -46,7 +46,12 @@ float PID::updatePID(float error) {
 	printf("iTerm = %f\n", iTerm);
 	printf("dTerm = %f\n", dTerm);
 
-	return (pTerm + iTerm + dTerm);
+	float gain = pTerm+iTerm+dTerm;
+	if(gain>1.0){
+		gain=1.0;
+	}
+
+	return gain;
 }
 
 /** useful when you have reached the destination, and just want to zero the error **/
