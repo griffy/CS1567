@@ -15,39 +15,62 @@ int zero_x;
 int zero_y;
 float zero_theta;
 int starting_room_ID;
+int move_flag;
 
 int main(int argc, char *argv[]) {
-	if(argc<2){
-		printf("ERROR: need argument for robot name\n");
+	if(argc<4) {
+		printf("ERROR: Invalid number of args -> should be:\n\t%s [ip/name of robot] [base filename of data files] [move binary flag 1=y]\n", argv[0]);
 		exit(-1);
 	}
-    //Base locations within the global coordinate system
-	Pose * bases[NUMBASES];
-	bases[0] = new Pose(0, 0, 0);
-	bases[1] = new Pose(341, 0, 0);
-	bases[2] = new Pose(240, 186, 0);
-	bases[3] = new Pose(320, 186, 0);
-	bases[4] = new Pose(402, 303, 0);
-	bases[5] = new Pose(402, 353, 0);
-	bases[6] = new Pose(69, 419, 0);
+
+	printf("Name of robot: %s\n",argv[1]);
+
+        std::string baseFilename(argv[2]);
+
+        move_flag = atoi(argv[3]);
+
+        std::string pwd(getcwd(NULL,0));
+        pwd+="/data_logs/";
+        pwd+=+argv[2];
+        pwd+="/";
+        printf("Current working dir: %s\n",pwd.c_str());
+
+        if(mkdir(pwd.c_str(),S_IREAD|S_IWRITE|S_IEXEC)!=0){
+                printf("ERROR CREATING DIRECTORY FOR SAVED DATA\n");
+                exit(-2);
+        }
+		
+	//Generate filename
+	std::string filenameNorthStarDataGlobal;
+        filenameNorthStarDataGlobal=pwd+baseFilename+"_ns_global";
+
+	//Open file
+        if(fopen(filenameNorthStarDataGlobal.c_str(), "r")!=NULL){
+                printf("ERROR North Star filtered data file already exists\n");
+                printf("FILE: %s\n",filenameNorthStarDataGlobal.c_str());
+                exit(-2);
+        }
+	
+	FILE * outfileglobal=fopen(filenameNorthStarDataGlobal.c_str(),"a");
 
 	Robot *robot = new Robot(argv[1], 0);
 
 	for (int i = 0; i < 15; i++) {
 		printf("prefilling data\n");
 		robot->update();
+         	//write to global position file
+                fprintf(outfileglobal,"%f,%f,%f\n",robot->_getNSTransX(),robot->_getNSTransY(),robot->_getNSTransTheta());
 	}
 
-    for (int i = 0; i < NUMBASES; i++) {
-        robot->moveTo(bases[i]->getX(),
-                      bases[i]->getY());
+    for (int i = 0; i < 30; i++) {
+        robot->moveForward(1);
+	//write to global position file
+	fprintf(outfileglobal,"%f,%f,%f\n",robot->_getNSTransX(),robot->_getNSTransY(),robot->_getNSTransTheta());
     }
+  
+	fflush(outfileglobal);
+        fclose(outfileglobal);
 
 	delete(robot);
-    // FIXME: Should this be delete[] ?
-	for(int i = 0; i < NUMBASES; i++) {
-		delete bases[i];
-	}
-
 	return 0;
 }
