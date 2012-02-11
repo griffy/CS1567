@@ -1,23 +1,22 @@
 #ifndef CS1567_CONSTANTS_H
 #define CS1567_CONSTANTS_H
 
+#define PI 3.14159265358979323846
+#define DEGREE_30 0.523598776 // pi/6
+#define DEGREE_60 1.04719755 // pi/6
+#define DEGREE_150 2.617993878 // 5pi/6
+
+#define WE_TICKS 4 // ticks per cm
+#define NS_TICKS 45 // ticks per cm
+
+#define ROBOT_DIAMETER 29 // cm
+
 // ROOM 2 stuff
 const float ROOM_X_SHIFT[4]= {199, 48, 229, 375};
 const float ROOM_Y_SHIFT[4]= {154, 281, 449, 303};
 const float ROOM_SCALE[2][4]= {{45, 45, 45, 45}, {45, 45, 45, 45}};
 const float ROOM_ROTATION[4]= {350.7, 353.1, 95.7, 3.4};
 
-// ROOM_X_SHIFT[0]=199;
-// ROOM_Y_SHIFT[0]=154;
-// 
-// ROOM_X_SHIFT[1]=48;
-// ROOM_Y_SHIFT[1]=281;
-// 
-// ROOM_X_SHIFT[2]=229;
-// ROOM_Y_SHIFT[2]=449;
-// 
-// ROOM_X_SHIFT[3]=375;
-// ROOM_Y_SHIFT[3]=303;
 // 
 // //ROOM_SCALE[0] is room 2 scale => # ticks to cm in room 2
 // //X scale
