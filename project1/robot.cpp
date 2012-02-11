@@ -86,6 +86,8 @@ void Robot::moveTo(int x, int y) {
         error = sqrt(yError*yError + xError*xError);
     }
 
+    // flush PIDs?
+    
     update();
 
     yError = y - _pose->getY();
