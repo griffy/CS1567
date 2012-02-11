@@ -5,7 +5,8 @@
 const float ROOM_X_SHIFT[4]= {199, 48, 229, 375};
 const float ROOM_Y_SHIFT[4]= {154, 281, 449, 303};
 const float ROOM_SCALE[2][4]= {{45, 45, 45, 45}, {45, 45, 45, 45}};
-const float ROOM_ROTATION[4]= {350.7, 353.1, 95.7, 3.4};
+const float ROOM_ROTATION[4]= {80.7, 96.9, 95.7, 3.4};
+const float ROOM_FLIP[4] = {0,0,0,0}; //binary flag indicating whether to reflect over x-axis
 
 // ROOM_X_SHIFT[0]=199;
 // ROOM_Y_SHIFT[0]=154;
