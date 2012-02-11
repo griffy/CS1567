@@ -6,7 +6,6 @@ Kalman::Kalman(Pose *initialPose) {
     // such that any modifications made to the value
     // will also update the reference outside this class
 	_curPose = initialPose;
-	// TODO: does _kf need to be explicitly initialized?
     // convert the pose to a 3-element array with x, y, and theta
 	float initialPoseArr[3];
 	initialPose->toArray(initialPoseArr);
@@ -28,11 +27,7 @@ void Kalman::filter(Pose *nsPose, Pose *wePose) {
 	float wePoseArr[3];
 	nsPose->toArray(nsPoseArr);
 	wePose->toArray(wePoseArr);
-    printf("%f %f %f\n", nsPoseArr[0], nsPoseArr[1], nsPoseArr[2]);
-    printf("%f %f %f\n", wePoseArr[0], wePoseArr[1], wePoseArr[2]);
     // update the kalman filter with the new data
-    // FIXME: We have issues here. This causes "Parameter 14 incorrect"
-    //        issue
 	rovioKalmanFilter(&_kf, nsPoseArr, wePoseArr, _track);
     // update the current pose to its new estimate
 	_curPose->setX(_track[0]);

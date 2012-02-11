@@ -39,9 +39,6 @@ float FIRFilter::filter(float val) {
     float sum = 0;
     int i, j;
 
-//    if (getOrder() == -1)
-//        return val;
-
     _samples[_nextSample] = val;
     for (i = 0, j = _nextSample; i < getOrder()+1; i++) {
         sum += _coefficients[i] * _samples[j++];
