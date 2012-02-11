@@ -6,7 +6,6 @@ Kalman::Kalman(Pose *initialPose) {
     // such that any modifications made to the value
     // will also update the reference outside this class
 	_curPose = initialPose;
-	// TODO: does _kf need to be explicitly initialized?
     // convert the pose to a 3-element array with x, y, and theta
 	float initialPoseArr[3];
 	initialPose->toArray(initialPoseArr);
