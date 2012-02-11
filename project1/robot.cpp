@@ -60,7 +60,8 @@ Robot::~Robot() {
 
 // Moves to a location in the global coordinate system (in cm)
 void Robot::moveTo(int x, int y) {
-	//find current total magnitude of the error.  Then, if we are not going straight towards the target, we will turn
+	// find current total magnitude of the error.  
+    // Then, if we are not going straight towards the target, we will turn
 
     update();
 
@@ -134,6 +135,9 @@ void Robot::moveTo(int x, int y) {
         
         thetaGain = _thetaPID->updatePID(thetaError);
     } while (error > 10);
+
+    _distancePID->flushPID();
+    _thetaPID->flushPID();
 }
 
 void Robot::turnTo(int theta) {
