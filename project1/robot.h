@@ -3,7 +3,7 @@
 
 #include "pose.h"
 #include "firfilter.h"
-#include "kalmanfilter.h"
+#include "kalman.h"
 #include "PID.h"
 #include "utilities.h"
 #include "constants.h"
@@ -20,6 +20,7 @@ public:
     ~Robot();
     void moveTo(int x, int y);
     void turnTo(int theta);
+    void moveForward(int speed);
     void setFailLimit(int limit);
     int getFailLimit();
     void update();
@@ -75,7 +76,7 @@ private:
     Pose *_nsPose;
     Pose *_pose;
 
-    KalmanFilter *_kalmanFilter;
+    Kalman *_kalmanFilter;
     // FIXME: Temporarily not private members (for testing)
     //        below
     // bool _update();

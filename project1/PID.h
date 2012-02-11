@@ -11,7 +11,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
 #define NUM_INTEGRATOR_VALUES 10
 
 typedef struct {
@@ -30,17 +29,17 @@ public:
 	// gets the speed you want to travel at based on your current Pose and the destination Pose
 	float updatePID(float error);
 
-	// adds the error to the list of previous values. returns the integrated error
-	float addErrorToIntegrator(float error);
+	// adds the error to the list of previous values.
+	void addErrorToIntegrator(float error);
 
-	PIDConstants constants;
-	
-	float integratorValues[NUM_INTEGRATOR_VALUES]; //most recent errors (index 0 is the most recent)
-	float currentIntegratorError; // most recent sum of the integratorValues
-	
-	float maxValue;
-	float minValue;
+	float currentIntegratorError(); // most recent sum of the integratorValues
+
+	float lastError(); // returns the error at index 0
 private:
+	float _integratorValues[NUM_INTEGRATOR_VALUES]; //most recent errors (index 0 is the most recent)
+	PIDConstants _constants;
+	float _maxValue;
+	float _minValue;
 };
 
 #endif
