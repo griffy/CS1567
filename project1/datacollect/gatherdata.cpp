@@ -15,15 +15,18 @@ int zero_x;
 int zero_y;
 float zero_theta;
 int starting_room_ID;
+int move_flag;
 
 int main(int argc, char *argv[]) {
-	if(argc<3){
-		printf("ERROR: Invalid number of args -> should be:\n\t%s [ip/name of robot] [base filename of data files]\n", argv[0]);
+	if(argc<4){
+		printf("ERROR: Invalid number of args -> should be:\n\t%s [ip/name of robot] [base filename of data files] [move binary flag 1=y]\n", argv[0]);
 		exit(-1);
 	}
 	printf("Name of robot: %s\n",argv[1]);
 
 	std::string baseFilename(argv[2]);
+
+	move_flag = atoi(argv[3]);
 
 	std::string pwd(getcwd(NULL,0));
 	pwd+="/data_logs/";
@@ -177,6 +180,8 @@ int main(int argc, char *argv[]) {
 // 	FILE * outfileglobal=fopen(filenameNorthStarDataGlobal.c_str(),"a");
 	FILE * wheelfile=fopen(filenameWheelDataFiltered.c_str(),"a");
 	FILE * wheelfileraw=fopen(filenameWheelDataRaw.c_str(),"a");
+
+	int tmp_counter = 0;
 	
 	do {
 		// Update the robot's sensor information
@@ -237,7 +242,16 @@ int main(int argc, char *argv[]) {
 			//else{
 			//	printf("Detected IR\n");
 			//}
-			//robot->Move(RI_MOVE_FORWARD, 1);
+
+			if(tmp_counter > 20 && tmp_counter < 33) {	
+				if(move_flag != 0) {
+					robot->Move(RI_MOVE_FORWARD, 1);
+				}
+			} else if(tmp_counter == 45) {
+				break;	
+			}
+			tmp_counter++;
+			
 		}
 	} while(1);
 	
