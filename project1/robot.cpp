@@ -275,7 +275,11 @@ float Robot::_getNSY() {
 // Returns: filtered north star theta
 float Robot::_getNSTheta() {
     float theta = _robotInterface->Theta();
-    return _nsThetaFilter->filter(theta);
+    
+    //Don't filter the theta value, weighted average is bad
+    //return _nsThetaFilter->filter(theta);
+    
+    return theta;
 }
 
 // Returns: filtered wheel encoder delta x for left wheel in ticks 
@@ -399,11 +403,21 @@ float Robot::_getNSTransX() {
    using namespace Util;
    float result;
    int room = _robotInterface->RoomID();
-   float x = _getNSX();
-   float transform[2] = {cos(ROOM_ROTATION[room-2]), sin(ROOM_ROTATION[room-2])};
+   float coords[2];
+   float transform[2];
+   
+   coords[1] = _getNSX();
+   coords[0] = _getNSY();
+   transform[0] = cos(ROOM_ROTATION[room-2]);
+   
+   if(ROOM_FLIP[room-2] == 0) {
+   	transform[1] = -sin(ROOM_ROTATION[room-2]);
+   } else {
+   	transform[1] = sin(ROOM_ROTATION[room-2]);
+   }
 
-   mMult(transform, 2, 1, &x, 1, 1, &result);
-
+   mMult(transform, 1, 2, coords, 2, 1, &result);   
+   
    //scale
 
    //move
@@ -419,15 +433,27 @@ float Robot::_getNSTransY() {
    
    float result;
    int room = _robotInterface->RoomID();
-   float y = _getNSY();
-   float transform[2] = {sin(ROOM_ROTATION[room-2]), -cos(ROOM_ROTATION[room-2])};
+   float coords[2];
+   float transform[2];
+   
+   coords[1] = _getNSX();
+   coords[0] = _getNSY();
 
-   mMult(transform, 2, 1, &y, 1, 1, &result);   
+   transform[0] = sin(ROOM_ROTATION[room-2]);
+   
+   if(ROOM_FLIP[room-2] == 0) {
+   	transform[1] = cos(ROOM_ROTATION[room-2]);
+   } else {
+   	transform[1] = -cos(ROOM_ROTATION[room-2]);
+   }
+
+   mMult(transform, 1, 2, coords, 2, 1, &result);   
    
    //scale
 
    //move
 
+   //printf("got Y: %f\n", result);
    return result; 
 }
 
