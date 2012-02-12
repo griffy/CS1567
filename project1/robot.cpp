@@ -274,12 +274,20 @@ float Robot::turnTo(int theta) {
 }
 
 void Robot::moveForward(int speed) {
-    if (!_robotInterface->IR_Detected()) {
-		if(name=="Optimus"){
-			printf("No No No No No No No!!!\t\tDETECTION!");
-		}
+    if (!isThereABitchInMyWay()) {
         _robotInterface->Move(RI_MOVE_FORWARD, speed);
     }
+	else if(name=="Optimus"){
+		printf("No No No No No No No!!!\t\tDETECTION!");
+	}
+}
+
+void Robot::turnLeft(int speed) {
+	_robotInterface->Move(RI_TURN_LEFT, speed);
+}
+
+void Robot::turnRight(int speed) {
+	_robotInterface->Move(RI_TURN_RIGHT, speed);
 }
 
 bool Robot::isThereABitchInMyWay() {

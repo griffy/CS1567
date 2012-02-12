@@ -26,6 +26,8 @@ public:
     float turnTo(int theta);
 	
     void moveForward(int speed);
+    void turnLeft(int speed);
+    void turnRight(int speed);
     void setFailLimit(int limit);
     int getFailLimit();
     void update();
