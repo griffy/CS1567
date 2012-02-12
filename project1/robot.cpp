@@ -361,8 +361,10 @@ float Robot::_getNSTransX() {
    mMult(transform, 1, 2, coords, 2, 1, &result);   
    
    //scale
+   result /= ROOM_SCALE[0][room-2];
 
    //move
+   result += ROOM_X_SHIFT[room-2];
 
    return result; 
 }
@@ -392,10 +394,11 @@ float Robot::_getNSTransY() {
    mMult(transform, 1, 2, coords, 2, 1, &result);   
    
    //scale
+   result /= ROOM_SCALE[1][room-2];
 
    //move
+   result += ROOM_Y_SHIFT[room-2];
 
-   //printf("got Y: %f\n", result);
    return result; 
 }
 
