@@ -498,11 +498,11 @@ float Robot::_getNSTransX() {
    coords[1] = _getNSX();
    coords[0] = _getNSY();
    transform[0] = cos(ROOM_ROTATION[room-2]);
-   
-   if(ROOM_FLIP[room-2] == 0) {
-   	transform[1] = -sin(ROOM_ROTATION[room-2]);
-   } else {
-   	transform[1] = sin(ROOM_ROTATION[room-2]);
+   transform[1] = -sin(ROOM_ROTATION[room-2]);
+
+   if(ROOM_FLIPX[room-2] == 1) {
+   	transform[1] = -transform[1];
+	transform[0] = -transform[0];
    }
 
    mMult(transform, 1, 2, coords, 2, 1, &result);   
@@ -529,11 +529,11 @@ float Robot::_getNSTransY() {
    coords[0] = _getNSY();
 
    transform[0] = sin(ROOM_ROTATION[room-2]);
-   
-   if(ROOM_FLIP[room-2] == 0) {
-   	transform[1] = cos(ROOM_ROTATION[room-2]);
-   } else {
-   	transform[1] = -cos(ROOM_ROTATION[room-2]);
+   transform[1] = cos(ROOM_ROTATION[room-2]);
+
+   if(ROOM_FLIPY[room-2] == 1) {
+   	transform[1] = -transform[1];
+	transform[0] = -transform[0];
    }
 
    mMult(transform, 1, 2, coords, 2, 1, &result);   
