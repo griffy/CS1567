@@ -35,6 +35,7 @@ public:
 	//TODO: FINDBITCHES
 	bool isThereABitchInMyWay();
 	
+	int nameToInt();
 	void printOpeningDialog();
 	void printSuccessDialog();
 	void printFailureDialog();

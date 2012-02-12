@@ -46,60 +46,89 @@ Robot::Robot(std::string address, int id) {
     printf("pid controllers initialized\n");
 }
 
+int Robot::nameToInt(){
+	if(name=="Rosie" || name=="rosie")
+		return 1;
+	if(name=="Bender" || name=="bender")
+		return 2;
+	if(name=="Johnny5" || name=="johnny5")
+		return 3;
+	if(name=="Optimus" || name=="optimus")
+		return 4;
+	if(name=="Walle" || name=="walle" || name=="wallE" || name=="WallE")
+		return 5;
+	if(name=="Gort" || name=="gort")
+		return 5;
+	return -1;
+}
+
 void Robot::printOpeningDialog(){
 	printf("\n\n\n");
-	switch (name){
-		case "Optimus":
-		case "optimus":
-			printf("Transformers, robots in disguise\n");
-			break;
-		case "Rosie":
-		case "rosie":
+	switch (nameToInt()){
+		case 1:
 			printf("I swear on my mother's rechargable batteries\n");
 			break;
-		case default:
-			printf("This is done\n");
+		case 2:
+			printf("Bender here\n");
+			break;
+		case 3:
+			printf("I'm Johnny5\n");
+			break;
+		case 4:
+			printf("Transformers, robots in disguise\n");
+			break;
+		case 5:
+			printf("WallEEEEEEEEeeeeeeee\n");
+			break;
+		default:
+			printf("I don't know who I am\n");
 			break;
 	}
 	printf("\n\n\n");
 }
 void Robot::printFailureDialog(){
 	printf("\n\n\n");
-	switch (name){
-		case "Optimus":
-		case "optimus":
+	switch (nameToInt()){
+		case 1:
+			printf("Again?\n");
+			break;
+		case 2:
+			printf("I just messed up\n");
+			break;
+		case 3:
+			printf("I'm Johnny5, and I crashed\n");
+			break;
+		case 4:
 			printf("In war, there are calms between storms.\nThere will be days when we lose faith, days when our allies turn against us.");
 			break;
-		case "Rosie":
-		case "rosie":
-			printf("Again?");
+		case 5:
+			printf("WallE...\n");
 			break;
-		case "Bender":
-		case "bender":
-			printf("");
-			break;
-		case default:
-			printf("This sucks");
+		default:
+			printf("I don't do anything right... :(");
 			break;
 	}
 	printf("\n\n\n");
 }
 void Robot::printSuccessDialog(){
 	printf("\n\n\n");
-	switch (name){
-		case "Optimus":
-		case "optimus":
+	switch (nameToInt()){
+		case 1:
+			printf("Again?\n");
+			break;
+		case 2:
+			printf("I'm awesome\n");
+			break;
+		case 3:
+			printf("I'm Johnny5, and I did not go insane\n");
+			break;
+		case 4:
 			printf("There's more than meets the eye");
 			break;
-		case "Rosie":
-		case "rosie":
-			printf("Again?");
+		case 5:
+			printf("WallE...\n");
 			break;
-		case "Bender":
-		case "bender":
-			printf("");
-			break;
-		case default:
+		default:
 			printf("Good JOB!!!!!!!!!!!!!!!");
 			break;
 	}

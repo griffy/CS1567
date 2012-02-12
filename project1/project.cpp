@@ -37,18 +37,15 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < NUMBASES; i++) {
     	printf("moving to base %d", i+1);
         if(!robot->moveToFull(bases[i]->getX(),bases[i]->getY())) {
-			if(robot->name=="Optimus"){
-				printf("No No No No NO!!!!\n");
-			}
+			robot->printFailureDialog();
 		}
     }
 
     printf("done!");
 
-	delete(robot);
-	for (int i = 0; i < NUMBASES; i++) {
-		delete bases[i];
-	}
+	delete [] bases;
+	
+	delete robot;
 
 	return 0;
 }
