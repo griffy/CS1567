@@ -2,6 +2,8 @@
 
 #define DEFAULT_NUM_FAILS 5
 
+#define THETA_ERROR_MIN 0.13
+
 Robot::Robot(std::string address, int id) {
     _robotInterface = new RobotInterface(address, id);
 
@@ -12,6 +14,8 @@ Robot::Robot(std::string address, int id) {
     _weRightFilter = new FIRFilter("filters/we.ffc");
     _weRearFilter = new FIRFilter("filters/we.ffc");
 
+	name=address;
+
     setFailLimit(DEFAULT_NUM_FAILS);
 
     _wePose = new Pose(0, 0, 0);
@@ -20,24 +24,115 @@ Robot::Robot(std::string address, int id) {
 
     // bind _pose to the kalman filter
     _kalmanFilter = new Kalman(_pose);
-	
+
     printf("kf initialized\n");
 
 	PIDConstants distancePIDConstants;
 	PIDConstants thetaPIDConstants;
-	
-	distancePIDConstants.ki = .001;
-	distancePIDConstants.kp = 1;
-	distancePIDConstants.kd = 1;
-	
-	thetaPIDConstants.ki = .001;
-	thetaPIDConstants.kp = 1;
-	thetaPIDConstants.kd = 1;
 
-	_distancePID = new PID(&distancePIDConstants);
-	_thetaPID = new PID(&thetaPIDConstants);
+	distancePIDConstants.kp = .9;
+	distancePIDConstants.ki = .05;
+	distancePIDConstants.kd = .05;
+	
+	thetaPIDConstants.kp = .9;
+	thetaPIDConstants.ki = .05;
+	thetaPIDConstants.kd = .05;
+	
+	float maxIntGain=0.2, minIntGain=-.2, maxThetaIntGain=.2, minThetaIntGain= -.2;
+
+	_distancePID = new PID(&distancePIDConstants, maxIntGain, minIntGain);
+	_thetaPID = new PID(&thetaPIDConstants, maxThetaIntGain, minThetaIntGain);
 
     printf("pid controllers initialized\n");
+}
+
+int Robot::nameToInt(){
+	if(name=="Rosie" || name=="rosie")
+		return 1;
+	if(name=="Bender" || name=="bender")
+		return 2;
+	if(name=="Johnny5" || name=="johnny5")
+		return 3;
+	if(name=="Optimus" || name=="optimus")
+		return 4;
+	if(name=="Walle" || name=="walle" || name=="wallE" || name=="WallE")
+		return 5;
+	if(name=="Gort" || name=="gort")
+		return 5;
+	return -1;
+}
+
+void Robot::printOpeningDialog(){
+	printf("\n\n\n");
+	switch (nameToInt()){
+		case 1:
+			printf("I swear on my mother's rechargable batteries\n");
+			break;
+		case 2:
+			printf("Bender here\n");
+			break;
+		case 3:
+			printf("I'm Johnny5\n");
+			break;
+		case 4:
+			printf("Transformers, robots in disguise\n");
+			break;
+		case 5:
+			printf("WallEEEEEEEEeeeeeeee\n");
+			break;
+		default:
+			printf("I don't know who I am\n");
+			break;
+	}
+	printf("\n\n\n");
+}
+void Robot::printFailureDialog(){
+	printf("\n\n\n");
+	switch (nameToInt()){
+		case 1:
+			printf("Again?\n");
+			break;
+		case 2:
+			printf("I just messed up\n");
+			break;
+		case 3:
+			printf("I'm Johnny5, and I crashed\n");
+			break;
+		case 4:
+			printf("In war, there are calms between storms.\nThere will be days when we lose faith, days when our allies turn against us.");
+			break;
+		case 5:
+			printf("WallE...\n");
+			break;
+		default:
+			printf("I don't do anything right... :(");
+			break;
+	}
+	printf("\n\n\n");
+}
+void Robot::printSuccessDialog(){
+	printf("\n\n\n");
+	switch (nameToInt()){
+		case 1:
+			printf("Again?\n");
+			break;
+		case 2:
+			printf("I'm awesome\n");
+			break;
+		case 3:
+			printf("I'm Johnny5, and I did not go insane\n");
+			break;
+		case 4:
+			printf("There's more than meets the eye");
+			break;
+		case 5:
+			printf("WallE...\n");
+			break;
+		default:
+			printf("Good JOB!!!!!!!!!!!!!!!");
+			break;
+	}
+	printf("\n\n\n");
 }
 
 Robot::~Robot() {
@@ -59,7 +154,7 @@ Robot::~Robot() {
 }
 
 // Moves to a location in the global coordinate system (in cm)
-void Robot::moveTo(int x, int y) {
+bool Robot::moveToFull(int x, int y) {
 	// find current total magnitude of the error.  
     // Then, if we are not going straight towards the target, we will turn
 
@@ -74,6 +169,7 @@ void Robot::moveTo(int x, int y) {
 
     float thetaError = atan(yError/xError);
 
+	
 
     do {
 		update();
@@ -85,11 +181,10 @@ void Robot::moveTo(int x, int y) {
 		
 		distGain = _distancePID->updatePID(error);
 		
-        if (abs(thetaError) > 0.1) {
+        if (abs(thetaError) > THETA_ERROR_MIN) {
 			turnTo((_pose->getTheta()-thetaError));
         }
         else{
-
 			printf("X global: %f\t\tY global: %f\t\tTheta global: %f\n",
 				_pose->getX(),
 				_pose->getY(),
@@ -108,6 +203,46 @@ void Robot::moveTo(int x, int y) {
 
     _distancePID->flushPID();
     _thetaPID->flushPID();
+
+	return true;
+}
+// Moves to a location in the global coordinate system (in cm)
+void Robot::moveTo(int x, int y) {
+	// find current total magnitude of the error.  
+    // Then, if we are not going straight towards the target, we will turn
+
+	update();
+
+    float yError = y - _pose->getY();
+    float xError = x - _pose->getX();
+
+    float error = sqrt(yError*yError + xError*xError);
+
+    float distGain = _distancePID->updatePID(error);
+
+    float thetaError = atan(yError/xError);
+
+	if(abs(thetaError) > THETA_ERROR_MIN) {
+		turnTo((_pose->getTheta()-thetaError));
+	}
+	else{
+		printf("X global: %f\t\tY global: %f\t\tTheta global: %f\n",
+			_pose->getX(),
+			_pose->getY(),
+			_pose->getTheta());
+
+		yError = y - _pose->getY();
+		xError = x - _pose->getX();
+
+		error = sqrt(yError*yError + xError*xError);
+		printf("Distance Error = %f\n", error);
+
+		// going relatively straight
+		moveForward((int)1.0/(distGain));
+	}
+
+    _distancePID->flushPID();
+    _thetaPID->flushPID();
 }
 
 /// returns the error (in radians) of theta
@@ -119,27 +254,39 @@ float Robot::turnTo(int theta) {
 	
     float thetaGain = _thetaPID->updatePID(error);
 	
-	if(theta >= 2*PI){
+	if(error >= 2*PI){
 		theta -= 2*PI;
 	}
-	else if(theta<= -1*2*PI){
+	else if(error<= -1*2*PI){
 		theta += 2*PI;
 	}
 
-	//don't move, just turn
-	if (error > 0){
-		_robotInterface->Move(RI_TURN_RIGHT, 5);
-	}
-	else{
-		_robotInterface->Move(RI_TURN_LEFT, 5);
+	if(abs(error) > THETA_ERROR_MIN) {
+		//don't move, just turn
+		if (error > 0){
+			_robotInterface->Move(RI_TURN_RIGHT, 5);
+		}
+		else{
+			_robotInterface->Move(RI_TURN_LEFT, 5);
+		}
 	}
 	return error;
 }
 
 void Robot::moveForward(int speed) {
     if (!_robotInterface->IR_Detected()) {
+		if(name=="Optimus"){
+			printf("No No No No No No No!!!\t\tDETECTION!");
+		}
         _robotInterface->Move(RI_MOVE_FORWARD, speed);
     }
+}
+
+bool Robot::isThereABitchInMyWay() {
+    if (_robotInterface->IR_Detected()) {
+		return true;
+    }
+    return false;
 }
 
 void Robot::setFailLimit(int limit) {
