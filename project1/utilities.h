@@ -11,6 +11,8 @@ namespace Util {
 	float cmToWE(float cm); // converts cm to Wheel Encoder ticks
 
 	void mMult(float (*mA), int lA, int hA, float (*mB), int lB, int hB, float (*mC));
+	
+	void printOpeningDialog(std::string name);
 };
 
 #endif
