@@ -14,8 +14,8 @@
 // ROOM 2 stuff
 const float ROOM_X_SHIFT[4]= {199, 48, 229, 375};
 const float ROOM_Y_SHIFT[4]= {154, 281, 449, 303};
-const float ROOM_SCALE[2][4]= {{45, 41.7, 59.6, 37.4}, {45, 45, 36.7, 53.5}}; //Rosie Data
-const float ROOM_ROTATION[4]= 	{80.7, 0, 92.8, 3.4}; //Rosie Data
+const float ROOM_SCALE[2][4]= {{27.2, 41.7, 59.6, 37.4}, {45, 45, 36.7, 53.5}}; //Rosie Data
+const float ROOM_ROTATION[4]= 	{77.3, 0, 92.8, 3.4}; //Rosie Data
 			      //{80.7, -6.9, 95.7, 3.4}; Optimus Data
 const float ROOM_FLIPX[4] = {0,1,0,0}; //binary flag indicating whether to reflect x-coordinates over y-axis
 const float ROOM_FLIPY[4] = {0,0,1,1}; //binary flag indicating whether to reflect y-coordinates over x-axis
