@@ -303,14 +303,11 @@ float Robot::_getWEDeltaY() {
 // Returns: filtered wheel encoder overall delta theta
 //          in terms of robot axis
 float Robot::_getWEDeltaTheta() {
-//    float rear = _getWEDeltaRear();
 	float thetaWheelLeft=(_getWEDeltaLeft());
 	float thetaWheelRight=(_getWEDeltaRight());
 	float thetaWheelRear=(_getWEDeltaRear());
 	
 	float thetaNew=((-thetaWheelLeft+thetaWheelRight)+thetaWheelRear)/(PI*Util::cmToWE(ROBOT_DIAMETER));
-    // TODO: verify that this works
-    //return rear / (PI * Util::cmToWE(ROBOT_DIAMETER));
 	return thetaNew;
 }
 
@@ -319,7 +316,7 @@ float Robot::_getWEDeltaTheta() {
 float Robot::_getWETransDeltaX() {
     float deltaX = _getWEDeltaX();
     float scaledDeltaX = Util::weToCM(deltaX);
-    // TODO: finish
+    return scaledDeltaX;
 }
 
 // Returns: transformed wheel encoder y estimate in cm of where
@@ -327,14 +324,13 @@ float Robot::_getWETransDeltaX() {
 float Robot::_getWETransDeltaY() {
     float deltaY = _getWEDeltaY();
     float scaledDeltaY = Util::weToCM(deltaY);
-    // TODO: finish
+    return scaledDeltaY;
 }
 
 // Returns: transformed wheel encoder theta estimate of where
 //          robot should now be in global coordinate system
 float Robot::_getWETransDeltaTheta() {
     float deltaTheta = _getWEDeltaTheta();
-    // TODO: finish
     return deltaTheta;
 }
 
