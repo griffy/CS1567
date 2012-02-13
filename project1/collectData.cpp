@@ -76,7 +76,12 @@ int main(int argc, char *argv[]) {
     }
 
     for (int i = 0; i < 30; i++) {
-        robot->moveForward(5);
+        if(i<22)
+            robot->turnLeft(5);
+        else{
+            robot->stop;
+            sleep(0.5);
+        }
         robot->update();
         //write to global position file
         fprintf(outfileglobal,"%f,%f,%f\n",robot->_getNSTransX(),robot->_getNSTransY(),robot->_getNSTransTheta());

@@ -18,31 +18,32 @@ class Robot {
 public:
     Robot(std::string address, int id);
     ~Robot();
-	//moves to the given x/y coordinates, without stopping
+    //moves to the given x/y coordinates, without stopping
     bool moveToFull(int x, int y);
     void moveTo(int x, int y);
-	
-	//incrementally moves towards given theta
+
+    //incrementally moves towards given theta
     float turnTo(int theta);
-	
+
     void moveForward(int speed);
     void turnLeft(int speed);
     void turnRight(int speed);
+    void stop();
     void setFailLimit(int limit);
     int getFailLimit();
     void update();
     Pose* getPose();
-	
-	/// Self explanatory
-	//TODO: FINDBITCHES
-	bool isThereABitchInMyWay();
-	
-	int nameToInt();
-	void printOpeningDialog();
-	void printSuccessDialog();
-	void printFailureDialog();
-	
-	std::string name;
+
+    /// Self explanatory
+    //TODO: FINDBITCHES
+    bool isThereABitchInMyWay();
+
+    int nameToInt();
+    void printOpeningDialog();
+    void printSuccessDialog();
+    void printFailureDialog();
+
+    std::string name;
 
     // FIXME: Temporarily public members (for testing)
     //        below
@@ -64,7 +65,7 @@ public:
     float _getWEDeltaX();
     float _getWEDeltaY();
     float _getWEDeltaTheta();
-    
+
     float _getWETransDeltaX();
     float _getWETransDeltaY();
     float _getWETransDeltaTheta();
@@ -75,9 +76,9 @@ public:
 
     void _updateWEPose();
     void _updateNSPose();
-	
-	PID* _distancePID;
-	PID* _thetaPID;
+
+    PID* _distancePID;
+    PID* _thetaPID;
 private:
     // RobotInterface *_robotInterface;
 
@@ -115,7 +116,7 @@ private:
     // float _getWEDeltaX();
     // float _getWEDeltaY();
     // float _getWEDeltaTheta();
-    
+
     // float _getWETransDeltaX();
     // float _getWETransDeltaY();
     // float _getWETransDeltaTheta();

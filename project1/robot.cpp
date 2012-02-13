@@ -288,6 +288,10 @@ void Robot::turnRight(int speed) {
     _robotInterface->Move(RI_TURN_RIGHT, speed);
 }
 
+void Robot::stop() {
+    _robotInterface->Move(RI_STOP, 0);
+}
+
 bool Robot::isThereABitchInMyWay() {
     if (_robotInterface->IR_Detected()) {
         return true;
