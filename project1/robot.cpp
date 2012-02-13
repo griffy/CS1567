@@ -14,7 +14,7 @@ Robot::Robot(std::string address, int id) {
     _weRightFilter = new FIRFilter("filters/we.ffc");
     _weRearFilter = new FIRFilter("filters/we.ffc");
 
-	name=address;
+    name=address;
 
     setFailLimit(DEFAULT_NUM_FAILS);
 
@@ -27,112 +27,112 @@ Robot::Robot(std::string address, int id) {
 
     printf("kf initialized\n");
 
-	PIDConstants distancePIDConstants;
-	PIDConstants thetaPIDConstants;
+    PIDConstants distancePIDConstants;
+    PIDConstants thetaPIDConstants;
 
-	distancePIDConstants.kp = .9;
-	distancePIDConstants.ki = .05;
-	distancePIDConstants.kd = .05;
-	
-	thetaPIDConstants.kp = .9;
-	thetaPIDConstants.ki = .05;
-	thetaPIDConstants.kd = .05;
-	
-	float maxIntGain=0.2, minIntGain=-.2, maxThetaIntGain=.2, minThetaIntGain= -.2;
+    distancePIDConstants.kp = .9;
+    distancePIDConstants.ki = .05;
+    distancePIDConstants.kd = .05;
 
-	_distancePID = new PID(&distancePIDConstants, maxIntGain, minIntGain);
-	_thetaPID = new PID(&thetaPIDConstants, maxThetaIntGain, minThetaIntGain);
+    thetaPIDConstants.kp = .9;
+    thetaPIDConstants.ki = .05;
+    thetaPIDConstants.kd = .05;
+
+    float maxIntGain=0.2, minIntGain=-.2, maxThetaIntGain=.2, minThetaIntGain= -.2;
+
+    _distancePID = new PID(&distancePIDConstants, maxIntGain, minIntGain);
+    _thetaPID = new PID(&thetaPIDConstants, maxThetaIntGain, minThetaIntGain);
 
     printf("pid controllers initialized\n");
 }
 
 int Robot::nameToInt(){
-	if(name=="Rosie" || name=="rosie")
-		return 1;
-	if(name=="Bender" || name=="bender")
-		return 2;
-	if(name=="Johnny5" || name=="johnny5")
-		return 3;
-	if(name=="Optimus" || name=="optimus")
-		return 4;
-	if(name=="Walle" || name=="walle" || name=="wallE" || name=="WallE")
-		return 5;
-	if(name=="Gort" || name=="gort")
-		return 5;
-	return -1;
+    if(name=="Rosie" || name=="rosie")
+        return 1;
+    if(name=="Bender" || name=="bender")
+        return 2;
+    if(name=="Johnny5" || name=="johnny5")
+        return 3;
+    if(name=="Optimus" || name=="optimus")
+        return 4;
+    if(name=="Walle" || name=="walle" || name=="wallE" || name=="WallE")
+        return 5;
+    if(name=="Gort" || name=="gort")
+        return 5;
+    return -1;
 }
 
 void Robot::printOpeningDialog(){
-	printf("\n\n\n");
-	switch (nameToInt()){
-		case 1:
-			printf("I swear on my mother's rechargable batteries\n");
-			break;
-		case 2:
-			printf("Bender here\n");
-			break;
-		case 3:
-			printf("I'm Johnny5\n");
-			break;
-		case 4:
-			printf("Transformers, robots in disguise\n");
-			break;
-		case 5:
-			printf("WallEEEEEEEEeeeeeeee\n");
-			break;
-		default:
-			printf("I don't know who I am\n");
-			break;
-	}
-	printf("\n\n\n");
+    printf("\n\n\n");
+    switch (nameToInt()){
+        case 1:
+            printf("I swear on my mother's rechargable batteries\n");
+            break;
+        case 2:
+            printf("Bender here\n");
+            break;
+        case 3:
+            printf("I'm Johnny5\n");
+            break;
+        case 4:
+            printf("Transformers, robots in disguise\n");
+            break;
+        case 5:
+            printf("WallEEEEEEEEeeeeeeee\n");
+            break;
+        default:
+            printf("I don't know who I am\n");
+            break;
+    }
+    printf("\n\n\n");
 }
 void Robot::printFailureDialog(){
-	printf("\n\n\n");
-	switch (nameToInt()){
-		case 1:
-			printf("Again?\n");
-			break;
-		case 2:
-			printf("I just messed up\n");
-			break;
-		case 3:
-			printf("I'm Johnny5, and I crashed\n");
-			break;
-		case 4:
-			printf("In war, there are calms between storms.\nThere will be days when we lose faith, days when our allies turn against us.");
-			break;
-		case 5:
-			printf("WallE...\n");
-			break;
-		default:
-			printf("I don't do anything right... :(");
-			break;
-	}
-	printf("\n\n\n");
+    printf("\n\n\n");
+    switch (nameToInt()){
+        case 1:
+            printf("Again?\n");
+            break;
+        case 2:
+            printf("I just messed up\n");
+            break;
+        case 3:
+            printf("I'm Johnny5, and I crashed\n");
+            break;
+        case 4:
+            printf("In war, there are calms between storms.\nThere will be days when we lose faith, days when our allies turn against us.");
+            break;
+        case 5:
+            printf("WallE...\n");
+            break;
+        default:
+            printf("I don't do anything right... :(");
+            break;
+    }
+    printf("\n\n\n");
 }
 void Robot::printSuccessDialog(){
-	printf("\n\n\n");
-	switch (nameToInt()){
-		case 1:
-			printf("Again?\n");
-			break;
-		case 2:
-			printf("I'm awesome\n");
-			break;
-		case 3:
-			printf("I'm Johnny5, and I did not go insane\n");
-			break;
-		case 4:
-			printf("There's more than meets the eye");
-			break;
-		case 5:
-			printf("WallE...\n");
-			break;
-		default:
-			printf("Good JOB!!!!!!!!!!!!!!!");
-			break;
-	}
-	printf("\n\n\n");
+    printf("\n\n\n");
+    switch (nameToInt()){
+        case 1:
+            printf("Again?\n");
+            break;
+        case 2:
+            printf("I'm awesome\n");
+            break;
+        case 3:
+            printf("I'm Johnny5, and I did not go insane\n");
+            break;
+        case 4:
+            printf("There's more than meets the eye");
+            break;
+        case 5:
+            printf("WallE...\n");
+            break;
+        default:
+            printf("Good JOB!!!!!!!!!!!!!!!");
+            break;
+    }
+    printf("\n\n\n");
 }
 
 Robot::~Robot() {
@@ -155,7 +155,7 @@ Robot::~Robot() {
 
 // Moves to a location in the global coordinate system (in cm)
 bool Robot::moveToFull(int x, int y) {
-	// find current total magnitude of the error.  
+    // find current total magnitude of the error.
     // Then, if we are not going straight towards the target, we will turn
 
     update();
@@ -169,32 +169,30 @@ bool Robot::moveToFull(int x, int y) {
 
     float thetaError = atan(yError/xError);
 
-	
-
     do {
-		update();
+        update();
 
-		yError = y - _pose->getY();
-		xError = x - _pose->getX();
-		thetaError = atan(yError/xError);
-		error = sqrt(yError*yError + xError*xError);
-		
-		distGain = _distancePID->updatePID(error);
-		
+        yError = y - _pose->getY();
+        xError = x - _pose->getX();
+        thetaError = atan(yError/xError);
+        error = sqrt(yError*yError + xError*xError);
+
+        distGain = _distancePID->updatePID(error);
+
         if (abs(thetaError) > THETA_ERROR_MIN) {
-			turnTo((_pose->getTheta()-thetaError));
+            turnTo((_pose->getTheta()-thetaError));
         }
         else{
-			printf("X global: %f\t\tY global: %f\t\tTheta global: %f\n",
-				_pose->getX(),
-				_pose->getY(),
-				_pose->getTheta());
+            printf("X global: %f\t\tY global: %f\t\tTheta global: %f\n",
+                _pose->getX(),
+                _pose->getY(),
+                _pose->getTheta());
 
-			yError = y - _pose->getY();
-			xError = x - _pose->getX();
+            yError = y - _pose->getY();
+            xError = x - _pose->getX();
 
-			error = sqrt(yError*yError + xError*xError);
-			printf("Distance Error = %f\n", error);
+            error = sqrt(yError*yError + xError*xError);
+            printf("Distance Error = %f\n", error);
 
             // going relatively straight
             moveForward((int)1.0/(distGain));
@@ -204,14 +202,14 @@ bool Robot::moveToFull(int x, int y) {
     _distancePID->flushPID();
     _thetaPID->flushPID();
 
-	return true;
+    return true;
 }
 // Moves to a location in the global coordinate system (in cm)
 void Robot::moveTo(int x, int y) {
-	// find current total magnitude of the error.  
+    // find current total magnitude of the error.
     // Then, if we are not going straight towards the target, we will turn
 
-	update();
+    update();
 
     float yError = y - _pose->getY();
     float xError = x - _pose->getX();
@@ -222,24 +220,24 @@ void Robot::moveTo(int x, int y) {
 
     float thetaError = atan(yError/xError);
 
-	if(abs(thetaError) > THETA_ERROR_MIN) {
-		turnTo((_pose->getTheta()-thetaError));
-	}
-	else{
-		printf("X global: %f\t\tY global: %f\t\tTheta global: %f\n",
-			_pose->getX(),
-			_pose->getY(),
-			_pose->getTheta());
+    if(abs(thetaError) > THETA_ERROR_MIN) {
+        turnTo((_pose->getTheta()-thetaError));
+    }
+    else{
+        printf("X global: %f\t\tY global: %f\t\tTheta global: %f\n",
+            _pose->getX(),
+            _pose->getY(),
+            _pose->getTheta());
 
-		yError = y - _pose->getY();
-		xError = x - _pose->getX();
+        yError = y - _pose->getY();
+        xError = x - _pose->getX();
 
-		error = sqrt(yError*yError + xError*xError);
-		printf("Distance Error = %f\n", error);
+        error = sqrt(yError*yError + xError*xError);
+        printf("Distance Error = %f\n", error);
 
-		// going relatively straight
-		moveForward((int)1.0/(distGain));
-	}
+        // going relatively straight
+        moveForward((int)1.0/(distGain));
+    }
 
     _distancePID->flushPID();
     _thetaPID->flushPID();
@@ -247,52 +245,52 @@ void Robot::moveTo(int x, int y) {
 
 /// returns the error (in radians) of theta
 float Robot::turnTo(int theta) {
-	update();
+    update();
 
     float error = theta - _pose->getTheta();
-	printf("Theta Error = %f\n", error);
-	
-    float thetaGain = _thetaPID->updatePID(error);
-	
-	if(error >= 2*PI){
-		theta -= 2*PI;
-	}
-	else if(error<= -1*2*PI){
-		theta += 2*PI;
-	}
+    printf("Theta Error = %f\n", error);
 
-	if(abs(error) > THETA_ERROR_MIN) {
-		//don't move, just turn
-		if (error > 0){
-			_robotInterface->Move(RI_TURN_RIGHT, 5);
-		}
-		else{
-			_robotInterface->Move(RI_TURN_LEFT, 5);
-		}
-	}
-	return error;
+    float thetaGain = _thetaPID->updatePID(error);
+
+    if(error >= 2*PI){
+        theta -= 2*PI;
+    }
+    else if(error<= -1*2*PI){
+        theta += 2*PI;
+    }
+
+    if(abs(error) > THETA_ERROR_MIN) {
+        //don't move, just turn
+        if (error > 0){
+            _robotInterface->Move(RI_TURN_RIGHT, 5);
+        }
+        else{
+            _robotInterface->Move(RI_TURN_LEFT, 5);
+        }
+    }
+    return error;
 }
 
 void Robot::moveForward(int speed) {
     if (!isThereABitchInMyWay()) {
         _robotInterface->Move(RI_MOVE_FORWARD, speed);
     }
-	else if(name=="Optimus"){
-		printf("No No No No No No No!!!\t\tDETECTION!");
-	}
+    else if(name=="Optimus"){
+        printf("No No No No No No No!!!\t\tDETECTION!");
+    }
 }
 
 void Robot::turnLeft(int speed) {
-	_robotInterface->Move(RI_TURN_LEFT, speed);
+    _robotInterface->Move(RI_TURN_LEFT, speed);
 }
 
 void Robot::turnRight(int speed) {
-	_robotInterface->Move(RI_TURN_RIGHT, speed);
+    _robotInterface->Move(RI_TURN_RIGHT, speed);
 }
 
 bool Robot::isThereABitchInMyWay() {
     if (_robotInterface->IR_Detected()) {
-		return true;
+        return true;
     }
     return false;
 }
@@ -372,14 +370,14 @@ float Robot::_getNSY() {
 // Returns: filtered north star theta
 float Robot::_getNSTheta() {
     float theta = _robotInterface->Theta();
-    
+
     //Don't filter the theta value, weighted average is bad
     //return _nsThetaFilter->filter(theta);
-    
+
     return theta;
 }
 
-// Returns: filtered wheel encoder delta x for left wheel in ticks 
+// Returns: filtered wheel encoder delta x for left wheel in ticks
 //          in terms of robot axis
 float Robot::_getWEDeltaXLeft() {
     float deltaX = _getWEDeltaLeft();
@@ -387,7 +385,7 @@ float Robot::_getWEDeltaXLeft() {
     return deltaX;
 }
 
-// Returns: filtered wheel encoder delta y for left wheel in ticks 
+// Returns: filtered wheel encoder delta y for left wheel in ticks
 //          in terms of robot axis
 float Robot::_getWEDeltaYLeft() {
     float deltaY = _getWEDeltaLeft();
@@ -395,7 +393,7 @@ float Robot::_getWEDeltaYLeft() {
     return -deltaY;
 }
 
-// Returns: filtered wheel encoder delta x for right wheel in ticks 
+// Returns: filtered wheel encoder delta x for right wheel in ticks
 //          in terms of robot axis
 float Robot::_getWEDeltaXRight() {
     float deltaX = _getWEDeltaRight();
@@ -403,7 +401,7 @@ float Robot::_getWEDeltaXRight() {
     return deltaX;
 }
 
-// Returns: filtered wheel encoder delta y for right wheel in ticks 
+// Returns: filtered wheel encoder delta y for right wheel in ticks
 //          in terms of robot axis
 float Robot::_getWEDeltaYRight() {
     float deltaY = _getWEDeltaRight();
@@ -417,7 +415,7 @@ float Robot::_getWEDeltaXRear() {
     return 0;
 }
 
-// Returns: filtered wheel encoder delta y for rear wheel in ticks 
+// Returns: filtered wheel encoder delta y for rear wheel in ticks
 //          in terms of robot axis
 float Robot::_getWEDeltaYRear() {
     return 0;
@@ -428,12 +426,12 @@ float Robot::_getWEDeltaYRear() {
 float Robot::_getWEDeltaX() {
     float leftDeltaX = _getWEDeltaXLeft();
     float rightDeltaX = _getWEDeltaXRight();
-	float weOld=_getWEDeltaRear();
+    float weOld=_getWEDeltaRear();
 
-	int w2=rightDeltaX;
-	int w1=leftDeltaX;
+    int w2=rightDeltaX;
+    int w1=leftDeltaX;
 
-	float dx=(w2*cos(DEGREE_30) - w1*cos(DEGREE_30))*cos(_wePose->getTheta());
+    float dx=(w2*cos(DEGREE_30) - w1*cos(DEGREE_30))*cos(_wePose->getTheta());
 
 
     // return the average
@@ -445,12 +443,12 @@ float Robot::_getWEDeltaX() {
 float Robot::_getWEDeltaY() {
     float leftDeltaX = _getWEDeltaXLeft();
     float rightDeltaX = _getWEDeltaXRight();
-	float weOld=_getWEDeltaRear();
+    float weOld=_getWEDeltaRear();
 
-	int w2=rightDeltaX;
-	int w1=leftDeltaX;
+    int w2=rightDeltaX;
+    int w1=leftDeltaX;
 
-	float dy=(w2*sin(DEGREE_30) - w1*sin(DEGREE_30))*sin(_wePose->getTheta());
+    float dy=(w2*sin(DEGREE_30) - w1*sin(DEGREE_30))*sin(_wePose->getTheta());
     // return the average
     return dy;
 }
@@ -458,12 +456,12 @@ float Robot::_getWEDeltaY() {
 // Returns: filtered wheel encoder overall delta theta
 //          in terms of robot axis
 float Robot::_getWEDeltaTheta() {
-	float thetaWheelLeft=(_getWEDeltaLeft());
-	float thetaWheelRight=(_getWEDeltaRight());
-	float thetaWheelRear=(_getWEDeltaRear());
-	
-	float thetaNew=((-thetaWheelLeft+thetaWheelRight)+thetaWheelRear)/(PI*Util::cmToWE(ROBOT_DIAMETER));
-	return thetaNew;
+    float thetaWheelLeft=(_getWEDeltaLeft());
+    float thetaWheelRight=(_getWEDeltaRight());
+    float thetaWheelRear=(_getWEDeltaRear());
+
+    float thetaNew=((-thetaWheelLeft+thetaWheelRight)+thetaWheelRear)/(PI*Util::cmToWE(ROBOT_DIAMETER));
+    return thetaNew;
 }
 
 // Returns: transformed wheel encoder x estimate in cm of where
@@ -498,39 +496,39 @@ float Robot::_getNSTransX() {
    int room = _robotInterface->RoomID();
    float coords[2];
    float transform[2];
-   
+
    coords[1] = _getNSX();
    coords[0] = _getNSY();
    transform[0] = cos(ROOM_ROTATION[room-2]);
    transform[1] = -sin(ROOM_ROTATION[room-2]);
 
    if(ROOM_FLIPX[room-2] == 1) {
-   	transform[1] = -transform[1];
-	transform[0] = -transform[0];
+    transform[1] = -transform[1];
+    transform[0] = -transform[0];
    }
 
-   mMult(transform, 1, 2, coords, 2, 1, &result);   
-   
+   mMult(transform, 1, 2, coords, 2, 1, &result);
+
    //scale
    result /= ROOM_SCALE[0][room-2];
 
    //move
    result += ROOM_X_SHIFT[room-2];
 
-   return result; 
+   return result;
 }
 
 // Returns: transformed north star y estimate of where
 //          robot should now be in global coordinate system
 // TODO?
-float Robot::_getNSTransY() { 
+float Robot::_getNSTransY() {
    using namespace Util;
-   
+
    float result;
    int room = _robotInterface->RoomID();
    float coords[2];
    float transform[2];
-   
+
    coords[1] = _getNSX();
    coords[0] = _getNSY();
 
@@ -538,19 +536,19 @@ float Robot::_getNSTransY() {
    transform[1] = cos(ROOM_ROTATION[room-2]);
 
    if(ROOM_FLIPY[room-2] == 1) {
-   	transform[1] = -transform[1];
-	transform[0] = -transform[0];
+    transform[1] = -transform[1];
+    transform[0] = -transform[0];
    }
 
-   mMult(transform, 1, 2, coords, 2, 1, &result);   
-   
+   mMult(transform, 1, 2, coords, 2, 1, &result);
+
    //scale
    result /= ROOM_SCALE[1][room-2];
 
    //move
    result += ROOM_Y_SHIFT[room-2];
 
-   return result; 
+   return result;
 }
 
 // Returns: transformed north star theta estimate of where
@@ -561,7 +559,7 @@ float Robot::_getNSTransTheta() {
     int room = _robotInterface->RoomID();
     result -= (ROOM_ROTATION[room-2] * (PI/180.0));
     if(result < -PI) {
-    	result += 2 * PI;
+        result += 2 * PI;
     }
     return result;
 }
