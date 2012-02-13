@@ -37,7 +37,7 @@ rovioKalmanFilter.o: kalmanfilter/rovioKalmanFilter.c
 utilities.o: utilities.cpp utilities.h
 	g++ $(CFLAGS) -c utilities.cpp
 
-PID.o: PID.h PID.cpp
+PID.o: PID.cpp PID.h
 	g++ $(CFLAGS) -c PID.cpp
 
 collectData.o: collectData.cpp
@@ -45,4 +45,5 @@ collectData.o: collectData.cpp
 
 clean:
 	rm -f *.o
+	rm -f *.gch
 	rm -f project.out
