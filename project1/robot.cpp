@@ -160,8 +160,8 @@ bool Robot::moveToFull(int x, int y) {
 
     update();
 
-    float yError = y - _pose->getY();
-    float xError = x - _pose->getX();
+    float yError = y - _nsPose->getY();
+    float xError = x - _nsPose->getX();
 
     float error = sqrt(yError*yError + xError*xError);
 
@@ -172,24 +172,27 @@ bool Robot::moveToFull(int x, int y) {
     do {
         update();
 
-        yError = y - _pose->getY();
-        xError = x - _pose->getX();
+            printf("X global: %f\t\tY global: %f\t\tTheta global: %f\n",
+                _nsPose->getX(),
+                _nsPose->getY(),
+                _nsPose->getTheta());
+			
+        yError = y - _nsPose->getY();
+        xError = x - _nsPose->getX();
         thetaError = atan(yError/xError);
         error = sqrt(yError*yError + xError*xError);
+		
+		printf("Theta error: %f",thetaError);
 
         distGain = _distancePID->updatePID(error);
 
         if (abs(thetaError) > THETA_ERROR_MIN) {
-            turnTo((_pose->getTheta()-thetaError));
+            turnTo((_nsPose->getTheta()-thetaError));
         }
         else{
-            printf("X global: %f\t\tY global: %f\t\tTheta global: %f\n",
-                _pose->getX(),
-                _pose->getY(),
-                _pose->getTheta());
 
-            yError = y - _pose->getY();
-            xError = x - _pose->getX();
+            yError = y - _nsPose->getY();
+            xError = x - _nsPose->getX();
 
             error = sqrt(yError*yError + xError*xError);
             printf("Distance Error = %f\n", error);
