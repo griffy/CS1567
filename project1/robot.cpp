@@ -288,6 +288,10 @@ void Robot::turnRight(int speed) {
     _robotInterface->Move(RI_TURN_RIGHT, speed);
 }
 
+void Robot::stop() {
+    _robotInterface->Move(RI_STOP, 0);
+}
+
 bool Robot::isThereABitchInMyWay() {
     if (_robotInterface->IR_Detected()) {
         return true;
@@ -518,6 +522,40 @@ float Robot::_getNSTransX() {
    return result;
 }
 
+// TEMP FUNCTION!
+//
+// Returns: transformed north star x estimate of where
+//          robot should now be in global coordinate system
+// TODO?
+float Robot::_getNSHalfTransX() {
+   using namespace Util;
+   float result;
+   int room = _robotInterface->RoomID();
+   float coords[2];
+   float transform[2];
+
+   coords[1] = _getNSX();
+   coords[0] = _getNSY();
+   transform[0] = cos(ROOM_ROTATION[room-2]);
+   transform[1] = -sin(ROOM_ROTATION[room-2]);
+
+   if(ROOM_FLIPX[room-2] == 1) {
+    transform[1] = -transform[1];
+    transform[0] = -transform[0];
+   }
+
+   mMult(transform, 1, 2, coords, 2, 1, &result);
+
+   //scale
+   //result /= ROOM_SCALE[0][room-2];
+
+   //move
+   //result += ROOM_X_SHIFT[room-2];
+
+   return result;
+}
+
+// Returns: transformed north star y estimate of where
 // Returns: transformed north star y estimate of where
 //          robot should now be in global coordinate system
 // TODO?
@@ -547,6 +585,41 @@ float Robot::_getNSTransY() {
 
    //move
    result += ROOM_Y_SHIFT[room-2];
+
+   return result;
+}
+
+// TEMP FUNCTION!
+//
+// Returns: transformed north star y estimate of where
+//          robot should now be in global coordinate system
+// TODO?
+float Robot::_getNSHalfTransY() {
+   using namespace Util;
+
+   float result;
+   int room = _robotInterface->RoomID();
+   float coords[2];
+   float transform[2];
+
+   coords[1] = _getNSX();
+   coords[0] = _getNSY();
+
+   transform[0] = sin(ROOM_ROTATION[room-2]);
+   transform[1] = cos(ROOM_ROTATION[room-2]);
+
+   if(ROOM_FLIPY[room-2] == 1) {
+    transform[1] = -transform[1];
+    transform[0] = -transform[0];
+   }
+
+   mMult(transform, 1, 2, coords, 2, 1, &result);
+
+   //scale
+   //result /= ROOM_SCALE[1][room-2];
+
+   //move
+   //result += ROOM_Y_SHIFT[room-2];
 
    return result;
 }
