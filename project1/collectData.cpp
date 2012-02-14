@@ -22,6 +22,7 @@ int main(int argc, char *argv[]) {
         printf("ERROR: Invalid number of args -> should be:\n\t%s [ip/name of robot] [base filename of data files] [move binary flag 1=y]\n", argv[0]);
         exit(-1);
     }
+    Robot *robot = new Robot(argv[1], 0);
 
     printf("Name of robot: %s\n",argv[1]);
 
@@ -63,21 +64,15 @@ int main(int argc, char *argv[]) {
 
     FILE * outfileglobal=fopen(filenameNorthStarDataGlobal.c_str(),"a");
     FILE * outfilewe=fopen(filenameWEdata.c_str(),"a");
+	
+	printf("Battery: %d\n", robot->_robotInterface->Battery());
 
-    Robot *robot = new Robot(argv[1], 0);
 
-    for (int i = 0; i < 15; i++) {
-        printf("prefilling data\n");
-        robot->update();
-        //write to global position file
-        fprintf(outfileglobal,"%d %f,%f,%f\n",robot->_robotInterface->RoomID(),robot->_getNSTransX(),robot->_getNSTransY(),robot->_getNSTransTheta());
-        //write to global position file
-        fprintf(outfilewe,"%d,%d,%d\n",robot->_robotInterface->getWheelEncoder(RI_WHEEL_LEFT),robot->_robotInterface->getWheelEncoder(RI_WHEEL_RIGHT),robot->_robotInterface->getWheelEncoder(RI_WHEEL_REAR));
-    }
-
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 50; i++) {
         robot->turnLeft(5);
         robot->update();
+		printf(" WE %f %f %d\t\t",robot->_wePose->getTotalTheta(), robot->_wePose->getTheta(), robot->_wePose->getNumRotations());
+		printf(" NS %f %f %d\n",robot->_nsPose->getTotalTheta(), robot->_nsPose->getTheta(), robot->_nsPose->getNumRotations());
         //write to global position file
         fprintf(outfileglobal,"%d %f,%f,%f\n",robot->_robotInterface->RoomID(),robot->_getNSTransX(),robot->_getNSTransY(),robot->_getNSTransTheta());
         fprintf(outfilewe,"%d,%d,%d\n",robot->_robotInterface->getWheelEncoder(RI_WHEEL_LEFT),robot->_robotInterface->getWheelEncoder(RI_WHEEL_RIGHT),robot->_robotInterface->getWheelEncoder(RI_WHEEL_REAR));
@@ -87,6 +82,8 @@ int main(int argc, char *argv[]) {
 	robot->stop();
     for (int i = 0; i < 10; i++) {
         robot->update();
+		printf(" WE %f %f %d\t\t",robot->_wePose->getTotalTheta(), robot->_wePose->getTheta(), robot->_wePose->getNumRotations());
+		printf(" NS %f %f %d\n",robot->_nsPose->getTotalTheta(), robot->_nsPose->getTheta(), robot->_nsPose->getNumRotations());
         //write to global position file
         fprintf(outfileglobal,"%d %f,%f,%f\n",robot->_robotInterface->RoomID(),robot->_getNSTransX(),robot->_getNSTransY(),robot->_getNSTransTheta());
         fprintf(outfilewe,"%d,%d,%d\n",robot->_robotInterface->getWheelEncoder(RI_WHEEL_LEFT),robot->_robotInterface->getWheelEncoder(RI_WHEEL_RIGHT),robot->_robotInterface->getWheelEncoder(RI_WHEEL_REAR));

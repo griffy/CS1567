@@ -21,10 +21,17 @@ public:
 	float getX();
 	float getY();
 	float getTheta();
+	float getTotalTheta();
+	int getNumRotations();
+
+	void modifyRotations(int num);
+	
 private:
 	float _x;
 	float _y;
 	float _theta;
+	float _totalTheta;
+	int _numRotations;
 };
 
 #endif

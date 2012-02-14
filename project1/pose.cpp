@@ -1,9 +1,12 @@
 #include "pose.h"
+#include "constants.h"
 
 Pose::Pose(float x, float y, float theta) {
 	_x = x;
 	_y = y;
 	_theta = theta;
+	_totalTheta = theta;
+	_numRotations=0;
 }
 
 Pose::~Pose() {
@@ -35,6 +38,19 @@ void Pose::setY(float y) {
 
 void Pose::setTheta(float theta) {
 	_theta = theta;
+}
+
+void Pose::modifyRotations(int num) {
+	_numRotations+=num;
+}
+
+float Pose::getTotalTheta(){
+	_totalTheta=_numRotations*2*PI+_theta;
+	return _totalTheta;
+}
+
+int Pose::getNumRotations(){
+	return _numRotations;
 }
 
 void Pose::add(float deltaX, float deltaY, float deltaTheta) {

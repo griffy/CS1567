@@ -25,6 +25,7 @@ public:
     //incrementally moves towards given theta
     float turnTo(int theta);
 
+	void prefillData();
     void moveForward(int speed);
     void turnLeft(int speed);
     void turnRight(int speed);
@@ -95,6 +96,11 @@ private:
     FIRFilter *_weLeftFilter;
     FIRFilter *_weRightFilter;
     FIRFilter *_weRearFilter;
+
+	Pose *_startingNSPose;
+
+	bool _passed2PIns;
+	bool _passed2PIwe;
 
     int _failLimit;
 

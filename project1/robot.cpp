@@ -15,12 +15,16 @@ Robot::Robot(std::string address, int id) {
     _weRearFilter = new FIRFilter("filters/we.ffc");
 
     name=address;
+	
+	_passed2PIns = false;
+	_passed2PIwe = false;
 
     setFailLimit(DEFAULT_NUM_FAILS);
 
     _wePose = new Pose(0, 0, 0);
     _nsPose = new Pose(0, 0, 0);
     _pose = new Pose(0, 0, 0);
+	_startingNSPose = new Pose(0,0,0);
 
     // bind _pose to the kalman filter
     _kalmanFilter = new Kalman(_pose);
@@ -42,6 +46,8 @@ Robot::Robot(std::string address, int id) {
 
     _distancePID = new PID(&distancePIDConstants, maxIntGain, minIntGain);
     _thetaPID = new PID(&thetaPIDConstants, maxThetaIntGain, minThetaIntGain);
+
+	prefillData();
 
     printf("pid controllers initialized\n");
 }
@@ -148,9 +154,23 @@ Robot::~Robot() {
     delete _wePose;
     delete _nsPose;
     delete _pose;
+	delete _startingNSPose;
 
     delete _distancePID;
     delete _thetaPID;
+}
+
+void Robot::prefillData(){
+	int order=_nsXFilter->getOrder();
+	printf("Prefilling:");
+	for (int i=0; i<order; i++){
+		printf(" %d",i);
+		update();
+	}
+	_startingNSPose->setX(_nsPose->getX());
+	_startingNSPose->setY(_nsPose->getY());
+	_startingNSPose->setTheta(_nsPose->getTheta());
+	printf("\n");
 }
 
 // Moves to a location in the global coordinate system (in cm)
@@ -172,11 +192,11 @@ bool Robot::moveToFull(int x, int y) {
     do {
         update();
 
-            printf("X global: %f\t\tY global: %f\t\tTheta global: %f\n",
-                _nsPose->getX(),
-                _nsPose->getY(),
-                _nsPose->getTheta());
-			
+        printf("X global: %f\t\tY global: %f\t\tTheta global: %f\n",
+            _nsPose->getX(),
+            _nsPose->getY(),
+            _nsPose->getTheta());
+
         yError = y - _nsPose->getY();
         xError = x - _nsPose->getX();
         thetaError = atan(yError/xError);
@@ -377,7 +397,6 @@ float Robot::_getNSY() {
 // Returns: filtered north star theta
 float Robot::_getNSTheta() {
     float theta = _robotInterface->Theta();
-
     //Don't filter the theta value, weighted average is bad
     //return _nsThetaFilter->filter(theta);
 
@@ -467,8 +486,8 @@ float Robot::_getWEDeltaTheta() {
     float thetaWheelRight=(_getWEDeltaRight());
     float thetaWheelRear=(_getWEDeltaRear());
 
-    float thetaNew=((-thetaWheelLeft+thetaWheelRight)+thetaWheelRear)/(PI*Util::cmToWE(ROBOT_DIAMETER));
-    return thetaNew;
+	float dTheta = Util::weToCM(-thetaWheelRear)/14.5;
+    return dTheta;
 }
 
 // Returns: transformed wheel encoder x estimate in cm of where
@@ -565,28 +584,91 @@ float Robot::_getNSTransTheta() {
     float result = _getNSTheta();
     int room = _robotInterface->RoomID();
     result -= (ROOM_ROTATION[room-2] * (PI/180.0));
+	
+	result-=_startingNSPose->getTheta();
+	
     if(result < -PI) {
         result += 2 * PI;
     }
+    
+    if(result<0)
+		result+=2*PI;
+
     return result;
 }
 
 // Updates transformed wheel encoder pose estimate of where
 // robot should now be in global coordinate system
 void Robot::_updateWEPose() {
+	float lastTheta=_wePose->getTheta();
+	
     float deltaX = _getWETransDeltaX();
     float deltaY = _getWETransDeltaY();
-    float deltaTheta = _getWETransDeltaTheta();
-    _wePose->add(deltaX, deltaY, deltaTheta);
-}
+    float dTheta = _getWETransDeltaTheta();
+	
+	float newTheta=lastTheta+dTheta;
+	float modifier = 0;
+	if(newTheta>2*PI){
+		newTheta=newTheta-2*PI;
+	}
+	else if(newTheta<0){
+		newTheta+=2*PI;
+	}
 
+	printf("NEW THETA: %f\t\tdtheta: %f\n", newTheta, dTheta);
+	
+	
+	if((lastTheta > (3/2.0)*PI && (newTheta) < PI/2.0)) {
+		_passed2PIwe = !_passed2PIwe;
+	}
+	else if(lastTheta < PI/2.0 && newTheta > (3/2.0)*PI){
+		_passed2PIwe = !_passed2PIwe;
+	}
+	
+	if(_passed2PIwe && (lastTheta>PI && newTheta<PI)){
+		_wePose->modifyRotations(1);
+		_passed2PIwe=false;
+	}
+	else if(_passed2PIwe && (lastTheta<PI && newTheta>PI)){
+		_wePose->modifyRotations(-1);
+		_passed2PIwe=false;
+	}
+
+    _wePose->add(deltaX, deltaY, (lastTheta-newTheta+modifier));
+    _wePose->setTheta(newTheta);
+}
+ 
 // Updates transformed north star pose estimate of where
 // robot should now be in global coordinate system
 void Robot::_updateNSPose() {
+	float lastTheta = _nsPose->getTheta();
+
     float newX = _getNSTransX();
     float newY = _getNSTransY();
     float newTheta = _getNSTransTheta();
+	
     _nsPose->setX(newX);
     _nsPose->setY(newY);
+
+	//float dTheta = lastTheta-newTheta;
+	
+	if((lastTheta > (3/2.0)*PI && (newTheta) < PI/2.0)) {
+		_passed2PIns = !_passed2PIns;
+	}
+	else if(lastTheta < PI/2.0 && newTheta > (3/2.0)*PI){
+		_passed2PIns = !_passed2PIns;
+	}
+	else{
+	}
+	
+	if(_passed2PIns && (lastTheta>PI && newTheta<PI)){
+		_nsPose->modifyRotations(1);
+		_passed2PIns=false;
+	}
+	else if(_passed2PIns && (lastTheta<PI && newTheta>PI)){
+		_nsPose->modifyRotations(-1);
+		_passed2PIns=false;
+	}
+
     _nsPose->setTheta(newTheta);
 }
