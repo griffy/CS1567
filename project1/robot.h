@@ -19,8 +19,8 @@ public:
     Robot(std::string address, int id);
     ~Robot();
     //moves to the given x/y coordinates, without stopping
-    void moveTo(int x, int y);
-    float moveToUntil(int x, int y, float thetaErrorLimit);
+    void moveTo(float x, float y);
+    float moveToUntil(float x, float y, float thetaErrorLimit);
     void turnTo(float theta, float thetaErrorLimit);
 
     void moveForward(int speed);

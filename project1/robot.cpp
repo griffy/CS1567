@@ -155,7 +155,7 @@ Robot::~Robot() {
 }
 
 // Moves to a location in the global coordinate system (in cm) until theta error is exceeded
-void Robot::moveTo(int x, int y) {
+void Robot::moveTo(float x, float y) {
     // find current total magnitude of the error.
     // Then, if we are not going straight towards the target, we will turn
 
@@ -164,7 +164,9 @@ void Robot::moveTo(int x, int y) {
     do {
         thetaError = moveToUntil(x, y, MAX_THETA_ERROR);
         if (thetaError != 0) {
+            printf("adjusting theta...");
             turnTo(_pose->getTheta()-thetaError, MAX_THETA_ERROR);
+            printf("theta acceptable!");
         }
     } while (thetaError != 0);
 
@@ -175,7 +177,7 @@ void Robot::moveTo(int x, int y) {
 // Moves to a location in the global coordinate system (in cm) 
 // until theta error limit exceeded
 // Returns: theta error
-float Robot::moveToUntil(int x, int y, float thetaErrorLimit) {
+float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
     float yError;
     float xError;
     float thetaError;
