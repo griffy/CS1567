@@ -2,7 +2,8 @@
 
 #define DEFAULT_NUM_FAILS 5
 
-#define THETA_ERROR_MIN 0.13
+#define MAX_THETA_ERROR 0.26 // 15 degrees
+#define MAX_DIST_ERROR 10.0 // in cm
 
 Robot::Robot(std::string address, int id) {
     _robotInterface = new RobotInterface(address, id);
@@ -153,125 +154,94 @@ Robot::~Robot() {
     delete _thetaPID;
 }
 
-// Moves to a location in the global coordinate system (in cm)
-bool Robot::moveToFull(int x, int y) {
+// Moves to a location in the global coordinate system (in cm) until theta error is exceeded
+void Robot::moveTo(float x, float y) {
     // find current total magnitude of the error.
     // Then, if we are not going straight towards the target, we will turn
 
-    update();
+    float thetaError;
 
-    float yError = y - _nsPose->getY();
-    float xError = x - _nsPose->getX();
+    do {
+        thetaError = moveToUntil(x, y, MAX_THETA_ERROR);
+        if (thetaError != 0) {
+            printf("adjusting theta...");
+            turnTo(_pose->getTheta()-thetaError, MAX_THETA_ERROR);
+            printf("theta acceptable!");
+        }
+    } while (thetaError != 0);
 
-    float error = sqrt(yError*yError + xError*xError);
+    _distancePID->flushPID();
+    _thetaPID->flushPID();
+}
 
-    float distGain = _distancePID->updatePID(error);
+// Moves to a location in the global coordinate system (in cm) 
+// until theta error limit exceeded
+// Returns: theta error
+float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
+    float yError;
+    float xError;
+    float thetaError;
+    float distError;
 
-    float thetaError = atan(yError/xError);
+    float distGain;
 
     do {
         update();
-
-            printf("X global: %f\t\tY global: %f\t\tTheta global: %f\n",
-                _nsPose->getX(),
-                _nsPose->getY(),
-                _nsPose->getTheta());
 			
-        yError = y - _nsPose->getY();
-        xError = x - _nsPose->getX();
-        thetaError = atan(yError/xError);
-        error = sqrt(yError*yError + xError*xError);
-		
-		printf("Theta error: %f",thetaError);
-
-        distGain = _distancePID->updatePID(error);
-
-        if (abs(thetaError) > THETA_ERROR_MIN) {
-            turnTo((_nsPose->getTheta()-thetaError));
-        }
-        else{
-
-            yError = y - _nsPose->getY();
-            xError = x - _nsPose->getX();
-
-            error = sqrt(yError*yError + xError*xError);
-            printf("Distance Error = %f\n", error);
-
-            // going relatively straight
-            moveForward((int)1.0/(distGain));
-        }
-    } while (error > 10);
-
-    _distancePID->flushPID();
-    _thetaPID->flushPID();
-
-    return true;
-}
-// Moves to a location in the global coordinate system (in cm)
-void Robot::moveTo(int x, int y) {
-    // find current total magnitude of the error.
-    // Then, if we are not going straight towards the target, we will turn
-
-    update();
-
-    float yError = y - _pose->getY();
-    float xError = x - _pose->getX();
-
-    float error = sqrt(yError*yError + xError*xError);
-
-    float distGain = _distancePID->updatePID(error);
-
-    float thetaError = atan(yError/xError);
-
-    if(abs(thetaError) > THETA_ERROR_MIN) {
-        turnTo((_pose->getTheta()-thetaError));
-    }
-    else{
-        printf("X global: %f\t\tY global: %f\t\tTheta global: %f\n",
-            _pose->getX(),
-            _pose->getY(),
-            _pose->getTheta());
-
         yError = y - _pose->getY();
         xError = x - _pose->getX();
+        thetaError = atan(yError/xError);
+        distError = sqrt(yError*yError + xError*xError);
+		
+        // TODO: remove
+        printf("Distance Error = %f\n", distError);
+		printf("Theta error: %f\n", thetaError);
 
-        error = sqrt(yError*yError + xError*xError);
-        printf("Distance Error = %f\n", error);
+        distGain = _distancePID->updatePID(distError);
+        _thetaPID->updatePID(thetaError);
+
+        if (abs(thetaError) > thetaErrorLimit) {
+            return thetaError;
+        }
 
         // going relatively straight
         moveForward((int)1.0/(distGain));
-    }
+    } while (distError > MAX_DIST_ERROR);
 
-    _distancePID->flushPID();
-    _thetaPID->flushPID();
+    return 0; // no error when we've finished
 }
 
-/// returns the error (in radians) of theta
-float Robot::turnTo(int theta) {
-    update();
+void Robot::turnTo(float theta, float thetaErrorLimit) {
+    float thetaError;
 
-    float error = theta - _pose->getTheta();
-    printf("Theta Error = %f\n", error);
+    float thetaGain;
 
-    float thetaGain = _thetaPID->updatePID(error);
+    do {
+        update();
+            
+        thetaError = theta - _pose->getTheta();
+        printf("Theta error: %f\n", thetaError);
 
-    if(error >= 2*PI){
-        theta -= 2*PI;
-    }
-    else if(error<= -1*2*PI){
-        theta += 2*PI;
-    }
+        thetaGain = _thetaPID->updatePID(thetaError);
 
-    if(abs(error) > THETA_ERROR_MIN) {
-        //don't move, just turn
-        if (error > 0){
-            _robotInterface->Move(RI_TURN_RIGHT, 5);
+/*
+        if (error >= 2*PI){
+            theta -= 2*PI;
         }
-        else{
-            _robotInterface->Move(RI_TURN_LEFT, 5);
+        else if(error<= -1*2*PI){
+            theta += 2*PI;
         }
-    }
-    return error;
+*/
+
+        if(abs(thetaError) > thetaErrorLimit) {
+            if (thetaError > 0){
+                turnRight((int)1.0/thetaGain);
+            }
+            else{
+                turnRight((int)1.0/thetaGain);
+            }
+        }
+    } while (thetaError > thetaErrorLimit);
 }
 
 void Robot::moveForward(int speed) {
