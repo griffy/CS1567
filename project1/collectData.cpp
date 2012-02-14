@@ -73,17 +73,18 @@ int main(int argc, char *argv[]) {
         fprintf(outfileglobal,"%d %f,%f,%f %f %f\n",robot->_robotInterface->RoomID(),robot->_getNSTransX(),robot->_getNSTransY(),robot->_getNSTransTheta(), robot->_getNSHalfTransX(),robot->_getNSHalfTransY());
         //write to global position file
         fprintf(outfilewe,"%d,%d,%d\n",robot->_robotInterface->getWheelEncoder(RI_WHEEL_LEFT),robot->_robotInterface->getWheelEncoder(RI_WHEEL_RIGHT),robot->_robotInterface->getWheelEncoder(RI_WHEEL_REAR));
-    }
+   }
 
-    for (int i = 0; i < 20; i++) {
-        robot->moveForward(1);
-	robot->update();
+    for (int i = 0; i < 10; i++) {
+        robot->turnLeft(5);
+        robot->update();
         //write to global position file
         fprintf(outfileglobal,"%d %f,%f,%f %f %f\n",robot->_robotInterface->RoomID(),robot->_getNSTransX(),robot->_getNSTransY(),robot->_getNSTransTheta(), robot->_getNSHalfTransX(),robot->_getNSHalfTransY());
         fprintf(outfilewe,"%d,%d,%d\n",robot->_robotInterface->getWheelEncoder(RI_WHEEL_LEFT),robot->_robotInterface->getWheelEncoder(RI_WHEEL_RIGHT),robot->_robotInterface->getWheelEncoder(RI_WHEEL_REAR));
     }
 
 
+	robot->stop();
     for (int i = 0; i < 10; i++) {
         robot->update();
         //write to global position file

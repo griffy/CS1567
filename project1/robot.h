@@ -81,6 +81,13 @@ public:
 
     PID* _distancePID;
     PID* _thetaPID;
+	
+	
+    Pose *_wePose;
+    Pose *_nsPose;
+    Pose *_pose;
+	
+	
 private:
     // RobotInterface *_robotInterface;
 
@@ -93,9 +100,6 @@ private:
 
     int _failLimit;
 
-    Pose *_wePose;
-    Pose *_nsPose;
-    Pose *_pose;
 
     Kalman *_kalmanFilter;
     // FIXME: Temporarily not private members (for testing)

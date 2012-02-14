@@ -33,12 +33,23 @@ int main(int argc, char *argv[]) {
 	for (int i = 0; i < 15; i++) {
 		robot->update();
 	}
+	
+	printf("Get battery: %d\n", robot->_robotInterface->Battery());
 
-    for (int i = 0; i < NUMBASES; i++) {
-    	printf("moving to base %d", i+1);
-        if(!robot->moveToFull(bases[i]->getX(),bases[i]->getY())) {
+    for (int i = 0; i < NUMBASES; i) {
+    	//printf("moving to base %d", i+1);
+        /*if(!robot->moveToFull(bases[i]->getX(),bases[i]->getY())) {
 			robot->printFailureDialog();
 		}
+		*/
+		robot->update();
+
+            printf("X global: %f\t\tY global: %f\t\tTheta global: %f\n",
+                robot->_nsPose->getX(),
+                robot->_nsPose->getY(),
+                robot->_nsPose->getTheta());
+            printf("X raw: %d\t\tY raw: %d\t\tTheta raw: %f\n",robot->_robotInterface->X(),robot->_robotInterface->Y(),robot->_robotInterface->Theta());
+			sleep(0.1);
     }
 
     printf("done!");
