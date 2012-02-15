@@ -15,7 +15,7 @@ Kalman::Kalman(Pose *initialPose) {
 	initKalmanFilter(&_kf, initialPoseArr, velocity, 1);
     // initialize the track to zero'd state
 
-	setUncertainty(.4, .4, .4, .2, .2, .08, .07, .07, .35);
+	//setUncertainty(.4, .4, .4, .2, .2, .08, .07, .07, .35);
 
     for (int i = 0; i < 9; i++) {
         _track[0] = 0;

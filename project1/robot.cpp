@@ -186,6 +186,7 @@ void Robot::moveTo(float x, float y) {
 		printf("Current Nav: %d\n",getStrength());
         thetaError = moveToUntil(x, y, MAX_THETA_ERROR);
 		printf("REturnedVALLUEEEEEEE: %f\n", thetaError);
+		update();
         if (thetaError != 0) {
             printf("adjusting theta...\n");
             turnTo(thetaError, MAX_THETA_ERROR);
@@ -210,17 +211,18 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
     float distGain;
 
     do {
+		printf("GOING TO : %f, %f\n", x, y);
         update();
 
-        yError = y - _pose->getY();
-        xError = x - _pose->getX();
+        yError = y - _wePose->getY();
+        xError = x - _wePose->getX();
 		
         thetaDesired = atan2(yError, xError);
 		printf("desired theta: %f\n", thetaDesired);
 		if(thetaDesired<0){
 			thetaDesired+=2*PI;
 		}
-		thetaError = thetaDesired - _nsPose->getTheta();
+		thetaError = thetaDesired - _wePose->getTheta();
 		if(thetaError>PI){
 			thetaError = -(2*PI-thetaError);
 		}
@@ -232,8 +234,9 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
 		printf("Value of kalman pose   x: %d\t\ty: %d\t\ttheta: %f\n", (int) _pose->getX(), (int) _pose->getY(), _pose->getTheta());
 
         // TODO: remove
-		printf("Xerror:\t\t\t\t\t%f\n", xError);
-		printf("Yerror:\t\t\t\t\t\t\t%f\n", yError);
+		printf("Xerror:\t\t\t\t\t\t\t\t\t\t\t%f\n", xError);
+		printf("Yerror:\t\t\t\t\t\t\t\t\t\t\t\t\t%f\n", yError);
+		printf("Yerror:\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t%f\n", thetaError);
         printf("Distance Error = %f\n", distError);
 		printf("pose theta: %f\n", _pose->getTheta());
 		
@@ -248,6 +251,7 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
 
         // going relatively straight
         printf("GOING FORWARD!!!\t\t(%d)\n",(int)1.0/(distGain));
+		update();
         moveForward(5);
     } while (distError > MAX_DIST_ERROR);
 
@@ -262,17 +266,18 @@ void Robot::turnTo(float theta, float thetaErrorLimit) {
 
     do {
         //update();
+		update();
 		
 		float poseTheta=_pose->getTheta();
 		float nsPose =_nsPose->getTheta();
 		
 		if(theta<(-thetaErrorLimit)){
 			printf("Turn right, theta error < -limit \n");
-			turnRight(10);
+			turnRight(5);
 		}
 		else if(theta>thetaErrorLimit){
 			printf("I'm turning left, theta error > limit\n");
-			turnLeft(10);
+			turnLeft(5);
 		}
 		
 		printf("pose theta: %f\n", poseTheta);
@@ -354,9 +359,9 @@ void Robot::update() {
     _updateNSPose();
 	
 	//update the kalman constants for NS
-	float newX = 2500/getStrength();
-	float newY = 5500/getStrength();
-	float newTheta = 800/getStrength();
+	float newX = 1000.0/getStrength();
+	float newY = 1500.0/getStrength();
+	float newTheta = 800.0/getStrength();
 	if(newX>0.3)
 		newX=.3;
 	if(newY>0.3)
@@ -364,7 +369,8 @@ void Robot::update() {
 	if(newTheta>0.3)
 		newTheta=.3;
 
-	_kalmanFilter->setNSUncertainty(newX, newY, newTheta);
+	//_kalmanFilter->setNSUncertainty(.15, .15, .08);
+	printf("certainties: %f %f %f\n", newX, newY, newTheta);
 	//update the kalman constants for WE
 
 	if(getStrength()>13222){ // It's OVER 9000
