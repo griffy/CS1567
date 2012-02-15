@@ -23,6 +23,7 @@ public:
     float moveToUntil(float x, float y, float thetaErrorLimit);
     void turnTo(float theta, float thetaErrorLimit);
 
+	void prefillData();
     void moveForward(int speed);
     void turnLeft(int speed);
     void turnRight(int speed);
@@ -35,6 +36,7 @@ public:
     /// Self explanatory
     //TODO: FINDBITCHES
     bool isThereABitchInMyWay();
+	int getStrength();
 
     int nameToInt();
     void printOpeningDialog();
@@ -95,6 +97,11 @@ private:
     FIRFilter *_weLeftFilter;
     FIRFilter *_weRightFilter;
     FIRFilter *_weRearFilter;
+
+	Pose *_startingNSPose;
+
+	bool _passed2PIns;
+	bool _passed2PIwe;
 
     int _failLimit;
 

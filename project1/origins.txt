@@ -1,0 +1,19 @@
+Column top-right corner is:
+303 cm diagonal from base 0
+193 cm west of base 0
+234 cm south of base 0
+
+Room 3 origin is 147 cm east of column top-right
+                 8 cm south of column top-right
+                 
+Room 4 origin is 168 cm south of column top-right
+                 41 cm west of column top-right
+
+Room 5 origin is 196cm west of column top-right
+                 30 cm south of column top-right
+
+Room 2 origin is 145cm north of column top-right
+                 30cm west of column top-right
+
+Room 2 and 5 axes are normal (x goes west, y goes south)
+Room 3 and 4 each axis goes in opposite direction (x goes east, y goes north)

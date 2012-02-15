@@ -58,9 +58,9 @@ float PID::updatePID(float error) {
     // multiply by the change in error (this one minus the previous)
 	dTerm = _constants.kd * (error - prevError);
 
-	printf("pTerm = %f\n", pTerm);
-	printf("iTerm = %f\n", iTerm);
-	printf("dTerm = %f\n", dTerm);
+	//printf("pTerm = %f\n", pTerm);
+	//printf("iTerm = %f\n", iTerm);
+	//printf("dTerm = %f\n", dTerm);
 
 	float gain = pTerm+iTerm+dTerm;
 	if(gain>1.0) {
