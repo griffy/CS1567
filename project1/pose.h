@@ -17,12 +17,14 @@ public:
 
 	//gets the distance (x/y) between the 2 poses
 	float distance(Pose* pose1, Pose* pose2);
-
+	
+	float normalizeTotalTheta();
 	float getX();
 	float getY();
 	float getTheta();
 	float getTotalTheta();
 	int getNumRotations();
+	void setTotalTheta(float theta);
 
 	void modifyRotations(int num);
 	

@@ -49,6 +49,20 @@ float Pose::getTotalTheta(){
 	return _totalTheta;
 }
 
+float Pose::normalizeTotalTheta(){
+	float temp=_totalTheta;
+	while(temp>2*PI)
+		temp-=2*PI;
+	while(temp<-2*PI)
+		temp+=2*PI;
+	return temp;
+}
+
+
+void Pose::setTotalTheta(float t){
+	_totalTheta=t;
+	_theta=normalizeTotalTheta();
+}
 int Pose::getNumRotations(){
 	return _numRotations;
 }
@@ -62,7 +76,7 @@ void Pose::add(float deltaX, float deltaY, float deltaTheta) {
 void Pose::toArray(float *arr) {
 	arr[0] = _x;
 	arr[1] = _y;
-	arr[2] =getTotalTheta();
+	arr[2] = getTotalTheta();
 }
 
 float Pose::getX() {

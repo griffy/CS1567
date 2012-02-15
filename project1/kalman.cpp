@@ -35,7 +35,7 @@ void Kalman::filter(Pose *nsPose, Pose *wePose) {
     // update the current pose to its new estimate
 	_curPose->setX(_track[0]);
 	_curPose->setY(_track[1]);
-	_curPose->setTheta(_track[2]);
+	_curPose->setTotalTheta(_track[2]);
 }
 
 void Kalman::setUncertainty(float proc_x, float proc_y, float proc_theta, float nsx, float nsy, float nstheta, float wex, float wey, float wetheta){
