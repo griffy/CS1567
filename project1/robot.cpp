@@ -5,7 +5,7 @@
 
 #define MAX_THETA_ERROR 0.5236 // 30 degrees
 // .26 // 15 degrees
-#define MAX_DIST_ERROR 10.0 // in cm
+#define MAX_DIST_ERROR 30.0 // in cm
 
 Robot::Robot(std::string address, int id) {
     _robotInterface = new RobotInterface(address, id);
@@ -17,7 +17,7 @@ Robot::Robot(std::string address, int id) {
     _weRightFilter = new FIRFilter("filters/we.ffc");
     _weRearFilter = new FIRFilter("filters/we.ffc");
 
-    name=address;
+    name = address;
 	
 	_passed2PIns = false;
 	_passed2PIwe = false;
@@ -27,7 +27,6 @@ Robot::Robot(std::string address, int id) {
     _wePose = new Pose(0, 0, 0);
     _nsPose = new Pose(0, 0, 0);
     _pose = new Pose(0, 0, 0);
-	_startingNSPose = new Pose(0,0,0);
 
     // bind _pose to the kalman filter
     _kalmanFilter = new Kalman(_pose);
@@ -157,41 +156,27 @@ Robot::~Robot() {
     delete _wePose;
     delete _nsPose;
     delete _pose;
-	delete _startingNSPose;
 
     delete _distancePID;
     delete _thetaPID;
 }
 
-void Robot::prefillData(){
-	int order=_nsXFilter->getOrder();
-	printf("Prefilling:");
-	for (int i=0; i<order+1; i++){
-		printf(" %d",i);
+void Robot::prefillData() {
+	int order = _nsXFilter->getOrder();
+	printf("Prefilling data...\n");
+	for (int i = 0; i < order+1; i++){
 		update();
 	}
-	_startingNSPose->setX(_nsPose->getX());
-	_startingNSPose->setY(_nsPose->getY());
-	_startingNSPose->setTheta(_nsPose->getTheta());
-	printf("\n");
 }
 
-// Moves to a location in the global coordinate system (in cm) until theta error is exceeded
+// Moves to a location in the global coordinate system (in cm)
 void Robot::moveTo(float x, float y) {
-    // find current total magnitude of the error.
-    // Then, if we are not going straight towards the target, we will turn
-
     float thetaError;
 
     do {
-		printf("Current Nav: %d\n",getStrength());
         thetaError = moveToUntil(x, y, MAX_THETA_ERROR);
-		printf("REturnedVALLUEEEEEEE: %f\n", thetaError);
-		update();
         if (thetaError != 0) {
-            printf("adjusting theta...\n");
-            turnTo(_pose->getTheta()-thetaError, MAX_THETA_ERROR);
-            printf("theta acceptable!\n");
+            turnTo(_pose->getTheta()+thetaError, MAX_THETA_ERROR); // FIXME: should be -?
         }
     } while (thetaError != 0);
 
@@ -211,13 +196,19 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
 
     float distGain;
 
+    printf("heading toward %f, %f\n", x, y);
     do {
-		printf("GOING TO : %f, %f\n", x, y);
+
         update();
 
-        yError = y - _wePose->getY();
-        xError = x - _wePose->getX();
+        printf("wheel encoder x: %f\t\ty: %f\t\ttheta: %f\n", _wePose->getX(), _wePose->getY(), _wePose->getTheta());
+        printf("north star    x: %f\t\ty: %f\t\ttheta: %f\n", _nsPose->getX(), _nsPose->getY(), _nsPose->getTheta());
+        printf("kalman pose   x: %f\t\ty: %f\t\ttheta: %f\n", _pose->getX(), _pose->getY(), _pose->getTheta());
+
+        yError = y - _pose->getY();
+        xError = x - _pose->getX();
 		/*
+        // previous way of calculating desired
         thetaDesired = atan2(yError, xError);
         thetaDesired = (float)(fmod(2*PI+thetaDesired, 2*PI));
         */
@@ -226,99 +217,64 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
             thetaDesired += PI;
         }
 		printf("desired theta: %f\n", thetaDesired);
-        /*
-		if(thetaDesired<0){
-			thetaDesired+=2*PI;
-		}
-        */
+
 		thetaError = thetaDesired - _pose->getTheta();
-		if(thetaError>PI){
+		if (thetaError > PI) {
 			thetaError = -(2*PI-thetaError);
 		}
 		
         distError = sqrt(yError*yError + xError*xError);
 
-		printf("Value of wheel encoder x: %d\t\ty: %d\t\ttheta: %f\n", (int) _wePose->getX(), (int) _wePose->getY(), _wePose->getTheta());
-		printf("Value of north star    x: %d\t\ty: %d\t\ttheta: %f\n", (int) _nsPose->getX(), (int) _nsPose->getY(), _nsPose->getTheta());
-		printf("Value of kalman pose   x: %d\t\ty: %d\t\ttheta: %f\n", (int) _pose->getX(), (int) _pose->getY(), _pose->getTheta());
-
         // TODO: remove
-		printf("Xerror:\t\t\t\t\t\t\t\t\t\t\t%f\n", xError);
-		printf("Yerror:\t\t\t\t\t\t\t\t\t\t\t\t\t%f\n", yError);
-		printf("Theta error:\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t%f\n", thetaError);
-        printf("Distance Error = %f\n", distError);
-		printf("pose theta: %f\n", _pose->getTheta());
-		
-		printf("Theta error: %f\t\tLiMIT: %f\t\tABS of tE: %f\n", thetaError, thetaErrorLimit, fabs(thetaError));
+		printf("x error:\t%f\n", xError);
+		printf("y error:\t%f\n", yError);
+		printf("theta error:\t%f\n", thetaError);
+        printf("distance error:\t%f\n", distError);
 
         distGain = _distancePID->updatePID(distError);
         _thetaPID->updatePID(thetaError);
 
-        if ((fabs(thetaError) > thetaErrorLimit) && xError < 50) {
+        if ((fabs(thetaError) > thetaErrorLimit) && xError < MAX_DIST_ERROR+20) {
             return thetaError;
         }
 
-        // going relatively straight
-        printf("GOING FORWARD!!!\t\t(%d)\n",(int)1.0/(distGain));
-		update();
-        moveForward(5);
+        moveForward(5); // (int)1.0/(distGain)
     } while (distError > MAX_DIST_ERROR);
 
     return 0; // no error when we've finished
 }
 
-//theta is between -pi and pi
-void Robot::turnTo(float theta, float thetaErrorLimit) {
+void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
+    float theta;
     float thetaError;
 
     float thetaGain;
 
+    printf("adjusting theta...\n");
     do {
 		update();
 		
-		float poseTheta=_pose->getTheta();
-		float nsPose =_nsPose->getTheta();
-		
-		if(theta<(-thetaErrorLimit)){
-			printf("Turn right, theta error < -limit \n");
-			turnRight(5);
-		}
-		else if(theta>thetaErrorLimit){
-			printf("I'm turning left, theta error > limit\n");
-			turnLeft(5);
-		}
-		
-		printf("pose theta: %f\n", poseTheta);
-		printf("ns pose theta: %f\n", nsPose);
-		printf("theta: %f\n", theta);
-        printf("Theta error: %f\n", thetaError);
-		
-		printf("Value of wheel encoder x: %d\t\ty: %d\t\ttheta: %f\n", (int) _wePose->getX(), (int) _wePose->getY(), _wePose->getTheta());
-		printf("Value of north star    x: %d\t\ty: %d\t\ttheta: %f\n", (int) _nsPose->getX(), (int) _nsPose->getY(), _nsPose->getTheta());
-		printf("Value of kalman pose   x: %d\t\ty: %d\t\ttheta: %f\n", (int) _pose->getX(), (int) _pose->getY(), _pose->getTheta());
+        theta = _pose->getTheta();
+        thetaError = theta - thetaGoal;
 
-		break;
-		
+        printf("wheel encoder x: %f\t\ty: %f\t\ttheta: %f\n", _wePose->getX(), _wePose->getY(), _wePose->getTheta());
+        printf("north star    x: %f\t\ty: %f\t\ttheta: %f\n", _nsPose->getX(), _nsPose->getY(), _nsPose->getTheta());
+        printf("kalman pose   x: %f\t\ty: %f\t\ttheta: %f\n", _pose->getX(), _pose->getY(), _pose->getTheta());
+        printf("theta error:\t%f\n", thetaError);
+
         thetaGain = _thetaPID->updatePID(thetaError);
 
-/*
-        if (error >= 2*PI){
-            theta -= 2*PI;
-        }
-        else if(error<= -1*2*PI){
-            theta += 2*PI;
-        }
-*/
-
-        if(fabs(thetaError) > thetaErrorLimit) {
-            if (thetaError > PI){
-                turnRight(10);
-            }
-            else{
-                turnRight(10);
-            }
+		if (thetaError < -thetaErrorLimit) {
+			printf("turning right, theta error < -limit \n");
+			turnRight(5); // (int)1.0/thetaGain
+		}
+		else if(thetaError > thetaErrorLimit){
+			printf("turning left, theta error > limit\n");
+			turnLeft(5); // (int)1.0/thetaGain
 		}
     } while (fabs(thetaError) > thetaErrorLimit);
+
+    printf("theta acceptable!\n");
 }
 
 void Robot::moveForward(int speed) {
@@ -625,8 +581,6 @@ float Robot::_getNSTransTheta() {
     float result = _getNSTheta();
     int room = _robotInterface->RoomID();
     result -= (ROOM_ROTATION[room-2] * (PI/180.0));
-	
-	//result-=_startingNSPose->getTheta();
 	
     if(result < -PI) {
         result += 2 * PI;
