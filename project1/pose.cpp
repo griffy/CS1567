@@ -63,6 +63,11 @@ void Pose::setTotalTheta(float t){
 	_totalTheta=t;
 	_theta=normalizeTotalTheta();
 }
+
+void Pose::setNumRotations(int rot) {
+	_numRotations = rot;
+}
+
 int Pose::getNumRotations(){
 	return _numRotations;
 }
