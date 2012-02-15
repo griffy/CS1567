@@ -3,7 +3,8 @@
 
 #define DEFAULT_NUM_FAILS 5
 
-#define MAX_THETA_ERROR 0.26 // 15 degrees
+#define MAX_THETA_ERROR 0.5236 // 30 degrees
+// .26 // 15 degrees
 #define MAX_DIST_ERROR 10.0 // in cm
 
 Robot::Robot(std::string address, int id) {
@@ -218,10 +219,13 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
         xError = x - _wePose->getX();
 		
         thetaDesired = atan2(yError, xError);
+        thetaDesired = (float)(fmod(2*PI+thetaDesired, 2*PI));
 		printf("desired theta: %f\n", thetaDesired);
+        /*
 		if(thetaDesired<0){
 			thetaDesired+=2*PI;
 		}
+        */
 		thetaError = thetaDesired - _pose->getTheta();
 		if(thetaError>PI){
 			thetaError = -(2*PI-thetaError);
@@ -236,7 +240,7 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
         // TODO: remove
 		printf("Xerror:\t\t\t\t\t\t\t\t\t\t\t%f\n", xError);
 		printf("Yerror:\t\t\t\t\t\t\t\t\t\t\t\t\t%f\n", yError);
-		printf("Thetaerror:\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t%f\n", thetaError);
+		printf("Theta error:\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t%f\n", thetaError);
         printf("Distance Error = %f\n", distError);
 		printf("pose theta: %f\n", _pose->getTheta());
 		
@@ -265,7 +269,6 @@ void Robot::turnTo(float theta, float thetaErrorLimit) {
     float thetaGain;
 
     do {
-        //update();
 		update();
 		
 		float poseTheta=_pose->getTheta();
