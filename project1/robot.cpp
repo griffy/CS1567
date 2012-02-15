@@ -11,7 +11,7 @@ Robot::Robot(std::string address, int id) {
 
     _nsXFilter = new FIRFilter("filters/ns_x.ffc");
     _nsYFilter = new FIRFilter("filters/ns_y.ffc");
-    _nsThetaFilter = new FIRFilter("filters/ns_theta.ffc");
+    _nsThetaFilter = new FIRFilter("filters/ns_theta.ffc"); // empty filter for now
     _weLeftFilter = new FIRFilter("filters/we.ffc");
     _weRightFilter = new FIRFilter("filters/we.ffc");
     _weRearFilter = new FIRFilter("filters/we.ffc");
@@ -165,7 +165,7 @@ Robot::~Robot() {
 void Robot::prefillData(){
 	int order=_nsXFilter->getOrder();
 	printf("Prefilling:");
-	for (int i=0; i<order; i++){
+	for (int i=0; i<order+1; i++){
 		printf(" %d",i);
 		update();
 	}
@@ -366,12 +366,15 @@ void Robot::update() {
 	_kalmanFilter->setNSUncertainty(newX, newY, newTheta);
 	//update the kalman constants for WE
 	
-	if(getStrength()>12000){
+    // TODO: remove comments around this after NS works
+    /*
+	if(getStrength()>12000){ // It's OVER 9000
 		//reset the theta on the we
 		_wePose->setTheta(_nsPose->getTheta());
 		_wePose->_numRotations= (_nsPose->_numRotations);
 	}
-	
+	*/
+
     // pass updated poses to kalman filter and update main pose
     _kalmanFilter->filter(_nsPose, _wePose);
 }
@@ -435,17 +438,14 @@ float Robot::_getNSY() {
 // Returns: filtered north star theta
 float Robot::_getNSTheta() {
     float theta = _robotInterface->Theta();
-    //Don't filter the theta value, weighted average is bad
-    //return _nsThetaFilter->filter(theta);
-
-    return theta;
+    return _nsThetaFilter->filter(theta);
 }
 
 // Returns: filtered wheel encoder delta x for left wheel in ticks
 //          in terms of robot axis
 float Robot::_getWEDeltaXLeft() {
     float deltaX = _getWEDeltaLeft();
-    deltaX *= cos(DEGREE_30);
+    deltaX *= sin(DEGREE_150);
     return deltaX;
 }
 
@@ -453,7 +453,7 @@ float Robot::_getWEDeltaXLeft() {
 //          in terms of robot axis
 float Robot::_getWEDeltaYLeft() {
     float deltaY = _getWEDeltaLeft();
-    deltaY *= cos(DEGREE_60);
+    deltaY *= cos(DEGREE_150);
     return -deltaY;
 }
 
@@ -461,7 +461,7 @@ float Robot::_getWEDeltaYLeft() {
 //          in terms of robot axis
 float Robot::_getWEDeltaXRight() {
     float deltaX = _getWEDeltaRight();
-    deltaX *= cos(DEGREE_30);
+    deltaX *= sin(DEGREE_30);
     return deltaX;
 }
 
@@ -469,14 +469,14 @@ float Robot::_getWEDeltaXRight() {
 //          in terms of robot axis
 float Robot::_getWEDeltaYRight() {
     float deltaY = _getWEDeltaRight();
-    deltaY *= cos(DEGREE_60);
+    deltaY *= cos(DEGREE_30);
     return deltaY;
 }
 
 // Returns: filtered wheel encoder delta x for rear wheel in ticks
 //          in terms of robot axis
 float Robot::_getWEDeltaXRear() {
-    return 0;
+    return _getWEDeltaRear();
 }
 
 // Returns: filtered wheel encoder delta y for rear wheel in ticks
@@ -490,71 +490,60 @@ float Robot::_getWEDeltaYRear() {
 float Robot::_getWEDeltaX() {
     float leftDeltaX = _getWEDeltaXLeft();
     float rightDeltaX = _getWEDeltaXRight();
-    float weOld=_getWEDeltaRear();
+    float rearDeltaX =_getWEDeltaRear();
 
-    int w2=rightDeltaX;
-    int w1=leftDeltaX;
-
-    float dx=((w2+w1)/2.0)*cos(_wePose->getTheta());
-
-
-    // return the average
-    return dx;
+    return (leftDeltaX + rightDeltaX + rearDeltaX) / 3.0;
 }
 
 // Returns: filtered wheel encoder overall delta y in ticks
 //          in terms of robot axis
 float Robot::_getWEDeltaY() {
-    float leftDeltaX = _getWEDeltaXLeft();
-    float rightDeltaX = _getWEDeltaXRight();
-    float weOld=_getWEDeltaRear();
+    float leftDeltaY = _getWEDeltaYLeft();
+    float rightDeltaY = _getWEDeltaYRight();
 
-    int w2=rightDeltaX;
-    int w1=leftDeltaX;
-
-    //float dy=((w2*sin(DEGREE_30) - w1*sin(DEGREE_150))/2.0)*sin(_nsPose->getTheta());
-    float dy=((w1+w2)/2.0)*sin(_wePose->getTheta());
-    // return the average
-    return dy;
+    return (leftDeltaY + rightDeltaY) / 2.0;
 }
 
 // Returns: filtered wheel encoder overall delta theta
 //          in terms of robot axis
+// TODO: remove, unnecessary
 float Robot::_getWEDeltaTheta() {
-    float thetaWheelLeft=(_getWEDeltaLeft());
-    float thetaWheelRight=(_getWEDeltaRight());
-    float thetaWheelRear=(_getWEDeltaRear());
+    float rearDeltaX = _getWEDeltaXRear();
 
-	float dTheta = Util::weToCM(-thetaWheelRear)/14.5;
-    return dTheta;
+	return -Util::weToCM(rearDeltaX)/(ROBOT_DIAMETER / 2.0);
 }
 
 // Returns: transformed wheel encoder x estimate in cm of where
 //          robot should now be in global coordinate system
 float Robot::_getWETransDeltaX() {
-    float deltaX = _getWEDeltaX();
-    float scaledDeltaX = Util::weToCM(deltaX);
-    return scaledDeltaX;
+    // the robot's x motion should be ignored (since we are not strafing), as that
+    // is purely theta information
+
+    // TODO: check logic of this for angles beyond first quadrant
+    return Util::weToCM(_getWEDeltaY()) * cos(_wePose->getTheta());
 }
 
 // Returns: transformed wheel encoder y estimate in cm of where
 //          robot should now be in global coordinate system
 float Robot::_getWETransDeltaY() {
-    float deltaY = _getWEDeltaY();
-    float scaledDeltaY = Util::weToCM(deltaY);
-    return scaledDeltaY;
+    // the robot's x motion should be ignored (since we are not strafing), as that
+    // is purely theta information
+
+    // TODO: check logic of this for angles beyond first quadrant
+    return Util::weToCM(_getWEDeltaY()) * sin(_wePose->getTheta());
 }
 
 // Returns: transformed wheel encoder theta estimate of where
 //          robot should now be in global coordinate system
 float Robot::_getWETransDeltaTheta() {
-    float deltaTheta = _getWEDeltaTheta();
-    return deltaTheta;
+    float rearDeltaX = _getWEDeltaXRear();
+
+    // TODO: Should the delta be adjusted according to previous (global) theta?
+    return -Util::weToCM(rearDeltaX)/(ROBOT_DIAMETER / 2.0);
 }
 
 // Returns: transformed north star x estimate of where
 //          robot should now be in global coordinate system
-// TODO?
 float Robot::_getNSTransX() {
    using namespace Util;
    float result;

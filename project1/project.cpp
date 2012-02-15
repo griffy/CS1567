@@ -19,13 +19,13 @@ int main(int argc, char *argv[]) {
 
     //Base locations within the global coordinate system
 	Pose * bases[NUMBASES];
-	bases[0] = new Pose(305, -80, 0);
-	bases[1] = new Pose(240, 186, 0);
-	bases[2] = new Pose(320, 186, 0);
-	bases[3] = new Pose(402, 303, 0);
-	bases[4] = new Pose(402, 353, 0);
-	bases[5] = new Pose(69, 419, 0);
-	bases[6] = new Pose(0, 0, 0);
+	bases[0] = new Pose(340, 0, 0); // base 1
+	bases[1] = new Pose(229, 183, 0); // base 2
+    bases[2] = new Pose(326, 183, 0); // fake base
+	bases[3] = new Pose(392, 300, 0); // base 3
+    bases[4] = new Pose(318, 386, 0); // fake base
+    bases[5] = new Pose(49, 386, 0); // base 4
+    bases[6] = new Pose(0, 0, 0); // base 5/0
 
 	Robot *robot = new Robot(argv[1], 0);
 	printf("Battery level: %d\n", robot->_robotInterface->Battery());
@@ -33,14 +33,14 @@ int main(int argc, char *argv[]) {
 	printf("battery: %d\n", robot->_robotInterface->Battery());
 
     for (int i = 0; i < 1; i++) {
-    	printf("moving to base %d...\n", i+1);
-    	robot->moveTo(bases[i]->getX(), bases[i]->getY());
-    	printf("reached base %d!\n", i+1);
-		
-		printf("prefilling data\n");
+ 		printf("prefilling data\n");
 		for (int j = 0; j < 5; j++) {
 			robot->update();
 		}
+		
+    	printf("moving to base %d...\n", i+1);
+    	robot->moveTo(bases[i]->getX(), bases[i]->getY());
+    	printf("reached base %d!\n", i+1);
     }
 
     printf("done!");

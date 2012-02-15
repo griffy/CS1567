@@ -16,7 +16,9 @@ Pose::~Pose() {
 //gets the difference between 2 poses
 // make sure to delete after use
 Pose* Pose::difference(Pose* pose1, Pose* pose2){
-	Pose* p = new Pose(pose2->getX()-pose1->getX(), pose2->getY()-pose1->getY(),pose2->getTheta()-pose1->getTheta());
+	Pose* p = new Pose(pose2->getX()-pose1->getX(), 
+					   pose2->getY()-pose1->getY(),
+					   pose2->getTheta()-pose1->getTheta());
 	return p;
 }
 
