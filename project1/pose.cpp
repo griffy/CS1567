@@ -62,7 +62,7 @@ void Pose::add(float deltaX, float deltaY, float deltaTheta) {
 void Pose::toArray(float *arr) {
 	arr[0] = _x;
 	arr[1] = _y;
-	arr[2] = _theta;
+	arr[2] =getTotalTheta();
 }
 
 float Pose::getX(){

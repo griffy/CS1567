@@ -12,8 +12,8 @@
 #define ROBOT_DIAMETER 29 // cm
 
 // ROOM 2 stuff
-const float ROOM_X_SHIFT[4]= {199, 48, 229, 375};
-const float ROOM_Y_SHIFT[4]= {154, 281, 449, 303};
+const float ROOM_X_SHIFT[4]= {560, 48, 229, 375};
+const float ROOM_Y_SHIFT[4]= {-86, 281, 449, 303};
 const float ROOM_SCALE[2][4]= {{27.2, 45.4, 59.6, 37.4}, {27.3, 57.6, 36.7, 53.5}}; //Rosie Data
 const float ROOM_ROTATION[4]= 	{77.3, 0, 92.8, 3.4}; //Rosie Data
 			      //{80.7, -6.9, 95.7, 3.4}; Optimus Data
