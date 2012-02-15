@@ -19,7 +19,7 @@ int main(int argc, char *argv[]) {
 
     //Base locations within the global coordinate system
 	Pose * bases[NUMBASES];
-	bases[0] = new Pose(514, -380, 0);
+	bases[0] = new Pose(305, -80, 0);
 	bases[1] = new Pose(240, 186, 0);
 	bases[2] = new Pose(320, 186, 0);
 	bases[3] = new Pose(402, 303, 0);

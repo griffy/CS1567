@@ -183,6 +183,7 @@ void Robot::moveTo(float x, float y) {
     float thetaError;
 
     do {
+		printf("Current Nav: %d\n",getStrength());
         thetaError = moveToUntil(x, y, MAX_THETA_ERROR);
 		printf("REturnedVALLUEEEEEEE: %f\n", thetaError);
         if (thetaError != 0) {
@@ -211,8 +212,8 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
     do {
         update();
 
-        yError = y - _nsPose->getY();
-        xError = x - _nsPose->getX();
+        yError = y - _pose->getY();
+        xError = x - _pose->getX();
 		
         thetaDesired = atan2(yError, xError);
 		printf("desired theta: %f\n", thetaDesired);
@@ -234,7 +235,7 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
 		printf("Xerror:\t\t\t\t\t%f\n", xError);
 		printf("Yerror:\t\t\t\t\t\t\t%f\n", yError);
         printf("Distance Error = %f\n", distError);
-		printf("pose theta: %f\n", _nsPose->getTheta());
+		printf("pose theta: %f\n", _pose->getTheta());
 		
 		printf("Theta error: %f\t\tLiMIT: %f\t\tABS of tE: %f\n", thetaError, thetaErrorLimit, fabs(thetaError));
 
@@ -274,7 +275,8 @@ void Robot::turnTo(float theta, float thetaErrorLimit) {
 			turnLeft(10);
 		}
 		
-		printf("pose theta: %f\n", nsPose);
+		printf("pose theta: %f\n", poseTheta);
+		printf("ns pose theta: %f\n", nsPose);
 		printf("theta: %f\n", theta);
         printf("Theta error: %f\n", thetaError);
 		
@@ -350,8 +352,32 @@ void Robot::update() {
     // update each pose estimate
     _updateWEPose();
     _updateNSPose();
+	
+	//update the kalman constants for NS
+	float newX = 2500/getStrength();
+	float newY = 5500/getStrength();
+	float newTheta = 800/getStrength();
+	if(newX>0.4)
+		newX=.4;
+	if(newY>0.4)
+		newY=.4;
+	if(newTheta>0.4)
+		newTheta=.4;
+	_kalmanFilter->setNSUncertainty(newX, newY, newTheta);
+	//update the kalman constants for WE
+	
+	if(getStrength()>12000){
+		//reset the theta on the we
+		_wePose->setTheta(_nsPose->getTheta());
+		_wePose->_numRotations= (_nsPose->_numRotations);
+	}
+	
     // pass updated poses to kalman filter and update main pose
     _kalmanFilter->filter(_nsPose, _wePose);
+}
+
+int Robot::getStrength(){
+	return _robotInterface->NavStrengthRaw();
 }
 
 Pose* Robot::getPose() {
@@ -618,7 +644,7 @@ void Robot::_updateWEPose() {
     float deltaX = _getWETransDeltaX();
     float deltaY = _getWETransDeltaY();
     float dTheta = _getWETransDeltaTheta();
-	
+   
 	float newTheta=lastTheta+dTheta;
 	float modifier = 0;
 	if(newTheta>2*PI){

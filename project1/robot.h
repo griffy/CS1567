@@ -36,6 +36,7 @@ public:
     /// Self explanatory
     //TODO: FINDBITCHES
     bool isThereABitchInMyWay();
+	int getStrength();
 
     int nameToInt();
     void printOpeningDialog();

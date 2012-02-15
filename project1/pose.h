@@ -26,12 +26,13 @@ public:
 
 	void modifyRotations(int num);
 	
+	int _numRotations;
+	
 private:
 	float _x;
 	float _y;
 	float _theta;
 	float _totalTheta;
-	int _numRotations;
 };
 
 #endif
