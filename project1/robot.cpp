@@ -374,7 +374,7 @@ void Robot::update() {
 		_wePose->_numRotations= (_nsPose->_numRotations);
 	}
 	*/
-    
+
     // pass updated poses to kalman filter and update main pose
     _kalmanFilter->filter(_nsPose, _wePose);
 }
@@ -520,7 +520,7 @@ float Robot::_getWETransDeltaX() {
     // is purely theta information
 
     // TODO: check logic of this for angles beyond first quadrant
-    return Util::weToCm(_getWEDeltaY()) * cos(_wePose->getTheta());
+    return Util::weToCM(_getWEDeltaY()) * cos(_wePose->getTheta());
 }
 
 // Returns: transformed wheel encoder y estimate in cm of where
@@ -530,7 +530,7 @@ float Robot::_getWETransDeltaY() {
     // is purely theta information
 
     // TODO: check logic of this for angles beyond first quadrant
-    return Util::weToCm(_getWEDeltaY()) * sin(_wePose->getTheta());
+    return Util::weToCM(_getWEDeltaY()) * sin(_wePose->getTheta());
 }
 
 // Returns: transformed wheel encoder theta estimate of where
