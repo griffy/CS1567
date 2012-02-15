@@ -13,9 +13,9 @@
 
 // TODO: find out proper indexes for arrays below
 #define ROOM_2 0
-#define ROOM_3 3
+#define ROOM_3 1
 #define ROOM_4 2
-#define ROOM_5 1
+#define ROOM_5 3
 
 // ROOM 2 stuff
 const float ROOM_X_SHIFT[4]= {223, 48, 234, 389};
