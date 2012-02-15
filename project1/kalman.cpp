@@ -10,7 +10,7 @@ Kalman::Kalman(Pose *initialPose) {
 	float initialPoseArr[3];
 	initialPose->toArray(initialPoseArr);
     // create a zero'd velocity array for x, y, and theta
-	float velocity[3] = {0, 0, 0};
+	float velocity[3] = {350/54.0, 0, 0};
     // initialize the kalman filter
 	initKalmanFilter(&_kf, initialPoseArr, velocity, 1);
     // initialize the track to zero'd state

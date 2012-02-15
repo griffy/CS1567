@@ -13,8 +13,8 @@ public:
     void toArray(float *arr);
 
 	//gets the pose difference between the 2 poses
-	Pose* difference(Pose* pose1, Pose* pose2);
-	
+	void difference(Pose* destination, Pose* pose1, Pose* pose2);
+
 	//gets the distance (x/y) between the 2 poses
 	float distance(Pose* pose1, Pose* pose2);
 

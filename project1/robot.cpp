@@ -357,19 +357,21 @@ void Robot::update() {
 	float newX = 2500/getStrength();
 	float newY = 5500/getStrength();
 	float newTheta = 800/getStrength();
-	if(newX>0.4)
-		newX=.4;
-	if(newY>0.4)
-		newY=.4;
-	if(newTheta>0.4)
-		newTheta=.4;
+	if(newX>0.3)
+		newX=.3;
+	if(newY>0.3)
+		newY=.3;
+	if(newTheta>0.3)
+		newTheta=.3;
+
 	_kalmanFilter->setNSUncertainty(newX, newY, newTheta);
 	//update the kalman constants for WE
 	
-	if(getStrength()>12000){
+	if(getStrength()>13222){
 		//reset the theta on the we
 		_wePose->setTheta(_nsPose->getTheta());
 		_wePose->_numRotations= (_nsPose->_numRotations);
+		printf("\a");
 	}
 	
     // pass updated poses to kalman filter and update main pose

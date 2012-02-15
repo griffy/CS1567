@@ -69,7 +69,7 @@ int main(int argc, char *argv[]) {
 	
 	
 
-    for (int i = 0; i< 300; i++) {
+    for (int i = 0; i< 3000; i++) {
         //robot->moveForward(5);
         robot->update();
 		//printf(" WE %f %f %d\t\t",robot->_wePose->getTotalTheta(), robot->_wePose->getTheta(), robot->_wePose->getNumRotations());

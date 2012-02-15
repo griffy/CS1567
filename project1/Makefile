@@ -1,5 +1,5 @@
-OBJS=project.o robot.o pose.o firfilter.o kalman.o rovioKalmanFilter.o utilities.o PID.o 
-DATA_OBJS = robot.o pose.o firfilter.o kalman.o rovioKalmanFilter.o utilities.o PID.o collectData.o
+OBJS=project.o robot.o pose.o firfilter.o kalman.o rovioKalmanFilter.o utilities.o PID.o constants.h
+DATA_OBJS = robot.o pose.o firfilter.o kalman.o rovioKalmanFilter.o utilities.o PID.o collectData.o constants.h
 CFLAGS=-ggdb -g3
 LIB_FLAGS=-L. -lrobot_if
 CPP_LIB_FLAGS=$(LIB_FLAGS) -lrobot_if++
