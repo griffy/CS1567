@@ -217,9 +217,14 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
 
         yError = y - _wePose->getY();
         xError = x - _wePose->getX();
-		
+		/*
         thetaDesired = atan2(yError, xError);
         thetaDesired = (float)(fmod(2*PI+thetaDesired, 2*PI));
+        */
+        thetaDesired = acos(xError / (sqrt(yError*yError + xError*xError)));
+        if (yError < 0) {
+            thetaDesired += PI;
+        }
 		printf("desired theta: %f\n", thetaDesired);
         /*
 		if(thetaDesired<0){
