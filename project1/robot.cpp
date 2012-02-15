@@ -1,7 +1,20 @@
 #include "robot.h"
 #include <math.h>
 
-#define DEFAULT_NUM_FAILS 5
+#define MAX_NUM_FAILS 5
+
+#define MIN_DIST_GAIN -0.1
+#define MAX_DIST_GAIN 0.1
+#define MIN_THETA_GAIN -0.05
+#define MAX_THETA_GAIN 0.05
+
+#define PID_DIST_KP 0.8
+#define PID_DIST_KI 0.05
+#define PID_DIST_KD 0.05
+
+#define PID_THETA_KP 0.65
+#define PID_THETA_KI 0.001
+#define PID_THETA_KD 0.001
 
 #define MAX_FILTER_TAPS 7
 
@@ -24,7 +37,7 @@ Robot::Robot(std::string address, int id) {
     _passed2PIns = false;
     _passed2PIwe = false;
 
-    setFailLimit(DEFAULT_NUM_FAILS);
+    setFailLimit(MAX_NUM_FAILS);
 
     _wePose = new Pose(0, 0, 0);
     _nsPose = new Pose(0, 0, 0);
@@ -35,21 +48,11 @@ Robot::Robot(std::string address, int id) {
 
     printf("kf initialized\n");
 
-    PIDConstants distancePIDConstants;
-    PIDConstants thetaPIDConstants;
+    PIDConstants distancePIDConstants = {PID_DIST_KP, PID_DIST_KI, PID_DIST_KD};
+    PIDConstants thetaPIDConstants = {PID_THETA_KP, PID_THETA_KI, PID_THETA_KD};
 
-    distancePIDConstants.kp = .8;
-    distancePIDConstants.ki = .05;
-    distancePIDConstants.kd = .05;
-
-    thetaPIDConstants.kp = .65;
-    thetaPIDConstants.ki = .001;
-    thetaPIDConstants.kd = .001;
-
-    float maxIntGain=0.1, minIntGain=-.1, maxThetaIntGain=.05, minThetaIntGain= -.05;
-
-    _distancePID = new PID(&distancePIDConstants, maxIntGain, minIntGain);
-    _thetaPID = new PID(&thetaPIDConstants, maxThetaIntGain, minThetaIntGain);
+    _distancePID = new PID(&distancePIDConstants, MAX_DIST_GAIN, MIN_DIST_GAIN);
+    _thetaPID = new PID(&thetaPIDConstants, MAX_THETA_GAIN, MIN_THETA_GAIN);
 
     prefillData();
 
@@ -201,9 +204,15 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
     do {
         update();
 
-        printf("wheel encoder x: %f\t\ty: %f\t\ttheta: %f\n", _wePose->getX(), _wePose->getY(), _wePose->getTheta());
-        printf("north star    x: %f\t\ty: %f\t\ttheta: %f\n", _nsPose->getX(), _nsPose->getY(), _nsPose->getTheta());
-        printf("kalman pose   x: %f\t\ty: %f\t\ttheta: %f\n", _pose->getX(), _pose->getY(), _pose->getTheta());
+        printf("wheel encoder x: %f\t\ty: %f\t\ttheta: %f\n", _wePose->getX(), 
+                                                              _wePose->getY(), 
+                                                              _wePose->getTheta());
+        printf("north star x: %f\t\ty: %f\t\ttheta: %f\n", _nsPose->getX(), 
+                                                           _nsPose->getY(), 
+                                                           _nsPose->getTheta());
+        printf("kalman pose x: %f\t\ty: %f\t\ttheta: %f\n", _pose->getX(), 
+                                                            _pose->getY(), 
+                                                            _pose->getTheta());
 
         yError = y - _pose->getY();
         xError = x - _pose->getX();
@@ -259,9 +268,15 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
         theta = _pose->getTheta();
         thetaError = theta - thetaGoal;
 
-        printf("wheel encoder x: %f\t\ty: %f\t\ttheta: %f\n", _wePose->getX(), _wePose->getY(), _wePose->getTheta());
-        printf("north star    x: %f\t\ty: %f\t\ttheta: %f\n", _nsPose->getX(), _nsPose->getY(), _nsPose->getTheta());
-        printf("kalman pose   x: %f\t\ty: %f\t\ttheta: %f\n", _pose->getX(), _pose->getY(), _pose->getTheta());
+        printf("wheel encoder x: %f\t\ty: %f\t\ttheta: %f\n", _wePose->getX(), 
+                                                              _wePose->getY(), 
+                                                              _wePose->getTheta());
+        printf("north star x: %f\t\ty: %f\t\ttheta: %f\n", _nsPose->getX(), 
+                                                           _nsPose->getY(), 
+                                                           _nsPose->getTheta());
+        printf("kalman pose x: %f\t\ty: %f\t\ttheta: %f\n", _pose->getX(), 
+                                                            _pose->getY(), 
+                                                            _pose->getTheta());
         printf("theta error:\t%f\n", thetaError);
 
         thetaGain = _thetaPID->updatePID(thetaError);
@@ -475,15 +490,6 @@ float Robot::_getWEDeltaY() {
     float rightDeltaY = _getWEDeltaYRight();
 
     return (leftDeltaY + rightDeltaY) / 2.0;
-}
-
-// Returns: filtered wheel encoder overall delta theta
-//          in terms of robot axis
-// TODO: remove, unnecessary
-float Robot::_getWEDeltaTheta() {
-    float rearDeltaX = _getWEDeltaXRear();
-
-    return -Util::weToCM(rearDeltaX)/(ROBOT_DIAMETER / 2.0);
 }
 
 // Returns: transformed wheel encoder x estimate in cm of where

@@ -28,7 +28,6 @@ int main(int argc, char *argv[]) {
     bases[6] = new Pose(0, 0, 0); // base 5/0
 
 	Robot *robot = new Robot(argv[1], 0);
-	printf("Battery level: %d\n", robot->_robotInterface->Battery());
 	
 	printf("battery: %d\n", robot->_robotInterface->Battery());
 
@@ -46,7 +45,7 @@ int main(int argc, char *argv[]) {
     printf("done!");
 
 	delete robot;
-	for (int i=0; i<NUMBASES; i++){
+	for (int i = 0; i < NUMBASES; i++) {
 		delete bases[i];
 	}
 
