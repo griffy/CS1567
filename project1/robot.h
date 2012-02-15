@@ -71,7 +71,9 @@ public:
     float _getWETransDeltaTheta();
 
     float _getNSTransX();
+    float _getNSHalfTransX();
     float _getNSTransY();
+    float _getNSHalfTransY();
     float _getNSTransTheta();
 
     void _updateWEPose();
