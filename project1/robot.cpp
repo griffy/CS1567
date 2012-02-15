@@ -638,11 +638,18 @@ float Robot::_getNSTransY() {
 
    mMult(transform, 1, 2, coords, 2, 1, &result);
 
+
+
    //scale
    result /= ROOM_SCALE[1][room-2];
 
    //move
    result += ROOM_Y_SHIFT[room-2];
+
+   //Correction for skew in room 2
+   if(room == 2) {
+	result += .75*_getNSTransX();
+   }
 
    return result;
 }
