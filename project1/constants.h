@@ -6,15 +6,22 @@
 #define DEGREE_60 1.04719755 // pi/6
 #define DEGREE_150 2.617993878 // 5pi/6
 
-#define WE_TICKS 4.0 // ticks per cm
-#define NS_TICKS 45.0 // ticks per cm
+#define WE_TICKS 4.0 // (avg) ticks per cm
+#define NS_TICKS 45.0 // (avg) ticks per cm, not really used
 
 #define ROBOT_DIAMETER 29 // cm
+
+// TODO: find out proper indexes for arrays below
+#define ROOM_2 0
+#define ROOM_3 3
+#define ROOM_4 2
+#define ROOM_5 1
 
 // ROOM 2 stuff
 const float ROOM_X_SHIFT[4]= {310, 48, 229, 375};
 const float ROOM_Y_SHIFT[4]= {255, 281, 449, 303};
-const float ROOM_SCALE[2][4]= {{27.2, 45.4, 59.6, 37.4}, {27.3, 57.6, 36.7, 53.5}}; //Rosie Data
+const float ROOM_SCALE[2][4]= {{27.2, 45.4, 59.6, 37.4}, // x
+							   {27.3, 57.6, 36.7, 53.5}}; // y (based on Rosie Data)
 const float ROOM_ROTATION[4]= 	{77.3, 0, 92.8, 3.4}; //Rosie Data
 			      //{80.7, -6.9, 95.7, 3.4}; Optimus Data
 const float ROOM_FLIPX[4] = {1,1,0,0}; //binary flag indicating whether to reflect x-coordinates over y-axis
