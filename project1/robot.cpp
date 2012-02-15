@@ -445,7 +445,7 @@ float Robot::_getNSTheta() {
 //          in terms of robot axis
 float Robot::_getWEDeltaXLeft() {
     float deltaX = _getWEDeltaLeft();
-    deltaX *= cos(DEGREE_30);
+    deltaX *= sin(DEGREE_150);
     return deltaX;
 }
 
@@ -453,7 +453,7 @@ float Robot::_getWEDeltaXLeft() {
 //          in terms of robot axis
 float Robot::_getWEDeltaYLeft() {
     float deltaY = _getWEDeltaLeft();
-    deltaY *= cos(DEGREE_60);
+    deltaY *= cos(DEGREE_150);
     return -deltaY;
 }
 
@@ -461,7 +461,7 @@ float Robot::_getWEDeltaYLeft() {
 //          in terms of robot axis
 float Robot::_getWEDeltaXRight() {
     float deltaX = _getWEDeltaRight();
-    deltaX *= cos(DEGREE_30);
+    deltaX *= sin(DEGREE_30);
     return deltaX;
 }
 
@@ -469,7 +469,7 @@ float Robot::_getWEDeltaXRight() {
 //          in terms of robot axis
 float Robot::_getWEDeltaYRight() {
     float deltaY = _getWEDeltaRight();
-    deltaY *= cos(DEGREE_60);
+    deltaY *= cos(DEGREE_30);
     return deltaY;
 }
 
@@ -492,7 +492,7 @@ float Robot::_getWEDeltaX() {
     float rightDeltaX = _getWEDeltaXRight();
     float rearDeltaX =_getWEDeltaRear();
 
-    return (leftDeltaX + rightDeltaX + rearDeltaX) / 3.0; // * cos(_wePose->getTheta()); ?
+    return (leftDeltaX + rightDeltaX + rearDeltaX) / 3.0;
 }
 
 // Returns: filtered wheel encoder overall delta y in ticks
@@ -501,7 +501,7 @@ float Robot::_getWEDeltaY() {
     float leftDeltaY = _getWEDeltaYLeft();
     float rightDeltaY = _getWEDeltaYRight();
 
-    return (leftDeltaY + rightDeltaY) / 2.0; // * sin(_wePose->getTheta()); ?
+    return (leftDeltaY + rightDeltaY) / 2.0;
 }
 
 // Returns: filtered wheel encoder overall delta theta
@@ -510,7 +510,7 @@ float Robot::_getWEDeltaY() {
 float Robot::_getWEDeltaTheta() {
     float rearDeltaX = _getWEDeltaXRear();
 
-	return Util::weToCM(rearDeltaX)/(ROBOT_DIAMETER / 2.0); // add - to rearDeltaX?
+	return -Util::weToCM(rearDeltaX)/(ROBOT_DIAMETER / 2.0);
 }
 
 // Returns: transformed wheel encoder x estimate in cm of where
@@ -539,7 +539,7 @@ float Robot::_getWETransDeltaTheta() {
     float rearDeltaX = _getWEDeltaXRear();
 
     // TODO: Should the delta be adjusted according to previous (global) theta?
-    return Util::weToCM(rearDeltaX)/(ROBOT_DIAMETER / 2.0); // add - to rearDeltaX?
+    return -Util::weToCM(rearDeltaX)/(ROBOT_DIAMETER / 2.0);
 }
 
 // Returns: transformed north star x estimate of where
