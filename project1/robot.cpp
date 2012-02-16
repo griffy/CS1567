@@ -346,7 +346,7 @@ void Robot::update() {
     if (newX > 0.3) {
         newX = .3;
     }
-    if (newY > 0.3)
+    if (newY > 0.3) {
         newY = .3;
     }
     if (newTheta > 0.3) {
@@ -641,7 +641,7 @@ float Robot::_getNSHalfTransY() {
         transform[0] = -transform[0];
     }
 
-    mMult(transform, 1, 2, coords, 2, 1, &result);
+    Util::mMult(transform, 1, 2, coords, 2, 1, &result);
 
     //scale
     //result /= ROOM_SCALE[1][room-2];

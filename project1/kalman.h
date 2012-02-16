@@ -21,7 +21,7 @@ private:
 	kalmanFilter _kf;
 	float _track[9];
 
-	Pose *_curPose;
+	Pose *_pose;
 };
 
 #endif
