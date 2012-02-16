@@ -1,6 +1,7 @@
 #include "pose.h"
 #include "constants.h"
 
+
 Pose::Pose(float x, float y, float theta) {
 	_x = x;
 	_y = y;
@@ -17,7 +18,7 @@ Pose::~Pose() {
 // make sure to delete after use
 void Pose::difference(Pose* returnPose, Pose* pose1, Pose* pose2){
 	delete returnPose;
-	returnPose = new Pose(pose2->getX()-pose1->getX(), pose2->getY()-pose1->getY(),pose2->getTheta()-pose1->getTheta());
+	returnPose = new Pose(pose2->getX()-pose1->getX(), pose2->getY()-pose1->getY(),pose2->getTotalTheta()-pose1->getTotalTheta());
 }
 
 //gets the distance (x/y) between 2 poses
@@ -37,7 +38,7 @@ void Pose::setY(float y) {
 }
 
 void Pose::setTheta(float theta) {
-	_theta = theta;
+	_theta = fmod(theta,2*PI);
 }
 
 void Pose::modifyRotations(int num) {
@@ -50,18 +51,21 @@ float Pose::getTotalTheta(){
 }
 
 float Pose::normalizeTotalTheta(){
-	float temp=_totalTheta;
-	while(temp>2*PI)
-		temp-=2*PI;
-	while(temp<-2*PI)
+	float temp = fmod(getTotalTheta(), 2*PI);
+	if(temp < 0){
 		temp+=2*PI;
+	}
 	return temp;
 }
 
 
 void Pose::setTotalTheta(float t){
 	_totalTheta=t;
-	_theta=normalizeTotalTheta();
+	_numRotations=(int) _totalTheta/(2*PI);
+	_theta=fmod(t,2*PI);
+	if(_theta < 0){
+		_theta+=2*PI;
+	}
 }
 int Pose::getNumRotations(){
 	return _numRotations;

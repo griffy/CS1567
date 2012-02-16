@@ -175,6 +175,8 @@ void Robot::moveTo(float x, float y) {
 
     do {
         thetaError = moveToUntil(x, y, MAX_THETA_ERROR);
+		float temp = _pose->getTheta()+thetaError;
+		
         if (thetaError != 0) {
             turnTo(_pose->getTheta()+thetaError, MAX_THETA_ERROR); // FIXME: should be -?
         }
@@ -278,10 +280,13 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
 }
 
 void Robot::moveForward(int speed) {
+	setVelocity(speed/.1, speed/.1, 0);
+	
     if (!isThereABitchInMyWay()) {
         _robotInterface->Move(RI_MOVE_FORWARD, speed);
     }
     else if(name=="Optimus"){
+		stop();
         printf("No No No No No No No!!!\t\tDETECTION!");
     }
 }
@@ -343,6 +348,9 @@ void Robot::update() {
 		_wePose->_numRotations= (_nsPose->_numRotations);
 		printf("\a");
 	}
+	
+	//set the velocity function in the kalman filter
+	
 
     // pass updated poses to kalman filter and update main pose
     _kalmanFilter->filter(_nsPose, _wePose);

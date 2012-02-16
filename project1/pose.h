@@ -1,6 +1,8 @@
 #ifndef CS1567_POSE_H
 #define CS1567_POSE_H
 #include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 class Pose {
 public:

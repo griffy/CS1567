@@ -1,7 +1,9 @@
 //MODIFY THIS FILE TO EXPLAIN THE STATUS OF THE PROJECT
 
 TODO:
-	
+	get robot moveto and turnto functions working
+	change velocity function in kalman filter based on current speed/rotation
+	tun PID loop
 
 FINISHED:
 	Program that measures NorthStar and Wheel Encoder data and saves to a file
