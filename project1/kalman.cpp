@@ -10,16 +10,14 @@ Kalman::Kalman(Pose *initialPose) {
 	float initialPoseArr[3];
 	initialPose->toArray(initialPoseArr);
     // create a zero'd velocity array for x, y, and theta
-	float velocity[3] = {350/54.0, 0, 0};
+	float velocity[3] = {350/54.0, 0, 0}; // FIXME: should be 0?
     // initialize the kalman filter
 	initKalmanFilter(&_kf, initialPoseArr, velocity, 1);
     // initialize the track to zero'd state
-
-	//setUncertainty(.4, .4, .4, .2, .2, .08, .07, .07, .35);
-
     for (int i = 0; i < 9; i++) {
         _track[0] = 0;
     }
+    //setUncertainty() // TODO
 }
 
 Kalman::~Kalman() {}
@@ -38,40 +36,42 @@ void Kalman::filter(Pose *nsPose, Pose *wePose) {
 	_pose->setTotalTheta(_track[2]);
 }
 
-void Kalman::setUncertainty(float proc_x, float proc_y, float proc_theta, float nsx, float nsy, float nstheta, float wex, float wey, float wetheta){
-	uncertainties[0]=proc_x;
-	uncertainties[1]=proc_y;
-	uncertainties[2]=proc_theta;
-	uncertainties[3]=nsx;
-	uncertainties[4]=nsy;
-	uncertainties[5]=nstheta;
-	uncertainties[6]=wex;
-	uncertainties[7]=wey;
-	uncertainties[8]=wetheta;
+void Kalman::setUncertainty(float procX, float procY, float procTheta, 
+						    float nsX, float nsY, float nsTheta, 
+						    float weX, float weY, float weTheta) {
+	uncertainties[0] = procX;
+	uncertainties[1] = procY;
+	uncertainties[2] = procTheta;
+	uncertainties[3] = nsX;
+	uncertainties[4] = nsY;
+	uncertainties[5] = nsTheta;
+	uncertainties[6] = weX;
+	uncertainties[7] = weY;
+	uncertainties[8] = weTheta;
 
 	rovioKalmanFilterSetUncertainty(&_kf, uncertainties);
 }
 
-void Kalman::setProcUncertainty(float x, float y, float theta){
-	uncertainties[0]=x;
-	uncertainties[1]=y;
-	uncertainties[2]=theta;
+void Kalman::setProcUncertainty(float x, float y, float theta) {
+	uncertainties[0] = x;
+	uncertainties[1] = y;
+	uncertainties[2] = theta;
 
 	rovioKalmanFilterSetUncertainty(&_kf, uncertainties);
 }
 
-void Kalman::setNSUncertainty(float x, float y, float theta){
-	uncertainties[3]=x;
-	uncertainties[4]=y;
-	uncertainties[5]=theta;
+void Kalman::setNSUncertainty(float x, float y, float theta) {
+	uncertainties[3] = x;
+	uncertainties[4] = y;
+	uncertainties[5] = theta;
 
 	rovioKalmanFilterSetUncertainty(&_kf, uncertainties);
 }
 
-void Kalman::setWEUncertainty(float x, float y, float theta){
-	uncertainties[5]=x;
-	uncertainties[6]=y;
-	uncertainties[7]=theta;
+void Kalman::setWEUncertainty(float x, float y, float theta) {
+	uncertainties[6] = x;
+	uncertainties[7] = y;
+	uncertainties[8] = theta;
 
 	rovioKalmanFilterSetUncertainty(&_kf, uncertainties);
 }
