@@ -52,6 +52,36 @@ Robot::Robot(std::string address, int id) {
 	prefillData();
 
     printf("pid controllers initialized\n");
+	
+	
+	_forwardSpeed[0]=0.0;
+	_forwardSpeed[1]=3.5;
+	_forwardSpeed[2]=3.5;
+	_forwardSpeed[3]=3.5;
+	_forwardSpeed[4]=3.7;
+	_forwardSpeed[5]=3.7;
+	_forwardSpeed[6]=3.9;
+	_forwardSpeed[7]=4.6;
+	_forwardSpeed[8]=4.6;
+	_forwardSpeed[9]=4.8;
+	_forwardSpeed[10]=4.9;
+
+	_turnSpeed[0]=0;
+	_turnSpeed[1]=0;
+	_turnSpeed[2]=0;
+	_turnSpeed[3]=0;
+	_turnSpeed[4]=0;
+	_turnSpeed[5]=0;
+	_turnSpeed[6]=0;
+	_turnSpeed[7]=0;
+	_turnSpeed[8]=0;
+	_turnSpeed[9]=0;
+	_turnSpeed[10]=0;
+	
+	_turningRight=0;
+	_movingForward=true;
+	_speedDistance=116; // cm
+
 }
 
 int Robot::nameToInt(){
@@ -280,26 +310,36 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
 }
 
 void Robot::moveForward(int speed) {
-	setVelocity(speed/.1, speed/.1, 0);
+	_movingForward=true;
 	
     if (!isThereABitchInMyWay()) {
+		_speed=0;
         _robotInterface->Move(RI_MOVE_FORWARD, speed);
     }
     else if(name=="Optimus"){
 		stop();
+		_speed=0;
         printf("No No No No No No No!!!\t\tDETECTION!");
     }
 }
 
 void Robot::turnLeft(int speed) {
+	_turningRight=0;
+	_movingForward=false;
+	_speed=speed;
     _robotInterface->Move(RI_TURN_LEFT, speed);
 }
 
 void Robot::turnRight(int speed) {
+	_turningRight=1;
+	_movingForward=false;
+	_speed=speed;
     _robotInterface->Move(RI_TURN_RIGHT, speed);
 }
 
 void Robot::stop() {
+	_movingForward=true;
+	_speed=0;
     _robotInterface->Move(RI_STOP, 0);
 }
 
@@ -350,8 +390,15 @@ void Robot::update() {
 	}
 	
 	//set the velocity function in the kalman filter
-	
 
+	if(_movingForward){
+		float speedX = _speedDistance/(_forwardSpeed[_speed])*cos(_pose->getTheta());
+		float speedY = _speedDistance/(_forwardSpeed[_speed])*sin(_pose->getTheta());
+		_kalmanFilter->setVelocity(speedX, speedY, 0.0);
+	}
+	else {
+		_kalmanFilter->setVelocity(0.0,0.0, _turnSpeed[_turningRight][_speed]);
+	}
     // pass updated poses to kalman filter and update main pose
     _kalmanFilter->filter(_nsPose, _wePose);
 }
