@@ -71,17 +71,29 @@ Robot::Robot(std::string address, int id) {
 	_forwardSpeed[9]=4.8;
 	_forwardSpeed[10]=4.9;
 
-	_turnSpeed[0]=0;
-	_turnSpeed[1]=0;
-	_turnSpeed[2]=0;
-	_turnSpeed[3]=0;
-	_turnSpeed[4]=0;
-	_turnSpeed[5]=0;
-	_turnSpeed[6]=0;
-	_turnSpeed[7]=0;
-	_turnSpeed[8]=0;
-	_turnSpeed[9]=0;
-	_turnSpeed[10]=0;
+    _turnSpeed[0][0]=0.0;
+    _turnSpeed[0][1]=0.0;
+    _turnSpeed[0][2]=0.0;
+    _turnSpeed[0][3]=0.0;
+    _turnSpeed[0][4]=0.0;
+    _turnSpeed[0][5]=0.0;
+    _turnSpeed[0][6]=0.0;
+    _turnSpeed[0][7]=0.0;
+    _turnSpeed[0][8]=0.0;
+    _turnSpeed[0][9]=0.0;
+    _turnSpeed[0][10]=0.0;
+
+    _turnSpeed[1][0]=0.0;
+	_turnSpeed[1][1]=1.6;
+	_turnSpeed[1][2]=2.0;
+	_turnSpeed[1][3]=2.2;
+	_turnSpeed[1][4]=2.3;
+	_turnSpeed[1][5]=2.8;
+	_turnSpeed[1][6]=2.8;
+	_turnSpeed[1][7]=4.75;
+	_turnSpeed[1][8]=4.75;
+	_turnSpeed[1][9]=5.35;
+	_turnSpeed[1][10]=5.45;
 	
 	_turningRight=0;
 	_movingForward=true;
@@ -380,7 +392,6 @@ void Robot::update() {
     // update each pose estimate
     _updateWEPose();
     _updateNSPose();
-<<<<<<< HEAD
     
     //update the kalman constants for NS
     float newX = 1000.0/getStrength();
