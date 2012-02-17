@@ -18,9 +18,18 @@
 #define ROOM_5 3
 
 // ROOM 2 stuff
-const float ROOM_X_SHIFT[4]= {223, 48, 234, 389};
-const float ROOM_Y_SHIFT[4]= {89, 242, 402, 264};
-const float ROOM_SCALE[2][4]= {{27.2, 45.4, 59.6, 37.4}, {20.3, 57.6, 36.7, 53.5}}; //Rosie Data
+const float ROOM_X_SHIFT[4] = {223, 48, 234, 389};
+const float ROOM_Y_SHIFT[4] = {89, 242, 402, 264};
+const float ROOM_SCALE[2][4] = {{27.2, 45.4, 59.6, 37.4}, {20.3, 57.6, 36.7, 53.5}}; //Rosie Data
+
+// store the distance of column top-right corner from base 0
+const float COL_OFFSET[2] = {193.0, 234.0};
+// store the distances of origins from column top-right corner
+const float ROOM_ORIGINS_FROM_COL[4][2] = {{30.0, -145.0}, 
+										   {-147.0, 8.0},
+										   {41.0, 168.0},
+										   {196.0, 30.0}};
+
 //const float ROOM_X_SHIFT[4]= {310, 48, 229, 375};
 //const float ROOM_Y_SHIFT[4]= {255, 281, 449, 303};
 //const float ROOM_SCALE[2][4]= {{27.2, 45.4, 59.6, 37.4}, // x

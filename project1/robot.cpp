@@ -545,7 +545,8 @@ float Robot::_getNSTransX() {
     result /= ROOM_SCALE[0][room-2];
 
     //move
-    result += ROOM_X_SHIFT[room-2];
+    float roomShiftX = COL_OFFSET[0] + ROOM_ORIGINS_FROM_COL[room-2][0];
+    result += roomShiftX;
 
     return result;
 }
@@ -577,7 +578,8 @@ float Robot::_getNSHalfTransX() {
     //result /= ROOM_SCALE[0][room-2];
 
     //move
-    //result += ROOM_X_SHIFT[room-2];
+    float roomShiftX = COL_OFFSET[0] + ROOM_ORIGINS_FROM_COL[room-2][0];
+    result += roomShiftX;
 
     return result;
 }
@@ -609,7 +611,8 @@ float Robot::_getNSTransY() {
     result /= ROOM_SCALE[1][room-2];
 
     //move
-    result += ROOM_Y_SHIFT[room-2];
+    float roomShiftY = COL_OFFSET[1] + ROOM_ORIGINS_FROM_COL[room-2][1];
+    result += roomShiftY;
 
     //Correction for skew in room 2
     if (room == 2) {
@@ -647,7 +650,8 @@ float Robot::_getNSHalfTransY() {
     //result /= ROOM_SCALE[1][room-2];
 
     //move
-    //result += ROOM_Y_SHIFT[room-2];
+    float roomShiftY = COL_OFFSET[1] + ROOM_ORIGINS_FROM_COL[room-2][1];
+    result += roomShiftY;
 
     return result;
 }
