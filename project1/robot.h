@@ -102,6 +102,19 @@ private:
 
 	bool _passed2PIns;
 	bool _passed2PIwe;
+	
+	// stores the most recent speed that the robot was told. set during both turns and moving straight instructions
+	int _speed;
+	
+	// distance the robot traveled in the time specified below
+	float _speedDistance;
+	//time values for forward velocity, in terms of time per _speedDistance.  must divide by _speedDistance to get velocity
+	float _forwardSpeed[11];
+	//time values for turning velocity. need to be divided by a constant to get it into radians
+	//these times are time to turn 2*PI radians
+	float _turnSpeed[2][11];	
+	char _turningRight;			// value of 1 means turning right, 0 means left
+	bool _movingForward;		// set if moving forward/stopped
 
     int _failLimit;
 

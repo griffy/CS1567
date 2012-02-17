@@ -15,10 +15,12 @@ public:
 	void setNSUncertainty(float x, float y, float theta);
 	void setWEUncertainty(float x, float y, float theta);
 	void setProcUncertainty(float x, float y, float theta);
-	
-	float uncertainties[9];
+	void setVelocity(float x, float y, float theta);
+
+	float _velocity[3];
+	float _uncertainties[9];
 private:
-	kalmanFilter _kf;
+	kalmanFilter *_kf;
 	float _track[9];
 
 	Pose *_pose;
