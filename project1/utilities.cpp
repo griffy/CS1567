@@ -43,9 +43,10 @@ namespace Util {
 	}
 
 	float normalizeThetaError(float thetaError) {
-		if (thetaError <= -PI) {
+		while (thetaError <= -PI) {
             thetaError += 2*PI;
-        } else if (thetaError >= PI) {
+        }
+        while (thetaError >= PI) {
             thetaError -= 2*PI;
         }
         return thetaError;
