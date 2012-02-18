@@ -87,7 +87,7 @@ int main(int argc, char *argv[]) {
 	}
 
     for (int i = 0; i < 100; i++) {
-        robot->turnLeft(10);
+        //robot->turnLeft(10);
         robot->update();
         //write to global position file
         fprintf(outfileglobal,"%d %f,%f,%f \n",robot->_robotInterface->RoomID(),robot->_getNSTransX(),robot->_getNSTransY(),robot->_getNSTransTheta());

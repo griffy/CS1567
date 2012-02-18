@@ -20,7 +20,8 @@
 
 #define MAX_THETA_ERROR 0.5236 // 30 degrees
 // .26 // 15 degrees
-#define MAX_DIST_ERROR 30.0 // in cm
+#define MAX_DIST_ERROR 15.0 // in cm
+
 
 Robot::Robot(std::string address, int id) {
     _robotInterface = new RobotInterface(address, id);
@@ -224,9 +225,10 @@ void Robot::moveTo(float x, float y) {
     float thetaError;
 
     do {
+		printf("We are in room: %d\n", _robotInterface->RoomID());
         thetaError = moveToUntil(x, y, MAX_THETA_ERROR);
 		float goal = _pose->getTheta()+thetaError;
-		printf("In MoveTo ==> goal=%f\n", goal);
+		printf("Finished MoveTo ==> goal=%f\n", goal);
         if (thetaError != 0) {
             turnTo(goal, MAX_THETA_ERROR); // FIXME: should be -?
         }
@@ -276,8 +278,11 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
         printf("desired theta: %f\n", thetaDesired);
 
         thetaError = thetaDesired - _pose->getTheta();
-        if (thetaError > PI) {
-            thetaError = -(2*PI-thetaError);
+        if (thetaError >= PI) {
+            thetaError -= 2*PI;
+        }
+        else if (thetaError <= -PI) {
+            thetaError += 2*PI;
         }
 
         distError = sqrt(yError*yError + xError*xError);
@@ -292,6 +297,7 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
         _thetaPID->updatePID(thetaError);
 
         if ((fabs(thetaError) > thetaErrorLimit)/* && xError < MAX_DIST_ERROR+20*/) {
+			printf("Returning with error: %f\n", thetaError);
             return thetaError;
         }
 
@@ -354,15 +360,16 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
 
 void Robot::moveForward(int speed) {
 	_movingForward=true;
+	printf("Moving forward");
 	
     if (!isThereABitchInMyWay()) {
 		_speed = speed;
-        _robotInterface->Move(RI_MOVE_FORWARD, speed);
+		_robotInterface->Move(RI_MOVE_FORWARD, speed);
     }
-    else if(name=="Optimus"){
+    else {
+		printf("Error, something in the way\n");
 		stop();
-        printf("No No No No No No No!!!\t\tDETECTION!");
-    }
+	}
 }
 
 void Robot::turnLeft(int speed) {
@@ -433,9 +440,11 @@ void Robot::update() {
 	if(_movingForward){
 		float speedX = _speedDistance/(_forwardSpeed[_speed])*cos(_pose->getTheta());
 		float speedY = _speedDistance/(_forwardSpeed[_speed])*sin(_pose->getTheta());
+		printf("Speed: %f, %f\n", speedX, speedY);
 		//_kalmanFilter->setVelocity(speedX, speedY, 0.0);
 	}
 	else {
+		printf("Speed theta: %f\n", (2*PI)/_turnSpeed[_turningRight][_speed]);
 		//_kalmanFilter->setVelocity(0.0,0.0, _turnSpeed[_turningRight][_speed]);
 	}
     // pass updated poses to kalman filter and update main pose
