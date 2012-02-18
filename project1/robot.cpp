@@ -604,7 +604,7 @@ float Robot::_getNSTransX() {
     Util::mMult(transform, 1, 2, coords, 2, 1, &result);
 
     //scale
-    result /= ROOM_SCALE[0][room-2];
+    result /= ROOM_SCALE[room-2][0];
 
     //move
     float roomShiftX = COL_OFFSET[0] + ROOM_ORIGINS_FROM_COL[room-2][0];
@@ -670,7 +670,7 @@ float Robot::_getNSTransY() {
     Util::mMult(transform, 1, 2, coords, 2, 1, &result);
 
     //scale
-    result /= ROOM_SCALE[1][room-2];
+    result /= ROOM_SCALE[room-2][1];
 
     //move
     float roomShiftY = COL_OFFSET[1] + ROOM_ORIGINS_FROM_COL[room-2][1];
