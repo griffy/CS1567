@@ -23,7 +23,6 @@ public:
 	float getX();
 	float getY();
 	float getTheta();
-	void setTotalTheta(float theta);
 	float getTotalTheta();
 	void setNumRotations(int rot);
 	int getNumRotations();

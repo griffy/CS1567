@@ -316,7 +316,10 @@ void Robot::update() {
 
     if (getStrength()>13222) { // It's OVER 9000
         //reset the theta on the we
-        _wePose->setTotalTheta(_nsPose->getTotalTheta());
+        _wePose->setTheta(_nsPose->getTheta());
+        // ns and we count rotations in opposite directions, so
+        // account for this
+        _wePose->setNumRotations(-_nsPose->getNumRotations());
     }
 
 	printf("speed: %d\n", _speed);
