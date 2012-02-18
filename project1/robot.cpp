@@ -112,7 +112,7 @@ void Robot::moveTo(float x, float y) {
     float thetaError;
 
     do {
-		printf("We are in room: %d\n", _robotInterface->RoomID());
+		printf("We are in room: %d\n", getRoom());
         thetaError = moveToUntil(x, y, MAX_THETA_ERROR);
 		float goal = _pose->getTheta() + thetaError;
 		printf("Finished MoveTo ==> goal=%f\n", goal);
@@ -265,6 +265,10 @@ void Robot::stop() {
 	_movingForward=true;
 	_speed=0;
     _robotInterface->Move(RI_STOP, 0);
+}
+
+int Robot::getRoom() {
+    return _robotInterface->RoomID();
 }
 
 bool Robot::isThereABitchInMyWay() {
@@ -490,7 +494,7 @@ float Robot::_getWETransDeltaTheta() {
 //          robot should now be in global coordinate system
 float Robot::_getNSTransX() {
     float result;
-    int room = _robotInterface->RoomID();
+    int room = getRoom();
     float coords[2];
     float transform[2];
 
@@ -523,7 +527,7 @@ float Robot::_getNSTransX() {
 // TODO?
 float Robot::_getNSHalfTransX() {
     float result;
-    int room = _robotInterface->RoomID();
+    int room = getRoom();
     float coords[2];
     float transform[2];
 
@@ -555,7 +559,7 @@ float Robot::_getNSHalfTransX() {
 // TODO?
 float Robot::_getNSTransY() {
     float result;
-    int room = _robotInterface->RoomID();
+    int room = getRoom();
     float coords[2];
     float transform[2];
 
@@ -594,7 +598,7 @@ float Robot::_getNSTransY() {
 // TODO?
 float Robot::_getNSHalfTransY() {
     float result;
-    int room = _robotInterface->RoomID();
+    int room = getRoom();
     float coords[2];
     float transform[2];
 
@@ -626,7 +630,7 @@ float Robot::_getNSHalfTransY() {
 // TODO?
 float Robot::_getNSTransTheta() {
     float result = _getNSTheta();
-    int room = _robotInterface->RoomID();
+    int room = getRoom();
     result -= (ROOM_ROTATION[room-2] * (PI/180.0));
     
     if (result < -PI) {

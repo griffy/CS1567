@@ -65,10 +65,11 @@ public:
     bool isThereABitchInMyWay();
 	int getStrength();
 
-    int nameToInt();
-    void printOpeningDialog();
+    int getRoom();
+
+    void printBeginDialog();
     void printSuccessDialog();
-    void printFailureDialog();
+    void printFailDialog();
 
     std::string name;
 
