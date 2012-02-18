@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
 
     printf("\n\ndone!\n\n");
 	
-	robot->printSuccessDialog();
+	//robot->printSuccessDialog();
 
 	delete robot;
 	for (int i = 0; i < NUMBASES; i++) {

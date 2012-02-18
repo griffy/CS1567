@@ -1,28 +1,6 @@
 #include "robot.h"
 #include <math.h>
 
-#define MAX_NUM_FAILS 5
-
-#define MIN_DIST_GAIN -0.1
-#define MAX_DIST_GAIN 0.1
-#define MIN_THETA_GAIN -0.05
-#define MAX_THETA_GAIN 0.05
-
-#define PID_DIST_KP 0.8
-#define PID_DIST_KI 0.05
-#define PID_DIST_KD 0.05
-
-#define PID_THETA_KP 0.65
-#define PID_THETA_KI 0.001
-#define PID_THETA_KD 0.001
-
-#define MAX_FILTER_TAPS 7
-
-//#define MAX_THETA_ERROR 0.5236 // 30 degrees
-#define MAX_THETA_ERROR 0.26 // 15 degrees
-#define MAX_DIST_ERROR 15.0 // in cm
-
-
 Robot::Robot(std::string address, int id) {
     _robotInterface = new RobotInterface(address, id);
 
@@ -32,6 +10,7 @@ Robot::Robot(std::string address, int id) {
     _weLeftFilter = new FIRFilter("filters/we.ffc");
     _weRightFilter = new FIRFilter("filters/we.ffc");
     _weRearFilter = new FIRFilter("filters/we.ffc");
+
 
     name = address;
     
@@ -55,144 +34,52 @@ Robot::Robot(std::string address, int id) {
     _distancePID = new PID(&distancePIDConstants, MAX_DIST_GAIN, MIN_DIST_GAIN);
     _thetaPID = new PID(&thetaPIDConstants, MAX_THETA_GAIN, MIN_THETA_GAIN);
 
-    prefillData();
-
     printf("pid controllers initialized\n");
 
 	// forward time constants
-	_forwardSpeed[0]= 0.0;
-	_forwardSpeed[1]= 3.5;
-	_forwardSpeed[2]= 3.5;
-	_forwardSpeed[3]= 3.5;
-	_forwardSpeed[4]= 3.7;
-	_forwardSpeed[5]= 3.7;
-	_forwardSpeed[6]= 3.9;
-	_forwardSpeed[7]= 4.6;
-	_forwardSpeed[8]= 4.6;
-	_forwardSpeed[9]= 4.8;
-	_forwardSpeed[10]=4.9;
+	_forwardSpeed[0] = 0.0;
+	_forwardSpeed[1] = 3.5;
+	_forwardSpeed[2] = 3.5;
+	_forwardSpeed[3] = 3.5;
+	_forwardSpeed[4] = 3.7;
+	_forwardSpeed[5] = 3.7;
+	_forwardSpeed[6] = 3.9;
+	_forwardSpeed[7] = 4.6;
+	_forwardSpeed[8] = 4.6;
+	_forwardSpeed[9] = 4.8;
+	_forwardSpeed[10] = 4.9;
 
 	// left time constants
-	_turnSpeed[0][0]= 0.0;
-	_turnSpeed[0][1]= 1.8;
-	_turnSpeed[0][2]= 1.9;
-	_turnSpeed[0][3]= 2.23;
-	_turnSpeed[0][4]= 2.36;
-	_turnSpeed[0][5]= 2.87;
-	_turnSpeed[0][6]= 2.8;
-	_turnSpeed[0][7]= 4.6;
-	_turnSpeed[0][8]= 4.75;
-	_turnSpeed[0][9]= 5.35;
-	_turnSpeed[0][10]=5.3;
+	_turnSpeed[0][0] = 0.0;
+	_turnSpeed[0][1] = 1.8;
+	_turnSpeed[0][2] = 1.9;
+	_turnSpeed[0][3] = 2.23;
+	_turnSpeed[0][4] = 2.36;
+	_turnSpeed[0][5] = 2.87;
+	_turnSpeed[0][6] = 2.8;
+	_turnSpeed[0][7] = 4.6;
+	_turnSpeed[0][8] = 4.75;
+	_turnSpeed[0][9] = 5.35;
+	_turnSpeed[0][10] = 5.3;
 
 	//right time constants
-	_turnSpeed[1][0]=0.0;
-	_turnSpeed[1][1]=1.6;
-	_turnSpeed[1][2]=2.0;
-	_turnSpeed[1][3]=2.2;
-	_turnSpeed[1][4]=2.3;
-	_turnSpeed[1][5]=2.8;
-	_turnSpeed[1][6]=2.8;
-	_turnSpeed[1][7]=4.75;
-	_turnSpeed[1][8]=4.75;
-	_turnSpeed[1][9]=5.35;
-	_turnSpeed[1][10]=5.45;
+	_turnSpeed[1][0] = 0.0;
+	_turnSpeed[1][1] = 1.6;
+	_turnSpeed[1][2] = 2.0;
+	_turnSpeed[1][3] = 2.2;
+	_turnSpeed[1][4] = 2.3;
+	_turnSpeed[1][5] = 2.8;
+	_turnSpeed[1][6] = 2.8;
+	_turnSpeed[1][7] = 4.75;
+	_turnSpeed[1][8] = 4.75;
+	_turnSpeed[1][9] = 5.35;
+	_turnSpeed[1][10] = 5.45;
 
-	_turnDirection=0;
-	_movingForward=true;
-	_speedDistance=116; // cm
+	_turnDirection = 0;
+	_movingForward = true;
+	_speedDistance = 116; // cm
 
-}
-
-int Robot::nameToInt(){
-    if(name=="Rosie" || name=="rosie")
-        return 1;
-    if(name=="Bender" || name=="bender")
-        return 2;
-    if(name=="Johnny5" || name=="johnny5")
-        return 3;
-    if(name=="Optimus" || name=="optimus")
-        return 4;
-    if(name=="Walle" || name=="walle" || name=="wallE" || name=="WallE")
-        return 5;
-    if(name=="Gort" || name=="gort")
-        return 5;
-    return -1;
-}
-
-void Robot::printOpeningDialog(){
-    printf("\n\n\n");
-    switch (nameToInt()){
-        case 1:
-            printf("I swear on my mother's rechargable batteries\n");
-            break;
-        case 2:
-            printf("Bender here\n");
-            break;
-        case 3:
-            printf("I'm Johnny5\n");
-            break;
-        case 4:
-            printf("Transformers, robots in disguise\n");
-            break;
-        case 5:
-            printf("WallEEEEEEEEeeeeeeee\n");
-            break;
-        default:
-            printf("I don't know who I am\n");
-            break;
-    }
-    printf("\n\n\n");
-}
-
-void Robot::printFailureDialog(){
-    printf("\n\n\n");
-    switch (nameToInt()){
-        case 1:
-            printf("Again?\n");
-            break;
-        case 2:
-            printf("I just messed up\n");
-            break;
-        case 3:
-            printf("I'm Johnny5, and I crashed\n");
-            break;
-        case 4:
-            printf("In war, there are calms between storms.\nThere will be days when we lose faith, days when our allies turn against us.");
-            break;
-        case 5:
-            printf("WallE...\n");
-            break;
-        default:
-            printf("I don't do anything right... :(");
-            break;
-    }
-    printf("\n\n\n");
-}
-
-void Robot::printSuccessDialog(){
-    printf("\n\n\n");
-    switch (nameToInt()){
-        case 1:
-            printf("Again?\n");
-            break;
-        case 2:
-            printf("I'm awesome\n");
-            break;
-        case 3:
-            printf("I'm Johnny5, and I did not go insane\n");
-            break;
-        case 4:
-            printf("There's more than meets the eye");
-            break;
-        case 5:
-            printf("WallE...\n");
-            break;
-        default:
-            printf("Good JOB!!!!!!!!!!!!!!!");
-            break;
-    }
-    printf("\n\n\n");
+    prefillData();
 }
 
 Robot::~Robot() {
@@ -227,7 +114,7 @@ void Robot::moveTo(float x, float y) {
     do {
 		printf("We are in room: %d\n", _robotInterface->RoomID());
         thetaError = moveToUntil(x, y, MAX_THETA_ERROR);
-		float goal = _pose->getTheta()+thetaError;
+		float goal = _pose->getTheta() + thetaError;
 		printf("Finished MoveTo ==> goal=%f\n", goal);
         if (thetaError != 0) {
             turnTo(goal, MAX_THETA_ERROR);
@@ -250,7 +137,7 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
 
     float distGain;
 
-    printf("heading toward %f, %f\n", x, y);
+    printf("heading toward (%f, %f)\n", x, y);
     do {
         update();
 
@@ -267,23 +154,18 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
         yError = y - _pose->getY();
         xError = x - _pose->getX();
         
-        // previous way of calculating desired
         thetaDesired = atan2(yError, xError);
         thetaDesired = (float)(fmod(2*PI+thetaDesired, 2*PI));
+
         /*
         thetaDesired = acos(xError / (sqrt(yError*yError + xError*xError)));
         if (yError < 0) {
             thetaDesired += PI;
         }*/
+
         printf("desired theta: %f\n", thetaDesired);
 
-        thetaError = thetaDesired - _pose->getTheta();
-        if (thetaError >= PI) {
-            thetaError -= 2*PI;
-        }
-        else if (thetaError <= -PI) {
-            thetaError += 2*PI;
-        }
+        thetaError = Util::denormalizeTheta(thetaDesired - _pose->getTheta());
 
         distError = sqrt(yError*yError + xError*xError);
 
@@ -296,7 +178,7 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
         distGain = _distancePID->updatePID(distError);
         _thetaPID->updatePID(thetaError);
 
-        if ((fabs(thetaError) > thetaErrorLimit)/* && xError < MAX_DIST_ERROR+20*/) {
+        if (fabs(thetaError) > thetaErrorLimit/* && xError < MAX_DIST_ERROR+20*/) {
 			printf("Returning with error: %f\n", thetaError);
             return thetaError;
         }
@@ -320,15 +202,8 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
             update();
         }
         
-		//thetaGoal = _pose->getTheta()+thetaError;
         theta = _pose->getTheta();
-        thetaError = thetaGoal-theta;
-		if(thetaError < -PI){
-			thetaError += 2*PI;
-		}
-		else if (thetaError>PI){
-			thetaError -= 2*PI;
-		}
+        thetaError = Util::denormalizeTheta(thetaGoal - theta);
 
 		printf("theta goal: %f\n", thetaGoal);
 
@@ -768,14 +643,7 @@ void Robot::_updateWEPose() {
     float deltaY = _getWETransDeltaY();
     float dTheta = _getWETransDeltaTheta();
    
-    float newTheta = lastTheta + dTheta;
-
-    if (newTheta > 2*PI) {
-        newTheta -= 2*PI;
-    }
-    else if (newTheta < 0) {
-        newTheta += 2*PI;
-    }
+    float newTheta = Util::normalizeTheta(lastTheta + dTheta);
     
     if (lastTheta > (3/2.0)*PI && newTheta < PI/2.0) {
         _passed2PIwe = !_passed2PIwe;

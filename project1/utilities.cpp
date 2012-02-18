@@ -40,4 +40,24 @@ namespace Util {
 	    }
 	    //return *mC;
 	}
+
+	float denormalizeTheta(float theta) {
+        if (theta >= PI) {
+            theta -= 2*PI;
+        }
+        else if (theta <= -PI) {
+            theta += 2*PI;
+        }
+        return theta;
+	}
+
+	float normalizeTheta(float theta) {
+        if (theta > 2*PI) {
+            theta -= 2*PI;
+        }
+        else if (theta < 0) {
+            theta += 2*PI;
+        }
+        return theta;
+	}
 };
