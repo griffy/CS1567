@@ -28,8 +28,8 @@
 
 #define MAX_FILTER_TAPS 7
 
-//#define MAX_THETA_ERROR 0.5236 // 30 degrees
-#define MAX_THETA_ERROR 0.40 // 15 degrees
+#define MAX_THETA_ERROR 0.5236 // 30 degrees
+//#define MAX_THETA_ERROR 0.26 // 15 degrees
 #define MAX_DIST_ERROR 15.0 // in cm
 
 // TODO: find out proper indexes for arrays below

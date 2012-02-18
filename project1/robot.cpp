@@ -111,6 +111,13 @@ void Robot::prefillData() {
 void Robot::moveTo(float x, float y) {
     float thetaError;
 
+    _robotInterface->Move(RI_HEAD_MIDDLE, 0);
+
+    printf("prefilling data for move...\n");
+    for (int i = 0; i < MAX_FILTER_TAPS; i++) {
+        update();
+    }
+    printf("beginning move\n");
     do {
 		printf("We are in room: %d\n", getRoom());
         thetaError = moveToUntil(x, y, MAX_THETA_ERROR);
@@ -123,6 +130,8 @@ void Robot::moveTo(float x, float y) {
 
     _distancePID->flushPID();
     _thetaPID->flushPID();
+
+    _robotInterface->Move(RI_HEAD_DOWN, 0);
 }
 
 // Moves to a location in the global coordinate system (in cm) 
@@ -231,7 +240,7 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
 
 void Robot::moveForward(int speed) {
 	_movingForward=true;
-	printf("Moving forward");
+	printf("Moving forward\n");
 	
     if (!isThereABitchInMyWay()) {
 		_speed = speed;
@@ -240,6 +249,9 @@ void Robot::moveForward(int speed) {
     else {
 		printf("Error, something in the way\n");
 		stop();
+        // TODO: remove? // turn 90 degrees
+        turnTo(Util::normalizeTheta(_pose->getTheta()+DEGREE_90),
+               MAX_THETA_ERROR);
 	}
 }
 
