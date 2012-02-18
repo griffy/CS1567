@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
 
 	printf("battery: %d\n", robot->_robotInterface->Battery());
 
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 7; i++) {
     	printf("moving to base %d...\n", i+1);
     	robot->moveTo(bases[i]->getX(), bases[i]->getY());
     	printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\nreached base %d!\n\n\n\n\n\n\n\n\n\n\n\n\n\n", i+1);

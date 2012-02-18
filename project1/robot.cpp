@@ -163,6 +163,9 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
         if (thetaError <= -PI) {
             thetaError += 2*PI;
         }
+        else if (thetaError >= 2*PI){
+			thetaError -= 2*PI;
+		}
 
         distError = sqrt(yError*yError + xError*xError);
 
@@ -204,6 +207,9 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
         if (thetaError <= -PI) {
             thetaError += 2*PI;
         }
+        else if (thetaError >= 2*PI){
+			thetaError -= 2*PI;
+		}
         
 		printf("theta goal: %f\n", thetaGoal);
 
