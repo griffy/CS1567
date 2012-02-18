@@ -318,18 +318,18 @@ void Robot::update() {
 
     if (_speed == 0) {
         printf("speed: 0\n");
-        _kalmanFilter->setVelocity(0.0, 0.0, 0.0);
+        //_kalmanFilter->setVelocity(0.0, 0.0, 0.0);
     }
     else {
     	if(_movingForward){
     		float speedX = (_speedDistance/_forwardSpeed[_speed])*cos(_pose->getTheta());
     		float speedY = (_speedDistance/_forwardSpeed[_speed])*sin(_pose->getTheta());
     		printf("speed: %f, %f\n", speedX, speedY);
-    		_kalmanFilter->setVelocity(speedX, speedY, 0.0);
+    		//_kalmanFilter->setVelocity(speedX, speedY, 0.0);
     	}
     	else {
     		printf("speed theta: %f\n", (2*PI)/_turnSpeed[_turnDirection][_speed]);
-    		_kalmanFilter->setVelocity(0.0, 0.0, (2*PI)/_turnSpeed[_turnDirection][_speed]);
+    		//_kalmanFilter->setVelocity(0.0, 0.0, (2*PI)/_turnSpeed[_turnDirection][_speed]);
     	}
     }
     // pass updated poses to kalman filter and update main pose
@@ -494,14 +494,14 @@ float Robot::_getWETransDeltaTheta() {
 //          robot should now be in global coordinate system
 float Robot::_getNSTransX() {
     float result;
-    int room = getRoom();
+    int room = getRoom()-2;
     float coords[2];
     float transform[2];
 
     coords[1] = _getNSX();
     coords[0] = _getNSY();
-    transform[0] = cos(ROOM_ROTATION[room-2]);
-    transform[1] = -sin(ROOM_ROTATION[room-2]);
+    transform[0] = cos(ROOM_ROTATION[room]);
+    transform[1] = -sin(ROOM_ROTATION[room]);
 
     if (ROOM_FLIPX[room-2]) {
         transform[1] = -transform[1];
@@ -511,15 +511,16 @@ float Robot::_getNSTransX() {
     Util::mMult(transform, 1, 2, coords, 2, 1, &result);
 
     //scale
-    result /= ROOM_SCALE[room-2][0];
+    result /= ROOM_SCALE[room][0];
 
     //move
-    float roomShiftX = COL_OFFSET[0] + ROOM_ORIGINS_FROM_COL[room-2][0];
+    float roomShiftX = COL_OFFSET[0] + ROOM_ORIGINS_FROM_COL[room][0];
     result += roomShiftX;
 
     return result;
 }
 
+/*
 // TEMP FUNCTION!
 //
 // Returns: transformed north star x estimate of where
@@ -552,6 +553,7 @@ float Robot::_getNSHalfTransX() {
 
     return result;
 }
+*/
 
 // Returns: transformed north star y estimate of where
 // Returns: transformed north star y estimate of where
@@ -559,17 +561,17 @@ float Robot::_getNSHalfTransX() {
 // TODO?
 float Robot::_getNSTransY() {
     float result;
-    int room = getRoom();
+    int room = getRoom()-2;
     float coords[2];
     float transform[2];
 
     coords[1] = _getNSX();
     coords[0] = _getNSY();
 
-    transform[0] = sin(ROOM_ROTATION[room-2]);
-    transform[1] = cos(ROOM_ROTATION[room-2]);
+    transform[0] = sin(ROOM_ROTATION[room]);
+    transform[1] = cos(ROOM_ROTATION[room]);
 
-    if (ROOM_FLIPY[room-2]) {
+    if (ROOM_FLIPY[room]) {
         transform[1] = -transform[1];
         transform[0] = -transform[0];
     }
@@ -577,20 +579,21 @@ float Robot::_getNSTransY() {
     Util::mMult(transform, 1, 2, coords, 2, 1, &result);
 
     //scale
-    result /= ROOM_SCALE[room-2][1];
+    result /= ROOM_SCALE[room][1];
 
     //move
-    float roomShiftY = COL_OFFSET[1] + ROOM_ORIGINS_FROM_COL[room-2][1];
+    float roomShiftY = COL_OFFSET[1] + ROOM_ORIGINS_FROM_COL[room][1];
     result += roomShiftY;
 
     //Correction for skew in room 2
-    if (room == 2) {
+    if (room == ROOM_2) {
         result += .75*_getNSTransX();
     }
 
     return result;
 }
 
+/*
 // TEMP FUNCTION!
 //
 // Returns: transformed north star y estimate of where
@@ -624,14 +627,15 @@ float Robot::_getNSHalfTransY() {
 
     return result;
 }
+*/
 
 // Returns: transformed north star theta estimate of where
 //          robot should now be in global coordinate system
 // TODO?
 float Robot::_getNSTransTheta() {
     float result = _getNSTheta();
-    int room = getRoom();
-    result -= (ROOM_ROTATION[room-2] * (PI/180.0));
+    int room = getRoom()-2;
+    result -= (ROOM_ROTATION[room] * (PI/180.0));
     
     if (result < -PI) {
         result += 2*PI;
@@ -684,9 +688,6 @@ void Robot::_updateNSPose() {
     float newY = _getNSTransY();
     float newTheta = _getNSTransTheta();
     
-    _nsPose->setX(newX);
-    _nsPose->setY(newY);
-    
     if (lastTheta > (3/2.0)*PI && newTheta < PI/2.0) {
         _passed2PIns = !_passed2PIns;
     }
@@ -703,5 +704,7 @@ void Robot::_updateNSPose() {
         _passed2PIns = false;
     }
 
+    _nsPose->setX(newX);
+    _nsPose->setY(newY);
     _nsPose->setTheta(newTheta);
 }
