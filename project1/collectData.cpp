@@ -87,14 +87,13 @@ int main(int argc, char *argv[]) {
 	}
 
     for (int i = 0; i < 100; i++) {
-        robot->turnLeft(1);
+        robot->turnLeft(10);
         robot->update();
         //write to global position file
         fprintf(outfileglobal,"%d %f,%f,%f \n",robot->_robotInterface->RoomID(),robot->_getNSTransX(),robot->_getNSTransY(),robot->_getNSTransTheta());
         printf("%d %f,%f,%f \n",robot->_robotInterface->RoomID(),robot->_getNSTransX(),robot->_getNSTransY(),robot->_getNSTransTheta());
         //fprintf(outfilewe,"%d,%d,%d\n",robot->_robotInterface->getWheelEncoder(RI_WHEEL_LEFT),robot->_robotInterface->getWheelEncoder(RI_WHEEL_RIGHT),robot->_robotInterface->getWheelEncoder(RI_WHEEL_REAR));
     }
-
 
     robot->stop();
     for (int i = 0; i < 10; i++) {

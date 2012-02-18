@@ -57,33 +57,35 @@ Robot::Robot(std::string address, int id) {
     prefillData();
 
     printf("pid controllers initialized\n");
-	
-	
-	_forwardSpeed[0]=0.0;
-	_forwardSpeed[1]=3.5;
-	_forwardSpeed[2]=3.5;
-	_forwardSpeed[3]=3.5;
-	_forwardSpeed[4]=3.7;
-	_forwardSpeed[5]=3.7;
-	_forwardSpeed[6]=3.9;
-	_forwardSpeed[7]=4.6;
-	_forwardSpeed[8]=4.6;
-	_forwardSpeed[9]=4.8;
+
+	// forward time constants
+	_forwardSpeed[0]= 0.0;
+	_forwardSpeed[1]= 3.5;
+	_forwardSpeed[2]= 3.5;
+	_forwardSpeed[3]= 3.5;
+	_forwardSpeed[4]= 3.7;
+	_forwardSpeed[5]= 3.7;
+	_forwardSpeed[6]= 3.9;
+	_forwardSpeed[7]= 4.6;
+	_forwardSpeed[8]= 4.6;
+	_forwardSpeed[9]= 4.8;
 	_forwardSpeed[10]=4.9;
 
-    _turnSpeed[0][0]=0.0;
-    _turnSpeed[0][1]=0.0;
-    _turnSpeed[0][2]=0.0;
-    _turnSpeed[0][3]=0.0;
-    _turnSpeed[0][4]=0.0;
-    _turnSpeed[0][5]=0.0;
-    _turnSpeed[0][6]=0.0;
-    _turnSpeed[0][7]=0.0;
-    _turnSpeed[0][8]=0.0;
-    _turnSpeed[0][9]=0.0;
-    _turnSpeed[0][10]=0.0;
+	// left time constants
+	_turnSpeed[0][0]= 0.0;
+	_turnSpeed[0][1]= 1.8;
+	_turnSpeed[0][2]= 1.9;
+	_turnSpeed[0][3]= 2.23;
+	_turnSpeed[0][4]= 2.36;
+	_turnSpeed[0][5]= 2.87;
+	_turnSpeed[0][6]= 2.8;
+	_turnSpeed[0][7]= 4.6;
+	_turnSpeed[0][8]= 4.75;
+	_turnSpeed[0][9]= 5.35;
+	_turnSpeed[0][10]=5.3;
 
-    _turnSpeed[1][0]=0.0;
+	//right time constants
+	_turnSpeed[1][0]=0.0;
 	_turnSpeed[1][1]=1.6;
 	_turnSpeed[1][2]=2.0;
 	_turnSpeed[1][3]=2.2;
@@ -94,7 +96,7 @@ Robot::Robot(std::string address, int id) {
 	_turnSpeed[1][8]=4.75;
 	_turnSpeed[1][9]=5.35;
 	_turnSpeed[1][10]=5.45;
-	
+
 	_turningRight=0;
 	_movingForward=true;
 	_speedDistance=116; // cm
@@ -141,6 +143,7 @@ void Robot::printOpeningDialog(){
     }
     printf("\n\n\n");
 }
+
 void Robot::printFailureDialog(){
     printf("\n\n\n");
     switch (nameToInt()){
@@ -165,6 +168,7 @@ void Robot::printFailureDialog(){
     }
     printf("\n\n\n");
 }
+
 void Robot::printSuccessDialog(){
     printf("\n\n\n");
     switch (nameToInt()){
@@ -221,10 +225,10 @@ void Robot::moveTo(float x, float y) {
 
     do {
         thetaError = moveToUntil(x, y, MAX_THETA_ERROR);
-		float temp = _pose->getTheta()+thetaError;
-		
+		float goal = _pose->getTheta()+thetaError;
+		printf("In MoveTo ==> goal=%f\n", goal);
         if (thetaError != 0) {
-            turnTo(_pose->getTheta()+thetaError, MAX_THETA_ERROR); // FIXME: should be -?
+            turnTo(goal, MAX_THETA_ERROR); // FIXME: should be -?
         }
     } while (thetaError != 0);
 
@@ -260,22 +264,22 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
 
         yError = y - _pose->getY();
         xError = x - _pose->getX();
-        /*
+        
         // previous way of calculating desired
         thetaDesired = atan2(yError, xError);
         thetaDesired = (float)(fmod(2*PI+thetaDesired, 2*PI));
-        */
+        /*
         thetaDesired = acos(xError / (sqrt(yError*yError + xError*xError)));
         if (yError < 0) {
             thetaDesired += PI;
-        }
+        }*/
         printf("desired theta: %f\n", thetaDesired);
 
         thetaError = thetaDesired - _pose->getTheta();
         if (thetaError > PI) {
             thetaError = -(2*PI-thetaError);
         }
-        
+
         distError = sqrt(yError*yError + xError*xError);
 
         // TODO: remove
@@ -287,11 +291,11 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
         distGain = _distancePID->updatePID(distError);
         _thetaPID->updatePID(thetaError);
 
-        if ((fabs(thetaError) > thetaErrorLimit) && xError < MAX_DIST_ERROR+20) {
+        if ((fabs(thetaError) > thetaErrorLimit)/* && xError < MAX_DIST_ERROR+20*/) {
             return thetaError;
         }
 
-        moveForward(5); // (int)1.0/(distGain)
+        moveForward(4); // (int)1.0/(distGain)
     } while (distError > MAX_DIST_ERROR);
 
     return 0; // no error when we've finished
@@ -305,12 +309,22 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
 
     printf("adjusting theta...\n");
     do {
+		//stop();
         for (int i = 0; i < MAX_FILTER_TAPS/2; i++) {
             update();
         }
-
+        
+		//thetaGoal = _pose->getTheta()+thetaError;
         theta = _pose->getTheta();
-        thetaError = theta - thetaGoal;
+        thetaError = thetaGoal-theta;
+		if(thetaError < -PI){
+			thetaError += 2*PI;
+		}
+		else if (thetaError>PI){
+			thetaError -= 2*PI;
+		}
+
+		printf("theta goal: %f\n", thetaGoal);
 
         printf("wheel encoder x: %f\t\ty: %f\t\ttheta: %f\n", _wePose->getX(), 
                                                               _wePose->getY(), 
@@ -347,7 +361,6 @@ void Robot::moveForward(int speed) {
     }
     else if(name=="Optimus"){
 		stop();
-		_speed=0;
         printf("No No No No No No No!!!\t\tDETECTION!");
     }
 }
@@ -394,7 +407,7 @@ void Robot::update() {
     _updateNSPose();
     
     //update the kalman constants for NS
-    float newX = 1000.0/getStrength();
+    float newX = 1000.0/getStrength(); 
     float newY = 1500.0/getStrength();
     float newTheta = 800.0/getStrength();
     if (newX > 0.3) {
@@ -420,10 +433,10 @@ void Robot::update() {
 	if(_movingForward){
 		float speedX = _speedDistance/(_forwardSpeed[_speed])*cos(_pose->getTheta());
 		float speedY = _speedDistance/(_forwardSpeed[_speed])*sin(_pose->getTheta());
-		_kalmanFilter->setVelocity(speedX, speedY, 0.0);
+		//_kalmanFilter->setVelocity(speedX, speedY, 0.0);
 	}
 	else {
-		_kalmanFilter->setVelocity(0.0,0.0, _turnSpeed[_turningRight][_speed]);
+		//_kalmanFilter->setVelocity(0.0,0.0, _turnSpeed[_turningRight][_speed]);
 	}
     // pass updated poses to kalman filter and update main pose
     _kalmanFilter->filter(_nsPose, _wePose);

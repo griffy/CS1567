@@ -42,7 +42,9 @@ int main(int argc, char *argv[]) {
     	printf("reached base %d!\n", i+1);
     }
 
-    printf("done!");
+    printf("\n\ndone!\n\n");
+	
+	robot->printSuccessDialog();
 
 	delete robot;
 	for (int i = 0; i < NUMBASES; i++) {
