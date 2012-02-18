@@ -312,16 +312,22 @@ void Robot::update() {
         _wePose->setNumRotations(_nsPose->getNumRotations());
     }
 
-	if(_movingForward){
-		float speedX = _speedDistance/(_forwardSpeed[_speed])*cos(_pose->getTheta());
-		float speedY = _speedDistance/(_forwardSpeed[_speed])*sin(_pose->getTheta());
-		printf("speed: %f, %f\n", speedX, speedY);
-		_kalmanFilter->setVelocity(speedX, speedY, 0.0);
-	}
-	else {
-		printf("speed theta: %f\n", (2*PI)/_turnSpeed[_turnDirection][_speed]);
-		_kalmanFilter->setVelocity(0.0, 0.0, (2*PI)/_turnSpeed[_turnDirection][_speed]);
-	}
+    if (_speed == 0) {
+        printf("speed: 0\n");
+        _kalmanFilter->setVelocity(0.0, 0.0, 0.0);
+    }
+    else {
+    	if(_movingForward){
+    		float speedX = (_speedDistance/_forwardSpeed[_speed])*cos(_pose->getTheta());
+    		float speedY = (_speedDistance/_forwardSpeed[_speed])*sin(_pose->getTheta());
+    		printf("speed: %f, %f\n", speedX, speedY);
+    		_kalmanFilter->setVelocity(speedX, speedY, 0.0);
+    	}
+    	else {
+    		printf("speed theta: %f\n", (2*PI)/_turnSpeed[_turnDirection][_speed]);
+    		_kalmanFilter->setVelocity(0.0, 0.0, (2*PI)/_turnSpeed[_turnDirection][_speed]);
+    	}
+    }
     // pass updated poses to kalman filter and update main pose
     _kalmanFilter->filter(_nsPose, _wePose);
 }
