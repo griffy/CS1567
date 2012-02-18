@@ -11,7 +11,6 @@ Robot::Robot(std::string address, int id) {
     _weRightFilter = new FIRFilter("filters/we.ffc");
     _weRearFilter = new FIRFilter("filters/we.ffc");
 
-
     name = address;
     
     _passed2PIns = false;
@@ -77,7 +76,8 @@ Robot::Robot(std::string address, int id) {
 
 	_turnDirection = 0;
 	_movingForward = true;
-	_speedDistance = 116; // cm
+	_speedDistance = 116.0; // cm
+	_speed = 0;
 
     prefillData();
 }
@@ -141,15 +141,15 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
     do {
         update();
 
-        printf("wheel encoder x: %f\t\ty: %f\t\ttheta: %f\n", _wePose->getX(), 
-                                                              _wePose->getY(), 
-                                                              _wePose->getTheta());
-        printf("north star x: %f\t\ty: %f\t\ttheta: %f\n", _nsPose->getX(), 
-                                                           _nsPose->getY(), 
-                                                           _nsPose->getTheta());
-        printf("kalman pose x: %f\t\ty: %f\t\ttheta: %f\n", _pose->getX(), 
-                                                            _pose->getY(), 
-                                                            _pose->getTheta());
+        printf("wheel encoder x: %f\t\ty: %f\t\ttheta: %f\t\ttotal theta: %f\n", _wePose->getX(), 
+                                                              _wePose->getY(), _wePose->getTheta(),
+                                                              _wePose->getTotalTheta());
+        printf("north star x: %f\t\ty: %f\t\ttheta: %f\t\ttotal theta: %f\n", _nsPose->getX(), 
+                                                           _nsPose->getY(), _nsPose->getTheta(),
+                                                           _nsPose->getTotalTheta());
+        printf("kalman pose x: %f\t\ty: %f\t\ttheta: %f\t\ttotal theta: %f\n", _pose->getX(), 
+                                                            _pose->getY(), _pose->getTheta(),
+                                                            _pose->getTotalTheta());
 
         yError = y - _pose->getY();
         xError = x - _pose->getX();
@@ -207,15 +207,15 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
         
 		printf("theta goal: %f\n", thetaGoal);
 
-        printf("wheel encoder x: %f\t\ty: %f\t\ttheta: %f\n", _wePose->getX(), 
-                                                              _wePose->getY(), 
-                                                              _wePose->getTheta());
-        printf("north star x: %f\t\ty: %f\t\ttheta: %f\n", _nsPose->getX(), 
-                                                           _nsPose->getY(), 
-                                                           _nsPose->getTheta());
-        printf("kalman pose x: %f\t\ty: %f\t\ttheta: %f\n", _pose->getX(), 
-                                                            _pose->getY(), 
-                                                            _pose->getTheta());
+        printf("wheel encoder x: %f\t\ty: %f\t\ttheta: %f\t\ttotal theta: %f\n", _wePose->getX(), 
+                                                              _wePose->getY(), _wePose->getTheta(),
+                                                              _wePose->getTotalTheta());
+        printf("north star x: %f\t\ty: %f\t\ttheta: %f\t\ttotal theta: %f\n", _nsPose->getX(), 
+                                                           _nsPose->getY(), _nsPose->getTheta(),
+                                                           _nsPose->getTotalTheta());
+        printf("kalman pose x: %f\t\ty: %f\t\ttheta: %f\t\ttotal theta: %f\n", _pose->getX(), 
+                                                            _pose->getY(), _pose->getTheta(),
+                                                            _pose->getTotalTheta());
         printf("theta error:\t%f\n", thetaError);
 
         thetaGain = _thetaPID->updatePID(thetaError);
@@ -311,14 +311,17 @@ void Robot::update() {
         _wePose->setTotalTheta(_nsPose->getTotalTheta());
     }
 
+	printf("speed: %d\n", _speed);
     if (_speed == 0) {
-        printf("speed: 0\n");
+		printf("speed is zero\n");
         _kalmanFilter->setVelocity(0.0, 0.0, 0.0);
+		printf("Kalman pose: %f, %f, %f\n",_pose->getX(), _pose->getY(), _pose->getTotalTheta());
     }
     else {
     	if(_movingForward){
-    		float speedX = (_speedDistance/_forwardSpeed[_speed])*cos(_pose->getTheta());
-    		float speedY = (_speedDistance/_forwardSpeed[_speed])*sin(_pose->getTheta());
+    		float speedX = (_speedDistance/_forwardSpeed[_speed])/**cos(_pose->getTheta())*/;
+    		float speedY = (_speedDistance/_forwardSpeed[_speed])/**sin(_pose->getTheta())*/;
+			printf("Pose theta: %f\n", _pose->getTheta());
     		printf("speed: %f, %f\n", speedX, speedY);
     		_kalmanFilter->setVelocity(speedX, speedY, 0.0);
     	}
