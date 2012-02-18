@@ -45,12 +45,12 @@ namespace Util {
 	float normalizeThetaError(float thetaError) {
 		if (thetaError <= -PI) {
             thetaError += 2*PI;
-        } else if (thetaError >= 2*PI) {
+        } else if (thetaError >= PI) {
             thetaError -= 2*PI;
         }
         return thetaError;
 	}
-	
+
 	/* Input: A number in range [-pi, pi], or > 2pi
 	   Returns: A number in range [0, 2pi]
 	*/

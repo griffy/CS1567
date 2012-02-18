@@ -111,7 +111,7 @@ void Robot::prefillData() {
 void Robot::moveTo(float x, float y) {
     float thetaError;
 
-    _robotInterface->Move(RI_HEAD_MIDDLE, 0);
+    _robotInterface->Move(RI_HEAD_MIDDLE, 1);
 
     printf("prefilling data for move...\n");
     for (int i = 0; i < MAX_FILTER_TAPS; i++) {
@@ -131,7 +131,7 @@ void Robot::moveTo(float x, float y) {
     _distancePID->flushPID();
     _thetaPID->flushPID();
 
-    _robotInterface->Move(RI_HEAD_DOWN, 0);
+    _robotInterface->Move(RI_HEAD_DOWN, 1);
 }
 
 // Moves to a location in the global coordinate system (in cm) 
