@@ -658,7 +658,7 @@ void Robot::_updateWEPose() {
     float deltaY = _getWETransDeltaY();
     float dTheta = _getWETransDeltaTheta();
    
-    float newTheta = Util::normalizeTheta(lastTheta + dTheta);
+    float newTheta = Util::normalizeTheta(lastTheta - dTheta);
     
     if (lastTheta > (3/2.0)*PI && newTheta < PI/2.0) {
         _wePose->modifyRotations(1);
@@ -709,7 +709,7 @@ void Robot::_updateNSPose() {
         _passed2PIns = false;
     }
     */
-    
+
     _nsPose->setX(newX);
     _nsPose->setY(newY);
     _nsPose->setTheta(newTheta);
