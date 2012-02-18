@@ -661,12 +661,13 @@ void Robot::_updateWEPose() {
     float newTheta = Util::normalizeTheta(lastTheta + dTheta);
     
     if (lastTheta > (3/2.0)*PI && newTheta < PI/2.0) {
-        _passed2PIwe = !_passed2PIwe;
+        _wePose->modifyRotations(1);
     }
     else if (lastTheta < PI/2.0 && newTheta > (3/2.0)*PI) {
-        _passed2PIwe = !_passed2PIwe;
+        _wePose->modifyRotations(-1);
     }
-    
+
+    /*
     if (_passed2PIwe && (lastTheta > PI && newTheta < PI)) {
         _wePose->modifyRotations(1);
         _passed2PIwe = false;
@@ -675,8 +676,10 @@ void Robot::_updateWEPose() {
         _wePose->modifyRotations(-1);
         _passed2PIwe = false;
     }
+    */
 
-    _wePose->add(deltaX, deltaY, 0);
+    _wePose->setX(_wePose->getX()+deltaX);
+    _wePose->setY(_wePose->getY()+deltaY);
     _wePose->setTheta(newTheta);
 }
  
@@ -690,12 +693,13 @@ void Robot::_updateNSPose() {
     float newTheta = _getNSTransTheta();
     
     if (lastTheta > (3/2.0)*PI && newTheta < PI/2.0) {
-        _passed2PIns = !_passed2PIns;
+        _nsPose->modifyRotations(1);
     }
     else if (lastTheta < PI/2.0 && newTheta > (3/2.0)*PI) {
-        _passed2PIns = !_passed2PIns;
+        _nsPose->modifyRotations(-1);
     }
     
+    /*
     if (_passed2PIns && (lastTheta > PI && newTheta < PI)) {
         _nsPose->modifyRotations(1);
         _passed2PIns = false;
@@ -704,7 +708,8 @@ void Robot::_updateNSPose() {
         _nsPose->modifyRotations(-1);
         _passed2PIns = false;
     }
-
+    */
+    
     _nsPose->setX(newX);
     _nsPose->setY(newY);
     _nsPose->setTheta(newTheta);
