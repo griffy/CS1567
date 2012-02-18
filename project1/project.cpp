@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
     //bases[4] = new Pose(340, 183, 0); // fake base between 1 & two
 	bases[1] = new Pose(300, 183, 0); // base 2
     bases[2] = new Pose(326, 183, 0); // fake base
-	bases[3] = new Pose(320, 415, 0); // base 3	
+	bases[3] = new Pose(320, 415, 0); // base 3
     bases[4] = new Pose(318, 386, 0); // fake base
     bases[5] = new Pose(49, 386, 0); // base 4
     bases[6] = new Pose(0, 0, 0); // base 5/0

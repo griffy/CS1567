@@ -10,13 +10,13 @@ LIB_LINK_NEW=-lopencv_core -lopencv_imgproc -lopencv_highgui -lm -lgslcblas -L/u
 all: $(OBJS)
 	g++ $(CFLAGS) -o project.out $(OBJS) $(CPP_LIB_FLAGS) $(LIB_LINK)
 
-data: $(DATA_OBJS)
+data: $(DATA_OBJS) constants.h
 	g++ $(CFLAGS) -o collectData.out $(DATA_OBJS) $(CPP_LIB_FLAGS) $(LIB_LINK)
 
-new: $(OBJS)
+new: $(OBJS) constants.h
 	g++ $(CFLAGS) -o project.out $(OBJS) $(CPP_LIB_FLAGS) $(LIB_LINK_NEW)
 
-project.o: project.cpp robot.h pose.h firfilter.h kalman.h PID.h
+project.o: project.cpp robot.h pose.h firfilter.h kalman.h PID.h constants.h
 	g++ $(CFLAGS) -c project.cpp
 
 robot.o: robot.cpp robot.h pose.h firfilter.h kalman.h utilities.h PID.h
