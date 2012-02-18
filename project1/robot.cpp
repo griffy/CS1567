@@ -306,10 +306,6 @@ void Robot::update() {
         newTheta = .3;
     }
 
-    //_kalmanFilter->setNSUncertainty(.15, .15, .08);
-    //printf("certainties: %f %f %f\n", newX, newY, newTheta);
-    //update the kalman constants for WE
-
     if (getStrength()>13222) { // It's OVER 9000
         //reset the theta on the we
         _wePose->setTheta(_nsPose->getTheta());
@@ -318,18 +314,18 @@ void Robot::update() {
 
     if (_speed == 0) {
         printf("speed: 0\n");
-        //_kalmanFilter->setVelocity(0.0, 0.0, 0.0);
+        _kalmanFilter->setVelocity(0.0, 0.0, 0.0);
     }
     else {
     	if(_movingForward){
     		float speedX = (_speedDistance/_forwardSpeed[_speed])*cos(_pose->getTheta());
     		float speedY = (_speedDistance/_forwardSpeed[_speed])*sin(_pose->getTheta());
     		printf("speed: %f, %f\n", speedX, speedY);
-    		//_kalmanFilter->setVelocity(speedX, speedY, 0.0);
+    		_kalmanFilter->setVelocity(speedX, speedY, 0.0);
     	}
     	else {
     		printf("speed theta: %f\n", (2*PI)/_turnSpeed[_turnDirection][_speed]);
-    		//_kalmanFilter->setVelocity(0.0, 0.0, (2*PI)/_turnSpeed[_turnDirection][_speed]);
+    		_kalmanFilter->setVelocity(0.0, 0.0, (2*PI)/_turnSpeed[_turnDirection][_speed]);
     	}
     }
     // pass updated poses to kalman filter and update main pose
