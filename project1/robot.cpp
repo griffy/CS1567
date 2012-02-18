@@ -678,6 +678,10 @@ void Robot::_updateWEPose() {
     }
     */
 
+    printf("WE lastTheta: %f\n", lastTheta);
+    printf("WE deltaTheta: %f\n", dTheta);
+    printf("WE newTheta: %f\n", newTheta);
+
     _wePose->setX(_wePose->getX()+deltaX);
     _wePose->setY(_wePose->getY()+deltaY);
     _wePose->setTheta(newTheta);
@@ -709,6 +713,10 @@ void Robot::_updateNSPose() {
         _passed2PIns = false;
     }
     */
+
+    printf("NS lastTheta: %f\n", lastTheta);
+    printf("NS deltaTheta: %f\n", newTheta-lastTheta);
+    printf("NS newTheta: %f\n", newTheta);
 
     _nsPose->setX(newX);
     _nsPose->setY(newY);
