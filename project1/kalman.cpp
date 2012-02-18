@@ -41,6 +41,14 @@ void Kalman::filter(Pose *nsPose, Pose *wePose) {
 	_pose->setTotalTheta(_track[2]);
 }
 
+void Kalman::setVelocity(float x, float y, float theta){
+	_velocity[0] = x;
+	_velocity[1] = y;
+	_velocity[2] = theta;
+
+	rovioKalmanFilterSetVelocity(_kf, _velocity);
+}
+
 void Kalman::setUncertainty(float procX, float procY, float procTheta, 
 						    float nsX, float nsY, float nsTheta, 
 						    float weX, float weY, float weTheta) {
@@ -55,14 +63,6 @@ void Kalman::setUncertainty(float procX, float procY, float procTheta,
 	_uncertainties[8] = weTheta;
 
 	rovioKalmanFilterSetUncertainty(_kf, _uncertainties);
-}
-
-void Kalman::setVelocity(float x, float y, float theta){
-	_velocity[0] = x;
-	_velocity[1] = y;
-	_velocity[2] = theta;
-
-	rovioKalmanFilterSetVelocity(_kf, _velocity);
 }
 
 void Kalman::setProcUncertainty(float x, float y, float theta){
