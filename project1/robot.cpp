@@ -661,10 +661,10 @@ void Robot::_updateWEPose() {
     float newTheta = Util::normalizeTheta(lastTheta - dTheta);
     
     if (lastTheta > (3/2.0)*PI && newTheta < PI/2.0) {
-        _wePose->modifyRotations(1);
+        _wePose->modifyRotations(-1);
     }
     else if (lastTheta < PI/2.0 && newTheta > (3/2.0)*PI) {
-        _wePose->modifyRotations(-1);
+        _wePose->modifyRotations(1);
     }
 
     /*
