@@ -113,7 +113,7 @@ private:
 	//time values for turning velocity. need to be divided by a constant to get it into radians
 	//these times are time to turn 2*PI radians
 	float _turnSpeed[2][11];	
-	char _turningRight;			// value of 1 means turning right, 0 means left
+	char _turnDirection;			// value of 1 means turning right, 0 means left
 	bool _movingForward;		// set if moving forward/stopped
 
     int _failLimit;

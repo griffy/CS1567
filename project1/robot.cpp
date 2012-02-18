@@ -18,8 +18,8 @@
 
 #define MAX_FILTER_TAPS 7
 
-#define MAX_THETA_ERROR 0.5236 // 30 degrees
-// .26 // 15 degrees
+//#define MAX_THETA_ERROR 0.5236 // 30 degrees
+#define MAX_THETA_ERROR 0.26 // 15 degrees
 #define MAX_DIST_ERROR 15.0 // in cm
 
 
@@ -98,7 +98,7 @@ Robot::Robot(std::string address, int id) {
 	_turnSpeed[1][9]=5.35;
 	_turnSpeed[1][10]=5.45;
 
-	_turningRight=0;
+	_turnDirection=0;
 	_movingForward=true;
 	_speedDistance=116; // cm
 
@@ -230,7 +230,7 @@ void Robot::moveTo(float x, float y) {
 		float goal = _pose->getTheta()+thetaError;
 		printf("Finished MoveTo ==> goal=%f\n", goal);
         if (thetaError != 0) {
-            turnTo(goal, MAX_THETA_ERROR); // FIXME: should be -?
+            turnTo(goal, MAX_THETA_ERROR);
         }
     } while (thetaError != 0);
 
@@ -373,14 +373,14 @@ void Robot::moveForward(int speed) {
 }
 
 void Robot::turnLeft(int speed) {
-	_turningRight=0;
+	_turnDirection=0;
 	_movingForward=false;
 	_speed=speed;
     _robotInterface->Move(RI_TURN_LEFT, speed);
 }
 
 void Robot::turnRight(int speed) {
-	_turningRight=1;
+	_turnDirection=1;
 	_movingForward=false;
 	_speed=speed;
     _robotInterface->Move(RI_TURN_RIGHT, speed);
@@ -440,12 +440,12 @@ void Robot::update() {
 	if(_movingForward){
 		float speedX = _speedDistance/(_forwardSpeed[_speed])*cos(_pose->getTheta());
 		float speedY = _speedDistance/(_forwardSpeed[_speed])*sin(_pose->getTheta());
-		printf("Speed: %f, %f\n", speedX, speedY);
-		//_kalmanFilter->setVelocity(speedX, speedY, 0.0);
+		printf("speed: %f, %f\n", speedX, speedY);
+		_kalmanFilter->setVelocity(speedX, speedY, 0.0);
 	}
 	else {
-		printf("Speed theta: %f\n", (2*PI)/_turnSpeed[_turningRight][_speed]);
-		//_kalmanFilter->setVelocity(0.0,0.0, _turnSpeed[_turningRight][_speed]);
+		printf("speed theta: %f\n", (2*PI)/_turnSpeed[_turnDirection][_speed]);
+		_kalmanFilter->setVelocity(0.0, 0.0, (2*PI)/_turnSpeed[_turnDirection][_speed]);
 	}
     // pass updated poses to kalman filter and update main pose
     _kalmanFilter->filter(_nsPose, _wePose);
