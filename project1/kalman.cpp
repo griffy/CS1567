@@ -23,9 +23,11 @@ Kalman::Kalman(Pose *initialPose) {
     for (int i = 0; i < 9; i++) {
         _track[i] = 0;
     }
+    /*
     setUncertainty(0.05, 0.05, 0.05, 
     			   0.05, 0.05, 0.05, 
     			   0.05, 0.05, 0.05);
+   	*/
 }
 
 Kalman::~Kalman() {}

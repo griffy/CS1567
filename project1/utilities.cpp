@@ -2,6 +2,7 @@
 #include "constants.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 namespace Util {
 	float nsToCM(float ticks) {
@@ -41,21 +42,12 @@ namespace Util {
 	    //return *mC;
 	}
 
-	float denormalizeTheta(float theta) {
-        if (theta >= PI) {
-            theta -= 2*PI;
-        }
-        else if (theta <= -PI) {
-            theta += 2*PI;
-        }
-        return theta;
-	}
-
+	/* Input: A number in range [-pi, pi], or > 2pi
+	   Returns: A number in range [0, 2pi]
+	*/
 	float normalizeTheta(float theta) {
-        if (theta > 2*PI) {
-            theta -= 2*PI;
-        }
-        else if (theta < 0) {
+		theta = fmod(theta, 2*PI);
+        while (theta < 0) {
             theta += 2*PI;
         }
         return theta;

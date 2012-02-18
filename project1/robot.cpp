@@ -114,7 +114,7 @@ void Robot::moveTo(float x, float y) {
     do {
 		printf("We are in room: %d\n", getRoom());
         thetaError = moveToUntil(x, y, MAX_THETA_ERROR);
-		float goal = _pose->getTheta() + thetaError;
+		float goal = Util::normalizeTheta(_pose->getTheta() + thetaError);
 		printf("Finished MoveTo ==> goal=%f\n", goal);
         if (thetaError != 0) {
             turnTo(goal, MAX_THETA_ERROR);
@@ -155,17 +155,11 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
         xError = x - _pose->getX();
         
         thetaDesired = atan2(yError, xError);
-        thetaDesired = (float)(fmod(2*PI+thetaDesired, 2*PI));
-
-        /*
-        thetaDesired = acos(xError / (sqrt(yError*yError + xError*xError)));
-        if (yError < 0) {
-            thetaDesired += PI;
-        }*/
+        thetaDesired = Util::normalizeTheta(thetaDesired);
 
         printf("desired theta: %f\n", thetaDesired);
 
-        thetaError = Util::denormalizeTheta(thetaDesired - _pose->getTheta());
+        thetaError = thetaDesired - _pose->getTheta();
 
         distError = sqrt(yError*yError + xError*xError);
 
@@ -203,7 +197,7 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
         }
         
         theta = _pose->getTheta();
-        thetaError = Util::denormalizeTheta(thetaGoal - theta);
+        thetaError = thetaGoal - theta;
 
 		printf("theta goal: %f\n", thetaGoal);
 
@@ -248,22 +242,22 @@ void Robot::moveForward(int speed) {
 }
 
 void Robot::turnLeft(int speed) {
-	_turnDirection=0;
-	_movingForward=false;
-	_speed=speed;
+	_turnDirection = 0;
+	_movingForward = false;
+	_speed = speed;
     _robotInterface->Move(RI_TURN_LEFT, speed);
 }
 
 void Robot::turnRight(int speed) {
-	_turnDirection=1;
-	_movingForward=false;
-	_speed=speed;
+	_turnDirection = 1;
+	_movingForward = false;
+	_speed = speed;
     _robotInterface->Move(RI_TURN_RIGHT, speed);
 }
 
 void Robot::stop() {
-	_movingForward=true;
-	_speed=0;
+	_movingForward = true;
+	_speed = 0;
     _robotInterface->Move(RI_STOP, 0);
 }
 
@@ -308,8 +302,7 @@ void Robot::update() {
 
     if (getStrength()>13222) { // It's OVER 9000
         //reset the theta on the we
-        _wePose->setTheta(_nsPose->getTheta());
-        _wePose->setNumRotations(_nsPose->getNumRotations());
+        _wePose->setTotalTheta(_nsPose->getTotalTheta());
     }
 
     if (_speed == 0) {
@@ -633,13 +626,8 @@ float Robot::_getNSTransTheta() {
     int room = getRoom()-2;
     result -= (ROOM_ROTATION[room] * (PI/180.0));
     
-    if (result < -PI) {
-        result += 2*PI;
-    }
-    
-    if (result < 0) {
-        result += 2*PI;
-    }
+    // convert from [-pi, pi] to [0, 2pi]
+    result = Util::normalizeTheta(result);
 
     return result;
 }
