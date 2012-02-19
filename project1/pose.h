@@ -35,6 +35,7 @@ private:
 	float _x;
 	float _y;
 	float _theta;
+	float _totalTheta;
 };
 
 #endif
