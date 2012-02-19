@@ -47,8 +47,10 @@ void Pose::modifyRotations(int num) {
 }
 
 void Pose::setTotalTheta(float totalTheta) {
+	//_totalTheta = totalTheta;
+	//_numRotations = (int) _totalTheta/(2*PI);
 	setTheta(Util::normalizeTheta(totalTheta));
-	setNumRotations((int)(getTheta() - totalTheta)/2*PI);
+	setNumRotations((int)(totalTheta/2*PI));
 }
 
 float Pose::getTotalTheta() {
