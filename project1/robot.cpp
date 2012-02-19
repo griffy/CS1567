@@ -315,9 +315,7 @@ void Robot::update() {
     if (getStrength()>13222) { // It's OVER 9000
         //reset the theta on the we
         _wePose->setTheta(_nsPose->getTheta());
-        // ns and we count rotations in opposite directions, so
-        // account for this
-        _wePose->setNumRotations(-_nsPose->getNumRotations());
+        _wePose->setNumRotations(_nsPose->getNumRotations());
     }
 
 	printf("speed: %d\n", _speed);
@@ -641,11 +639,12 @@ float Robot::_getNSHalfTransY() {
 // TODO?
 float Robot::_getNSTransTheta() {
     float result = _getNSTheta();
+    // convert from [-pi, pi] to [0, 2pi]
+    result = Util::normalizeTheta(result);
     int room = getRoom()-2;
     result -= (ROOM_ROTATION[room] * (PI/180.0));
     
-    // convert from [-pi, pi] to [0, 2pi]
-    result = Util::normalizeTheta(result);
+
 
     return result;
 }
@@ -667,11 +666,11 @@ void Robot::_updateWEPose() {
     }
     
     if (_passed2PIwe && (lastTheta > PI && newTheta < PI)) {
-        _wePose->modifyRotations(1);
+        _wePose->modifyRotations(-1);
         _passed2PIwe = false;
     }
     else if(_passed2PIwe && (lastTheta < PI && newTheta > PI)) {
-        _wePose->modifyRotations(-1);
+        _wePose->modifyRotations(1);
         _passed2PIwe = false;
     }
     
