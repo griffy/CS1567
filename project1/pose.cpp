@@ -80,10 +80,10 @@ void Pose::toArrayForKalman(float *arr) {
 	arr[1] = _y;
 	float totalTheta = getTotalTheta();
 	if (_numRotations == 0) {
-		if (totalTheta < 0) {
+		if (totalTheta < 0 && totalTheta > -PI) {
 			totalTheta -= 2*PI;
 		}
-		else {
+		else if (totalTheta > 0 && totalTheta < PI) {
 			totalTheta += 2*PI;
 		}
 	}
