@@ -74,7 +74,7 @@ void Pose::add(float deltaX, float deltaY, float deltaTheta) {
 void Pose::toArrayForKalman(float *arr) {
 	arr[0] = _x;
 	arr[1] = _y;
-	arr[2] = getTotalTheta();
+	arr[2] = fabs(getTotalTheta());
 }
 
 float Pose::getX() {
