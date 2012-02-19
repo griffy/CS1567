@@ -516,7 +516,7 @@ float Robot::_getNSTransX() {
 
     Util::mMult(transform, 1, 2, coords, 2, 1, &result);
 
-    print("ns x after transform: %f\n", result);
+    printf("ns x after transform: %f\n", result);
     //scale
     //result /= ROOM_SCALE[room][0];
     result /= ROOM_SCALE[0][room];
