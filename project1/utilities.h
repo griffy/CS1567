@@ -12,7 +12,7 @@ namespace Util {
 
 	void mMult(float (*mA), int lA, int hA, float (*mB), int lB, int hB, float (*mC));
 
-	float denormalizeTheta(float theta);
+	float normalizeThetaError(float thetaError);
 	float normalizeTheta(float theta);
 };
 

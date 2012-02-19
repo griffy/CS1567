@@ -111,6 +111,13 @@ void Robot::prefillData() {
 void Robot::moveTo(float x, float y) {
     float thetaError;
 
+    _robotInterface->Move(RI_HEAD_MIDDLE, 1);
+
+    printf("prefilling data for move...\n");
+    for (int i = 0; i < MAX_FILTER_TAPS; i++) {
+        update();
+    }
+    printf("beginning move\n");
     do {
 		printf("We are in room: %d\n", getRoom());
         thetaError = moveToUntil(x, y, MAX_THETA_ERROR);
@@ -123,6 +130,8 @@ void Robot::moveTo(float x, float y) {
 
     _distancePID->flushPID();
     _thetaPID->flushPID();
+
+    _robotInterface->Move(RI_HEAD_DOWN, 1);
 }
 
 // Moves to a location in the global coordinate system (in cm) 
@@ -160,12 +169,7 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
         printf("desired theta: %f\n", thetaDesired);
 
         thetaError = thetaDesired - _pose->getTheta();
-        if (thetaError <= -PI) {
-            thetaError += 2*PI;
-        }
-        else if (thetaError >= 2*PI){
-			thetaError -= 2*PI;
-		}
+        thetaError = Util::normalizeThetaError(thetaError);
 
         distError = sqrt(yError*yError + xError*xError);
 
@@ -198,18 +202,11 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
     printf("adjusting theta...\n");
     do {
 		//stop();
-        for (int i = 0; i < MAX_FILTER_TAPS/2; i++) {
-            update();
-        }
+        update();
         
         theta = _pose->getTheta();
         thetaError = thetaGoal - theta;
-        if (thetaError <= -PI) {
-            thetaError += 2*PI;
-        }
-        else if (thetaError >= 2*PI){
-			thetaError -= 2*PI;
-		}
+        thetaError = Util::normalizeThetaError(thetaError);
         
 		printf("theta goal: %f\n", thetaGoal);
 
@@ -241,7 +238,7 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
 
 void Robot::moveForward(int speed) {
 	_movingForward=true;
-	printf("Moving forward");
+	printf("Moving forward\n");
 	
     if (!isThereABitchInMyWay()) {
 		_speed = speed;
@@ -250,6 +247,9 @@ void Robot::moveForward(int speed) {
     else {
 		printf("Error, something in the way\n");
 		stop();
+        // TODO: remove? // turn 90 degrees
+        turnTo(Util::normalizeTheta(_pose->getTheta()+DEGREE_90),
+               MAX_THETA_ERROR);
 	}
 }
 
@@ -311,12 +311,13 @@ void Robot::update() {
     if (newTheta > 0.3) {
         newTheta = .3;
     }
-
+/*
     if (getStrength()>13222) { // It's OVER 9000
         //reset the theta on the we
-        _wePose->setTotalTheta(_nsPose->getTotalTheta());
+        _wePose->setTheta(_nsPose->getTheta());
+        _wePose->setNumRotations(_nsPose->getNumRotations());
     }
-
+*/
 	printf("speed: %d\n", _speed);
     if (_speed == 0) {
 		printf("speed is zero\n");
@@ -504,27 +505,33 @@ float Robot::_getNSTransX() {
 
     coords[1] = _getNSX();
     coords[0] = _getNSY();
+    printf("ns x to start: %f\n", coords[1]);
     transform[0] = cos(ROOM_ROTATION[room]);
     transform[1] = -sin(ROOM_ROTATION[room]);
 
-    if (ROOM_FLIPX[room-2]) {
+    if (ROOM_FLIPX[room]) {
         transform[1] = -transform[1];
         transform[0] = -transform[0];
     }
 
     Util::mMult(transform, 1, 2, coords, 2, 1, &result);
 
+    printf("ns x after transform: %f\n", result);
     //scale
-    result /= ROOM_SCALE[room][0];
+    //result /= ROOM_SCALE[room][0];
+    result /= ROOM_SCALE[0][room];
+
+    printf("ns x after scale: %f\n", result);
 
     //move
     float roomShiftX = COL_OFFSET[0] + ROOM_ORIGINS_FROM_COL[room][0];
     result += roomShiftX;
 
+    printf("ns x after shift: %f\n", result);
     return result;
 }
 
-/*
+
 // TEMP FUNCTION!
 //
 // Returns: transformed north star x estimate of where
@@ -557,7 +564,7 @@ float Robot::_getNSHalfTransX() {
 
     return result;
 }
-*/
+
 
 // Returns: transformed north star y estimate of where
 // Returns: transformed north star y estimate of where
@@ -583,7 +590,8 @@ float Robot::_getNSTransY() {
     Util::mMult(transform, 1, 2, coords, 2, 1, &result);
 
     //scale
-    result /= ROOM_SCALE[room][1];
+    //result /= ROOM_SCALE[room][1];
+    result /= ROOM_SCALE[1][room];
 
     //move
     float roomShiftY = COL_OFFSET[1] + ROOM_ORIGINS_FROM_COL[room][1];
@@ -597,7 +605,7 @@ float Robot::_getNSTransY() {
     return result;
 }
 
-/*
+
 // TEMP FUNCTION!
 //
 // Returns: transformed north star y estimate of where
@@ -631,7 +639,7 @@ float Robot::_getNSHalfTransY() {
 
     return result;
 }
-*/
+
 
 // Returns: transformed north star theta estimate of where
 //          robot should now be in global coordinate system
@@ -640,10 +648,8 @@ float Robot::_getNSTransTheta() {
     float result = _getNSTheta();
     int room = getRoom()-2;
     result -= (ROOM_ROTATION[room] * (PI/180.0));
-    
     // convert from [-pi, pi] to [0, 2pi]
     result = Util::normalizeTheta(result);
-
     return result;
 }
 
@@ -658,10 +664,8 @@ void Robot::_updateWEPose() {
    
     float newTheta = Util::normalizeTheta(lastTheta + dTheta);
     
-    if (lastTheta > (3/2.0)*PI && newTheta < PI/2.0) {
-        _passed2PIwe = !_passed2PIwe;
-    }
-    else if (lastTheta < PI/2.0 && newTheta > (3/2.0)*PI) {
+    if ((lastTheta > (3/2.0)*PI && newTheta < PI/2.0) || 
+        (lastTheta < PI/2.0 && newTheta > (3/2.0)*PI)) {
         _passed2PIwe = !_passed2PIwe;
     }
     
@@ -673,8 +677,14 @@ void Robot::_updateWEPose() {
         _wePose->modifyRotations(-1);
         _passed2PIwe = false;
     }
+    
 
-    _wePose->add(deltaX, deltaY, 0);
+    printf("WE lastTheta: %f\n", lastTheta);
+    printf("WE deltaTheta: %f\n", dTheta);
+    printf("WE newTheta: %f\n", newTheta);
+
+    _wePose->setX(_wePose->getX()+deltaX);
+    _wePose->setY(_wePose->getY()+deltaY);
     _wePose->setTheta(newTheta);
 }
  
@@ -687,10 +697,8 @@ void Robot::_updateNSPose() {
     float newY = _getNSTransY();
     float newTheta = _getNSTransTheta();
     
-    if (lastTheta > (3/2.0)*PI && newTheta < PI/2.0) {
-        _passed2PIns = !_passed2PIns;
-    }
-    else if (lastTheta < PI/2.0 && newTheta > (3/2.0)*PI) {
+    if ((lastTheta > (3/2.0)*PI && newTheta < PI/2.0) || 
+        (lastTheta < PI/2.0 && newTheta > (3/2.0)*PI)) {
         _passed2PIns = !_passed2PIns;
     }
     
@@ -698,10 +706,14 @@ void Robot::_updateNSPose() {
         _nsPose->modifyRotations(1);
         _passed2PIns = false;
     }
-    else if (_passed2PIns && (lastTheta < PI && newTheta > PI)) {
+    else if(_passed2PIns && (lastTheta < PI && newTheta > PI)) {
         _nsPose->modifyRotations(-1);
         _passed2PIns = false;
     }
+
+    printf("NS lastTheta: %f\n", lastTheta);
+    printf("NS deltaTheta: %f\n", newTheta-lastTheta);
+    printf("NS newTheta: %f\n", newTheta);
 
     _nsPose->setX(newX);
     _nsPose->setY(newY);

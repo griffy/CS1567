@@ -42,7 +42,17 @@ namespace Util {
 	    //return *mC;
 	}
 
-	/* Input: A number in range [-pi, pi], or > 2pi
+	float normalizeThetaError(float thetaError) {
+		while (thetaError <= -PI) {
+            thetaError += 2*PI;
+        }
+        while (thetaError >= PI) {
+            thetaError -= 2*PI;
+        }
+        return thetaError;
+	}
+
+	/* Input: A number in range [-inf, inf] (usually [-pi, pi])
 	   Returns: A number in range [0, 2pi]
 	*/
 	float normalizeTheta(float theta) {
