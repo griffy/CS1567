@@ -202,9 +202,7 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
     printf("adjusting theta...\n");
     do {
 		//stop();
-        for (int i = 0; i < MAX_FILTER_TAPS/2; i++) {
-            update();
-        }
+        update();
         
         theta = _pose->getTheta();
         thetaError = thetaGoal - theta;
