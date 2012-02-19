@@ -11,7 +11,7 @@ Kalman::Kalman(Pose *initialPose) {
 	_pose = initialPose;
     // convert the pose to a 3-element array with x, y, and theta
 	float initialPoseArr[3];
-	initialPose->toArray(initialPoseArr);
+	initialPose->toArrayForKalman(initialPoseArr);
     // create a zero'd velocity array for x, y, and theta
 	_velocity[0] = 0;
 	_velocity[1] = 0;
@@ -31,8 +31,8 @@ void Kalman::filter(Pose *nsPose, Pose *wePose) {
     // convert the poses to 3-element arrays
 	float nsPoseArr[3];
 	float wePoseArr[3];
-	nsPose->toArray(nsPoseArr);
-	wePose->toArray(wePoseArr);
+	nsPose->toArrayForKalman(nsPoseArr);
+	wePose->toArrayForKalman(wePoseArr);
     // update the kalman filter with the new data
 	rovioKalmanFilter(_kf, nsPoseArr, wePoseArr, _track);
     // update the current pose to its new estimate

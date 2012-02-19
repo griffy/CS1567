@@ -12,7 +12,7 @@ public:
     void setY(float y);
     void setTheta(float theta);
     void add(float deltaX, float deltaY, float deltaTheta);
-    void toArray(float *arr);
+    void toArrayForKalman(float *arr);
 
 	//gets the pose difference between the 2 poses
 	void difference(Pose* destination, Pose* pose1, Pose* pose2);
@@ -23,6 +23,7 @@ public:
 	float getX();
 	float getY();
 	float getTheta();
+	void setTotalTheta(float totalTheta);
 	float getTotalTheta();
 	void setNumRotations(int rot);
 	int getNumRotations();

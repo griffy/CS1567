@@ -46,6 +46,11 @@ void Pose::modifyRotations(int num) {
 	_numRotations += num;
 }
 
+void Pose::setTotalTheta(float totalTheta) {
+	setTheta(Util::normalizeTheta(totalTheta));
+	setNumRotations((int)(totalTheta-getTheta())/2*PI);
+}
+
 float Pose::getTotalTheta() {
 	return _numRotations * 2*PI + _theta;
 }
@@ -64,7 +69,7 @@ void Pose::add(float deltaX, float deltaY, float deltaTheta) {
 	_theta += deltaTheta;
 }
 
-void Pose::toArray(float *arr) {
+void Pose::toArrayForKalman(float *arr) {
 	arr[0] = _x;
 	arr[1] = _y;
 	arr[2] = getTotalTheta();
