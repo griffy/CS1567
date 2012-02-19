@@ -492,7 +492,7 @@ float Robot::_getWETransDeltaTheta() {
     float rearDeltaX = _getWEDeltaXRear();
 
     // TODO: Should the delta be adjusted according to previous (global) theta?
-    return Util::weToCM(rearDeltaX)/(ROBOT_DIAMETER / 2.0);
+    return -Util::weToCM(rearDeltaX)/(ROBOT_DIAMETER / 2.0);
 }
 
 // Returns: transformed north star x estimate of where
