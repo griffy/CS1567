@@ -12,6 +12,15 @@
 #define NUMBASES 7
 
 int main(int argc, char *argv[]) {
+	
+	FILE *fp=fopen("/dev/pts/4","w");
+
+    if(fp==NULL)
+        printf("\nfp null\n");
+    else
+		fprintf(fp, "Writing some results to this terminal\n");
+
+
 	if (argc < 2) {
 		printf("ERROR: need argument for robot name\n");
 		return -1;
@@ -33,8 +42,10 @@ int main(int argc, char *argv[]) {
 
     for (int i = 0; i < NUMBASES; i++) {
     	printf("moving to base %d...\n", i+1);
+		fprintf(fp, "Moving to base: %d...x=%f  y=%f\n", i,bases[i]->getX(), bases[i]->getY());
     	robot->moveTo(bases[i]->getX(), bases[i]->getY());
     	printf("reached base %d!\n\n\n\n\n\n\n\n\n\n\n\n\n\n", i+1);
+		fprintf(fp, "reached base %d!\n", i+1);
     }
 
     printf("done!\n");
@@ -43,6 +54,8 @@ int main(int argc, char *argv[]) {
 	for (int i = 0; i < NUMBASES; i++) {
 		delete bases[i];
 	}
+
+    fclose(fp);
 
 	return 0;
 }
