@@ -531,7 +531,7 @@ float Robot::_getNSTransX() {
     return result;
 }
 
-/*
+
 // TEMP FUNCTION!
 //
 // Returns: transformed north star x estimate of where
@@ -564,7 +564,7 @@ float Robot::_getNSHalfTransX() {
 
     return result;
 }
-*/
+
 
 // Returns: transformed north star y estimate of where
 // Returns: transformed north star y estimate of where
@@ -605,7 +605,7 @@ float Robot::_getNSTransY() {
     return result;
 }
 
-/*
+
 // TEMP FUNCTION!
 //
 // Returns: transformed north star y estimate of where
@@ -639,7 +639,7 @@ float Robot::_getNSHalfTransY() {
 
     return result;
 }
-*/
+
 
 // Returns: transformed north star theta estimate of where
 //          robot should now be in global coordinate system
