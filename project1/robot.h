@@ -14,6 +14,32 @@
 #include <robot_if++.h>
 #include <string>
 
+#define ROSIE 0
+#define BENDER 1
+#define JOHNNY5 2
+#define OPTIMUS 3
+#define WALLE 4
+#define GORT 5
+
+const std::string ROBOTS[] = {
+    "rosie",
+    "bender",
+    "johnny5",
+    "optimus",
+    "walle",
+    "gort"
+};
+
+// FIXME: replace with real addresses
+const std::string ROBOT_ADDRESSES[] = {
+    "192.168.1.41",
+    "192.168.1.42",
+    "192.168.1.43",
+    "192.168.1.44",
+    "192.168.1.45",
+    "192.168.1.46"
+};
+
 class Robot {
 public:
     Robot(std::string address, int id);
@@ -38,10 +64,11 @@ public:
     bool isThereABitchInMyWay();
 	int getStrength();
 
-    int nameToInt();
-    void printOpeningDialog();
+    int getRoom();
+
+    void printBeginDialog();
     void printSuccessDialog();
-    void printFailureDialog();
+    void printFailDialog();
 
     std::string name;
 
@@ -102,6 +129,19 @@ private:
 
 	bool _passed2PIns;
 	bool _passed2PIwe;
+	
+	// stores the most recent speed that the robot was told. set during both turns and moving straight instructions
+	int _speed;
+	
+	// distance the robot traveled in the time specified below
+	float _speedDistance;
+	//time values for forward velocity, in terms of time per _speedDistance.  must divide by _speedDistance to get velocity
+	float _forwardSpeed[11];
+	//time values for turning velocity. need to be divided by a constant to get it into radians
+	//these times are time to turn 2*PI radians
+	float _turnSpeed[2][11];	
+	char _turnDirection;			// value of 1 means turning right, 0 means left
+	bool _movingForward;		// set if moving forward/stopped
 
     int _failLimit;
 

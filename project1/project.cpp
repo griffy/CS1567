@@ -28,25 +28,19 @@ int main(int argc, char *argv[]) {
     bases[6] = new Pose(0, 0, 0); // base 5/0
 
 	Robot *robot = new Robot(argv[1], 0);
-	printf("Battery level: %d\n", robot->_robotInterface->Battery());
-	
+
 	printf("battery: %d\n", robot->_robotInterface->Battery());
 
-    for (int i = 0; i < 2; i++) {
- 		printf("prefilling data\n");
-		for (int j = 0; j < 5; j++) {
-			robot->update();
-		}
-		
+    for (int i = 0; i < NUMBASES; i++) {
     	printf("moving to base %d...\n", i+1);
     	robot->moveTo(bases[i]->getX(), bases[i]->getY());
-    	printf("reached base %d!\n", i+1);
+    	printf("reached base %d!\n\n\n\n\n\n\n\n\n\n\n\n\n\n", i+1);
     }
 
-    printf("done!");
+    printf("done!\n");
 
 	delete robot;
-	for (int i=0; i<NUMBASES; i++){
+	for (int i = 0; i < NUMBASES; i++) {
 		delete bases[i];
 	}
 
