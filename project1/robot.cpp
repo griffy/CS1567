@@ -311,13 +311,13 @@ void Robot::update() {
     if (newTheta > 0.3) {
         newTheta = .3;
     }
-
+/*
     if (getStrength()>13222) { // It's OVER 9000
         //reset the theta on the we
         _wePose->setTheta(_nsPose->getTheta());
         _wePose->setNumRotations(_nsPose->getNumRotations());
     }
-
+*/
 	printf("speed: %d\n", _speed);
     if (_speed == 0) {
 		printf("speed is zero\n");
