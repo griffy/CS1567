@@ -508,7 +508,7 @@ float Robot::_getNSTransX() {
     transform[0] = cos(ROOM_ROTATION[room]);
     transform[1] = -sin(ROOM_ROTATION[room]);
 
-    if (ROOM_FLIPX[room-2]) {
+    if (ROOM_FLIPX[room]) {
         transform[1] = -transform[1];
         transform[0] = -transform[0];
     }
