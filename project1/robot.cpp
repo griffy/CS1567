@@ -639,13 +639,10 @@ float Robot::_getNSHalfTransY() {
 // TODO?
 float Robot::_getNSTransTheta() {
     float result = _getNSTheta();
-    // convert from [-pi, pi] to [0, 2pi]
-    result = Util::normalizeTheta(result);
     int room = getRoom()-2;
     result -= (ROOM_ROTATION[room] * (PI/180.0));
-    
-
-
+    // convert from [-pi, pi] to [0, 2pi]
+    result = Util::normalizeTheta(result);
     return result;
 }
 
