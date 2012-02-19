@@ -38,6 +38,7 @@ void Kalman::filter(Pose *nsPose, Pose *wePose) {
     // update the current pose to its new estimate
 	_pose->setX(_track[0]);
 	_pose->setY(_track[1]);
+	printf("track total theta: %f\n", _track[2]);
 	_pose->setTotalTheta(_track[2]);
 }
 
