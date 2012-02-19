@@ -702,11 +702,11 @@ void Robot::_updateNSPose() {
     }
     
     if (_passed2PIns && (lastTheta > PI && newTheta < PI)) {
-        _nsPose->modifyRotations(1);
+        _nsPose->modifyRotations(-1);
         _passed2PIns = false;
     }
     else if(_passed2PIns && (lastTheta < PI && newTheta > PI)) {
-        _nsPose->modifyRotations(-1);
+        _nsPose->modifyRotations(1);
         _passed2PIns = false;
     }
 
