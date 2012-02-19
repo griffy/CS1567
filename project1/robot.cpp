@@ -505,6 +505,7 @@ float Robot::_getNSTransX() {
 
     coords[1] = _getNSX();
     coords[0] = _getNSY();
+    printf("ns x to start: %f\n", coords[1]);
     transform[0] = cos(ROOM_ROTATION[room]);
     transform[1] = -sin(ROOM_ROTATION[room]);
 
@@ -515,14 +516,18 @@ float Robot::_getNSTransX() {
 
     Util::mMult(transform, 1, 2, coords, 2, 1, &result);
 
+    print("ns x after transform: %f\n", result);
     //scale
     //result /= ROOM_SCALE[room][0];
     result /= ROOM_SCALE[0][room];
+
+    printf("ns x after scale: %f\n", result);
 
     //move
     float roomShiftX = COL_OFFSET[0] + ROOM_ORIGINS_FROM_COL[room][0];
     result += roomShiftX;
 
+    printf("ns x after shift: %f\n", result);
     return result;
 }
 
@@ -587,7 +592,7 @@ float Robot::_getNSTransY() {
     //scale
     //result /= ROOM_SCALE[room][1];
     result /= ROOM_SCALE[1][room];
-    
+
     //move
     float roomShiftY = COL_OFFSET[1] + ROOM_ORIGINS_FROM_COL[room][1];
     result += roomShiftY;
