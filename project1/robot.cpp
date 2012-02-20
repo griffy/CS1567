@@ -84,7 +84,7 @@ Robot::Robot(std::string address, int id) {
 
     _kalmanFilter->setUncertainty(0.05, 0.05, 0.1,
                                   0.01, 0.01, 0.1,
-                                  0.05, 0.05, 0.05);
+                                  0.05, 0.05, 0.15);
 
     prefillData();
 }
