@@ -82,6 +82,10 @@ Robot::Robot(std::string address, int id) {
 	_speedDistance = 116.0; // cm
 	_speed = 0;
 
+    _kalmanFilter->setUncertainty(0.05, 0.05, 0.1,
+                                  0.05, 0.05, 0.1,
+                                  0.05, 0.05, 0.05);
+
     prefillData();
 }
 
@@ -324,13 +328,13 @@ void Robot::update() {
     if (newTheta > 0.3) {
         newTheta = .3;
     }
-
+/*
     if (getStrength()>13222) { // It's OVER 9000
         //reset the theta on the we
         _wePose->setTheta(_nsPose->getTheta());
         _wePose->setNumRotations(_nsPose->getNumRotations());
     }
-
+*/
 	printf("speed: %d\n", _speed);
     if (_speed == 0) {
 		printf("speed is zero\n");
@@ -339,8 +343,8 @@ void Robot::update() {
     }
     else {
     	if(_movingForward){
-    		float speedX = (_speedDistance/_forwardSpeed[_speed])/**cos(_pose->getTheta())*/;
-    		float speedY = (_speedDistance/_forwardSpeed[_speed])/**sin(_pose->getTheta())*/;
+    		float speedX = (_speedDistance/_forwardSpeed[_speed])*cos(_pose->getTheta());
+    		float speedY = (_speedDistance/_forwardSpeed[_speed])*sin(_pose->getTheta());
 			printf("Pose theta: %f\n", _pose->getTheta());
     		printf("speed: %f, %f\n", speedX, speedY);
     		_kalmanFilter->setVelocity(speedX, speedY, 0.0);
@@ -352,10 +356,10 @@ void Robot::update() {
     }
 
     if (getRoom() == ROOM_2) {
-        _kalmanFilter->setNSUncertainty(0.1, 0.2, 0.05);
+        _kalmanFilter->setNSUncertainty(0.1, 0.2, 0.2);
     } 
     else {
-        _kalmanFilter->setNSUncertainty(0.05, 0.05, 0.05);
+        _kalmanFilter->setNSUncertainty(0.05, 0.05, 0.1);
     }
     // pass updated poses to kalman filter and update main pose
     _kalmanFilter->filter(_nsPose, _wePose);
