@@ -11,6 +11,7 @@ public:
     void setX(float x);
     void setY(float y);
     void setTheta(float theta);
+	void setTotalTheta(float totalTheta);
     void add(float deltaX, float deltaY, float deltaTheta);
     void toArrayForKalman(float *arr);
 
@@ -20,14 +21,14 @@ public:
 	//gets the distance (x/y) between the 2 poses
 	float distance(Pose* pose1, Pose* pose2);
 	
+	void setNumRotations(int rot);
+	void modifyRotations(int num);
+	
 	float getX();
 	float getY();
 	float getTheta();
-	void setTotalTheta(float totalTheta);
 	float getTotalTheta();
-	void setNumRotations(int rot);
 	int getNumRotations();
-	void modifyRotations(int num);
 	
 	int _numRotations;
 	

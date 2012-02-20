@@ -1,4 +1,5 @@
 #include "kalman.h"
+#include "constants.h"
 #include <stdio.h>
 
 Kalman::Kalman(Pose *initialPose) {
@@ -33,6 +34,14 @@ void Kalman::filter(Pose *nsPose, Pose *wePose) {
 	float wePoseArr[3];
 	nsPose->toArrayForKalman(nsPoseArr);
 	wePose->toArrayForKalman(wePoseArr);
+
+	//Normalize thetas w.r.t each other
+	if(nsPoseArr[2] - wePoseArr[2] > PI) {
+		wePoseArr[2] += 2*PI;
+	} else if(nsPoseArr[2] - wePoseArr[2] < -PI) {
+		wePoseArr[2] -= 2*PI;
+	}
+
     // update the kalman filter with the new data
 	rovioKalmanFilter(_kf, nsPoseArr, wePoseArr, _track);
     // update the current pose to its new estimate

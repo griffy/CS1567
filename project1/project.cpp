@@ -13,12 +13,12 @@
 
 int main(int argc, char *argv[]) {
 	
-	FILE *fp=fopen("/dev/pts/4","w");
+//	FILE *fp=fopen("/dev/pts/4","w");
 
-    if(fp==NULL)
-        printf("\nfp null\n");
-    else
-		fprintf(fp, "Writing some results to this terminal\n");
+//    if(fp==NULL)
+//        printf("\nfp null\n");
+//    else
+//		fprintf(fp, "\n\n\nNEW RUN. \n\nWriting some results to this terminal\n");
 
 
 	if (argc < 2) {
@@ -28,7 +28,7 @@ int main(int argc, char *argv[]) {
 
     //Base locations within the global coordinate system
 	Pose * bases[NUMBASES];
-	bases[0] = new Pose(340, 0, 0); // base 1
+	bases[0] = new Pose(300, 0, 0); // base 1 (340 w/ WE data)
 	bases[1] = new Pose(229, 183, 0); // base 2
     bases[2] = new Pose(326, 183, 0); // fake base
 	bases[3] = new Pose(392, 300, 0); // base 3
@@ -42,10 +42,10 @@ int main(int argc, char *argv[]) {
 
     for (int i = 0; i < NUMBASES; i++) {
     	printf("moving to base %d...\n", i+1);
-		fprintf(fp, "Moving to base: %d...x=%f  y=%f\n", i,bases[i]->getX(), bases[i]->getY());
+//		fprintf(fp, "Moving to base: %d...x=%f  y=%f\n", i, bases[i]->getX(), bases[i]->getY());
     	robot->moveTo(bases[i]->getX(), bases[i]->getY());
     	printf("reached base %d!\n\n\n\n\n\n\n\n\n\n\n\n\n\n", i+1);
-		fprintf(fp, "reached base %d!\n", i+1);
+//		fprintf(fp, "reached base %d!\n", i+1);
     }
 
     printf("done!\n");
@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
 		delete bases[i];
 	}
 
-    fclose(fp);
+//  fclose(fp);
 
 	return 0;
 }

@@ -69,24 +69,24 @@ int main(int argc, char *argv[]) {
 	
 	
 
-    for (int i = 0; i< 10; i++) {
-        //robot->moveForward(5);
+    for (int i = 0; i< 60; i++) {
+        robot->moveForward(5);
         robot->update();
 		//printf(" WE %f %f %d\t\t",robot->_wePose->getTotalTheta(), robot->_wePose->getTheta(), robot->_wePose->getNumRotations());
 		//printf(" NS %f %f %d\n",robot->_nsPose->getTotalTheta(), robot->_nsPose->getTheta(), robot->_nsPose->getNumRotations());
         //write to global position file
         printf("%d %f,%f,%f \n",robot->_robotInterface->RoomID(),robot->_getNSTransX(),robot->_getNSTransY(),robot->_getNSTransTheta());
-        fprintf(outfileglobal,"%d %f,%f,%f %f %f\n",robot->_robotInterface->RoomID(),robot->_getNSTransX(),robot->_getNSTransY(),robot->_getNSTransTheta(), robot->_getNSHalfTransX(),robot->_getNSHalfTransY());
+        //fprintf(outfileglobal,"%d %f,%f,%f %f %f\n",robot->_robotInterface->RoomID(),robot->_getNSTransX(),robot->_getNSTransY(),robot->_getNSTransTheta(), robot->_getNSHalfTransX(),robot->_getNSHalfTransY());
         //write to global position file
 		printf("current pose: %f %f %f\n", robot->getPose()->getX(), robot->getPose()->getY(), robot->getPose()->getTheta());
 		printf("current ns pose: \t\t\t%f %f %f\n", robot->_nsPose->getX(), robot->_nsPose->getY(), robot->_nsPose->getTheta());
 		printf("current we pose: \t\t\t\t\t%f %f %f\n", robot->_wePose->getX(), robot->_wePose->getY(), robot->_wePose->getTheta());
 		printf("strength: \t\t%d\n\n", robot->getStrength());
-        fprintf(outfileglobal,"%d %f,%f,%f\n",robot->_robotInterface->RoomID(),robot->_getNSTransX(),robot->_getNSTransY(),robot->_getNSTransTheta());
+        fprintf(outfileglobal,"%d %f,%f,%f\n",robot->_robotInterface->RoomID(),robot->_getNSX(),robot->_getNSY(),robot->_getNSTheta());
         fprintf(outfilewe,"%d,%d,%d\n",robot->_robotInterface->getWheelEncoder(RI_WHEEL_LEFT),robot->_robotInterface->getWheelEncoder(RI_WHEEL_RIGHT),robot->_robotInterface->getWheelEncoder(RI_WHEEL_REAR));
 	}
 
-    for (int i = 0; i < 100; i++) {
+/*    for (int i = 0; i < 100; i++) {
         //robot->turnLeft(10);
         robot->update();
         //write to global position file
@@ -111,7 +111,7 @@ int main(int argc, char *argv[]) {
         //fprintf(outfilewe,"%d,%d,%d\n",robot->_robotInterface->getWheelEncoder(RI_WHEEL_LEFT),robot->_robotInterface->getWheelEncoder(RI_WHEEL_RIGHT),robot->_robotInterface->getWheelEncoder(RI_WHEEL_REAR));
     }
 
-
+*/
     fflush(outfileglobal);
     fflush(outfilewe);
     fclose(outfileglobal);

@@ -1,6 +1,8 @@
 #include "robot.h"
 #include <math.h>
 
+#define MAX_TURNS 6
+
 Robot::Robot(std::string address, int id) {
     _robotInterface = new RobotInterface(address, id);
 
@@ -111,7 +113,7 @@ void Robot::prefillData() {
 void Robot::moveTo(float x, float y) {
     float thetaError;
 
-    _robotInterface->Move(RI_HEAD_MIDDLE, 1);
+    //_robotInterface->Move(RI_HEAD_MIDDLE, 1);
 
     printf("prefilling data for move...\n");
     for (int i = 0; i < MAX_FILTER_TAPS; i++) {
@@ -131,7 +133,7 @@ void Robot::moveTo(float x, float y) {
     _distancePID->flushPID();
     _thetaPID->flushPID();
 
-    _robotInterface->Move(RI_HEAD_DOWN, 1);
+    //_robotInterface->Move(RI_HEAD_DOWN, 1);
 }
 
 // Moves to a location in the global coordinate system (in cm) 
@@ -155,7 +157,7 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
                                                               _wePose->getTotalTheta());
         printf("north star x: %f\t\ty: %f\t\ttheta: %f\t\ttotal theta: %f\n", _nsPose->getX(), 
                                                            _nsPose->getY(), _nsPose->getTheta(),
-                                                           _nsPose->getTotalTheta());
+                                                           _nsPose->getTotalTheta(), _nsPose->_numRotations);
         printf("kalman pose x: %f\t\ty: %f\t\ttheta: %f\t\ttotal theta: %f\n", _pose->getX(), 
                                                             _pose->getY(), _pose->getTheta(),
                                                             _pose->getTotalTheta());
@@ -181,6 +183,7 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
 
         distGain = _distancePID->updatePID(distError);
         _thetaPID->updatePID(thetaError);
+		printf("Distance gain: %f\n", distGain);
 
         if (fabs(thetaError) > thetaErrorLimit/* && xError < MAX_DIST_ERROR+20*/) {
 			printf("Returning with error: %f\n", thetaError);
@@ -199,23 +202,32 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
 
     float thetaGain;
 
+    int numTurns = 0;
+
     printf("adjusting theta...\n");
     do {
-		//stop();
-        update();
-        
+/*	if (numTurns > MAX_TURNS) {
+	    for(int i = 0; i < MAX_FILTER_TAPS/2; i++) {
+                sleep(1.0);
+	        update();
+	    }
+            numTurns = 0;
+	}*/
+	
+	update();
+
         theta = _pose->getTheta();
         thetaError = thetaGoal - theta;
         thetaError = Util::normalizeThetaError(thetaError);
-        
+
 		printf("theta goal: %f\n", thetaGoal);
 
         printf("wheel encoder x: %f\t\ty: %f\t\ttheta: %f\t\ttotal theta: %f\n", _wePose->getX(), 
                                                               _wePose->getY(), _wePose->getTheta(),
                                                               _wePose->getTotalTheta());
-        printf("north star x: %f\t\ty: %f\t\ttheta: %f\t\ttotal theta: %f\n", _nsPose->getX(), 
+        printf("north star x: %f\t\ty: %f\t\ttheta: %f\t\ttotal theta: %f\tnumRotations: %d\n", _nsPose->getX(), 
                                                            _nsPose->getY(), _nsPose->getTheta(),
-                                                           _nsPose->getTotalTheta());
+                                                           _nsPose->getTotalTheta(), _nsPose->_numRotations);
         printf("kalman pose x: %f\t\ty: %f\t\ttheta: %f\t\ttotal theta: %f\n", _pose->getX(), 
                                                             _pose->getY(), _pose->getTheta(),
                                                             _pose->getTotalTheta());
@@ -225,13 +237,17 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
 
         if (thetaError < -thetaErrorLimit) {
             printf("turning right, theta error < -limit \n");
-            turnRight(5); // (int)1.0/thetaGain
+            turnRight(9); // (int)1.0/thetaGain
+            numTurns++;
         }
         else if(thetaError > thetaErrorLimit){
             printf("turning left, theta error > limit\n");
-            turnLeft(5); // (int)1.0/thetaGain
+            turnLeft(9); // (int)1.0/thetaGain
+            numTurns++;
         }
     } while (fabs(thetaError) > thetaErrorLimit);
+
+    numTurns = 0;
 
     printf("theta acceptable!\n");
 }
@@ -321,7 +337,7 @@ void Robot::update() {
 	printf("speed: %d\n", _speed);
     if (_speed == 0) {
 		printf("speed is zero\n");
-        _kalmanFilter->setVelocity(0.0, 0.0, 0.0);
+        //_kalmanFilter->setVelocity(0.0, 0.0, 0.0);
 		printf("Kalman pose: %f, %f, %f\n",_pose->getX(), _pose->getY(), _pose->getTotalTheta());
     }
     else {
@@ -330,15 +346,18 @@ void Robot::update() {
     		float speedY = (_speedDistance/_forwardSpeed[_speed])/**sin(_pose->getTheta())*/;
 			printf("Pose theta: %f\n", _pose->getTheta());
     		printf("speed: %f, %f\n", speedX, speedY);
-    		_kalmanFilter->setVelocity(speedX, speedY, 0.0);
+    		//_kalmanFilter->setVelocity(speedX, speedY, 0.0);
     	}
     	else {
     		printf("speed theta: %f\n", (2*PI)/_turnSpeed[_turnDirection][_speed]);
-    		_kalmanFilter->setVelocity(0.0, 0.0, (2*PI)/_turnSpeed[_turnDirection][_speed]);
+    		//_kalmanFilter->setVelocity(0.0, 0.0, (2*PI)/_turnSpeed[_turnDirection][_speed]);
     	}
     }
+    //_wePose->setTotalTheta(_nsPose->getTotalTheta());
+    //_wePose->setNumRotations(_nsPose->_numRotations);
     // pass updated poses to kalman filter and update main pose
-    _kalmanFilter->filter(_nsPose, _wePose);
+    
+    _kalmanFilter->filter(_nsPose, _nsPose);
 }
 
 int Robot::getStrength(){
@@ -502,12 +521,20 @@ float Robot::_getNSTransX() {
     int room = getRoom()-2;
     float coords[2];
     float transform[2];
+    float tempTheta;
 
-    coords[1] = _getNSX();
-    coords[0] = _getNSY();
-    printf("ns x to start: %f\n", coords[1]);
+    coords[0] = _getNSX();
+    coords[1] = _getNSY();
+ //   printf("ns x to start: %f\n", coords[1]);
     transform[0] = cos(ROOM_ROTATION[room]);
     transform[1] = -sin(ROOM_ROTATION[room]);
+
+    if(room == ROOM_2) {
+    	tempTheta = .00001697925*coords[0] - .1030;
+
+	transform[0] = cos(tempTheta);
+	transform[1] = -sin(tempTheta);
+    }
 
     if (ROOM_FLIPX[room]) {
         transform[1] = -transform[1];
@@ -516,18 +543,17 @@ float Robot::_getNSTransX() {
 
     Util::mMult(transform, 1, 2, coords, 2, 1, &result);
 
-    printf("ns x after transform: %f\n", result);
+//    printf("ns x after transform: %f\n", result);
     //scale
-    //result /= ROOM_SCALE[room][0];
-    result /= ROOM_SCALE[0][room];
+    result /= ROOM_SCALE[room][0];
 
-    printf("ns x after scale: %f\n", result);
+//    printf("ns x after scale: %f\n", result);
 
     //move
     float roomShiftX = COL_OFFSET[0] + ROOM_ORIGINS_FROM_COL[room][0];
     result += roomShiftX;
 
-    printf("ns x after shift: %f\n", result);
+ //   printf("ns x after shift: %f\n", result);
     return result;
 }
 
@@ -543,8 +569,8 @@ float Robot::_getNSHalfTransX() {
     float coords[2];
     float transform[2];
 
-    coords[1] = _getNSX();
-    coords[0] = _getNSY();
+    coords[0] = _getNSX();
+    coords[1] = _getNSY();
     transform[0] = cos(ROOM_ROTATION[room-2]);
     transform[1] = -sin(ROOM_ROTATION[room-2]);
 
@@ -556,7 +582,7 @@ float Robot::_getNSHalfTransX() {
     Util::mMult(transform, 1, 2, coords, 2, 1, &result);
 
     //scale
-    //result /= ROOM_SCALE[0][room-2];
+    //result /= ROOM_SCALE[room][0];
 
     //move
     float roomShiftX = COL_OFFSET[0] + ROOM_ORIGINS_FROM_COL[room-2][0];
@@ -575,12 +601,20 @@ float Robot::_getNSTransY() {
     int room = getRoom()-2;
     float coords[2];
     float transform[2];
+    float tempTheta;
 
-    coords[1] = _getNSX();
-    coords[0] = _getNSY();
+    coords[0] = _getNSX();
+    coords[1] = _getNSY();
 
     transform[0] = sin(ROOM_ROTATION[room]);
     transform[1] = cos(ROOM_ROTATION[room]);
+
+    if(room == ROOM_2) {
+    	tempTheta = .00001697925*coords[1] - .1030;
+
+	transform[0] = sin(tempTheta);
+	transform[1] = cos(tempTheta);
+    }
 
     if (ROOM_FLIPY[room]) {
         transform[1] = -transform[1];
@@ -590,17 +624,16 @@ float Robot::_getNSTransY() {
     Util::mMult(transform, 1, 2, coords, 2, 1, &result);
 
     //scale
-    //result /= ROOM_SCALE[room][1];
-    result /= ROOM_SCALE[1][room];
+    result /= ROOM_SCALE[room][1];
 
     //move
     float roomShiftY = COL_OFFSET[1] + ROOM_ORIGINS_FROM_COL[room][1];
     result += roomShiftY;
 
     //Correction for skew in room 2
-    if (room == ROOM_2) {
-        result += .75*_getNSTransX();
-    }
+    //if (room == ROOM_2) {
+    //    result += .75*_getNSTransX();
+    //}
 
     return result;
 }
@@ -617,8 +650,8 @@ float Robot::_getNSHalfTransY() {
     float coords[2];
     float transform[2];
 
-    coords[1] = _getNSX();
-    coords[0] = _getNSY();
+    coords[0] = _getNSX();
+    coords[1] = _getNSY();
 
     transform[0] = sin(ROOM_ROTATION[room-2]);
     transform[1] = cos(ROOM_ROTATION[room-2]);
@@ -647,7 +680,16 @@ float Robot::_getNSHalfTransY() {
 float Robot::_getNSTransTheta() {
     float result = _getNSTheta();
     int room = getRoom()-2;
-    result -= (ROOM_ROTATION[room] * (PI/180.0));
+    float tempTheta;
+    result -= (ROOM_ROTATION[room]);
+
+    if(room == ROOM_2) {
+    	tempTheta = .00001697925*_getNSX() - .1030;
+	result = tempTheta;
+    }
+
+    result += 1.5707;
+
     // convert from [-pi, pi] to [0, 2pi]
     result = Util::normalizeTheta(result);
     return result;
