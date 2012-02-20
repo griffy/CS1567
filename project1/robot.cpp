@@ -115,11 +115,11 @@ void Robot::prefillData() {
 }
 
 void Robot::rockOut() {
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < 1; i++) {
         _robotInterface->Move(RI_HEAD_UP, 1);
-        sleep(0.5);
+        sleep(1);
         _robotInterface->Move(RI_HEAD_DOWN, 1);
-        sleep(0.5);
+        sleep(1);
     }
 }
 // Moves to a location in the global coordinate system (in cm)
@@ -356,7 +356,7 @@ void Robot::update() {
     }
 
     if (getRoom() == ROOM_2) {
-        _kalmanFilter->setNSUncertainty(0.1, 0.2, 0.2);
+        _kalmanFilter->setNSUncertainty(0.2, 0.3, 0.2); // was .1, .2, .2
     } 
     else {
         _kalmanFilter->setNSUncertainty(0.05, 0.05, 0.1);
