@@ -329,7 +329,7 @@ void Robot::update() {
     _updateWEPose();
     _updateNSPose();
 
-
+/*
     if (getStrength() > GOOD_NS_STRENGTH && _numTurns > 10) { // It's OVER 9000
         //reset the theta on the we
         _wePose->setTheta(_nsPose->getTheta());
@@ -337,6 +337,7 @@ void Robot::update() {
         // reset our turn counter, since it's purely for WE uncertainty
         _numTurns = 0;
     }
+*/
 
 	printf("speed: %d\n", _speed);
     if (_speed == 0) {
