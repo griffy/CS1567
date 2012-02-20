@@ -389,7 +389,7 @@ void Robot::update() {
     }
     _kalmanFilter->setWEUncertainty(WE_X_UNCERTAIN+weTurnUncertainty,
                                     WE_Y_UNCERTAIN+weTurnUncertainty,
-                                    WE_THETA_UNCERTAIN+(weTurnUncertainty*2.0);
+                                    WE_THETA_UNCERTAIN+(weTurnUncertainty*2.0));
 
     // pass updated poses to kalman filter and update main pose
     _kalmanFilter->filter(_nsPose, _wePose);
