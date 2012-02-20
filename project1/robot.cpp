@@ -351,7 +351,7 @@ void Robot::update() {
     	}
     	else {
     		printf("speed theta: %f\n", (2*PI)/_turnSpeed[_turnDirection][_speed]);
-    		_kalmanFilter->setVelocity(0.0, 0.0, (2*PI)/_turnSpeed[_turnDirection][_speed]);
+    		//_kalmanFilter->setVelocity(0.0, 0.0, (2*PI)/_turnSpeed[_turnDirection][_speed]);
     	}
     }
 
