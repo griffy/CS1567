@@ -499,6 +499,7 @@ float Robot::_getWETransDeltaX() {
     // TODO: check logic of this for angles beyond first quadrant
     //return Util::weToCM(_getWEDeltaY()) * cos(_wePose->getTheta());
     return Util::weToCM(_getWEDeltaY()) * cos(_pose->getTheta());
+}
 
 // Returns: transformed wheel encoder y estimate in cm of where
 //          robot should now be in global coordinate system
