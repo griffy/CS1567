@@ -130,7 +130,8 @@ private:
 
 	bool _passed2PIns;
 	bool _passed2PIwe;
-	
+	int _numTurns;
+    
 	// stores the most recent speed that the robot was told. set during both turns and moving straight instructions
 	int _speed;
 	
