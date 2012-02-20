@@ -1,8 +1,17 @@
 #include "robot.h"
 #include <math.h>
 
-// TODO: remove?
-#define MAX_TURNS 6
+#define PROC_X_UNCERTAIN 0.05
+#define PROC_Y_UNCERTAIN 0.05
+#define PROC_THETA_UNCERTAIN 0.1
+
+#define NS_X_UNCERTAIN 0.05
+#define NS_Y_UNCERTAIN 0.05 
+#define NS_THETA_UNCERTAIN 0.15
+
+#define WE_X_UNCERTAIN 0.01
+#define WE_Y_UNCERTAIN 0.01
+#define WE_THETA_UNCERTAIN 0.05
 
 Robot::Robot(std::string address, int id) {
     _robotInterface = new RobotInterface(address, id);
@@ -18,6 +27,7 @@ Robot::Robot(std::string address, int id) {
     
     _passed2PIns = false;
     _passed2PIwe = false;
+    _numTurns = 0;
 
     setFailLimit(MAX_NUM_FAILS);
 
@@ -82,9 +92,15 @@ Robot::Robot(std::string address, int id) {
 	_speedDistance = 116.0; // cm
 	_speed = 0;
 
-    _kalmanFilter->setUncertainty(0.05, 0.05, 0.1,
-                                  0.01, 0.01, 0.15,
-                                  0.05, 0.05, 0.1);
+    _kalmanFilter->setUncertainty(PROC_X_UNCERTAIN,
+                                  PROC_Y_UNCERTAIN,
+                                  PROC_THETA_UNCERTAIN,
+                                  NS_X_UNCERTAIN,
+                                  NS_Y_UNCERTAIN,
+                                  NS_THETA_UNCERTAIN,
+                                  WE_X_UNCERTAIN,
+                                  WE_Y_UNCERTAIN,
+                                  WE_THETA_UNCERTAIN);
 
     prefillData();
 }
@@ -210,8 +226,6 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
 
     float thetaGain;
 
-    int numTurns = 0;
-
     printf("adjusting theta...\n");
     do {	
 	    update();
@@ -239,16 +253,14 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
         if (thetaError < -thetaErrorLimit) {
             printf("turning right, theta error < -limit \n");
             turnRight(turnSpeed); // was 7
-            numTurns++;
+            _numTurns++;
         }
         else if(thetaError > thetaErrorLimit){
             printf("turning left, theta error > limit\n");
             turnLeft(turnSpeed); // was 7
-            numTurns++;
+            _numTurns++;
         }
     } while (fabs(thetaError) > thetaErrorLimit);
-
-    numTurns = 0;
 
     printf("theta acceptable!\n");
 }
@@ -314,27 +326,13 @@ void Robot::update() {
     // update each pose estimate
     _updateWEPose();
     _updateNSPose();
-    
-    //update the kalman constants for NS
-    float newX = 1000.0/getStrength(); 
-    float newY = 1500.0/getStrength();
-    float newTheta = 800.0/getStrength();
-    if (newX > 0.3) {
-        newX = .3;
-    }
-    if (newY > 0.3) {
-        newY = .3;
-    }
-    if (newTheta > 0.3) {
-        newTheta = .3;
-    }
-/*
-    if (getStrength()>13222) { // It's OVER 9000
+
+    if (getStrength() > 13222) { // It's OVER 9000
         //reset the theta on the we
         _wePose->setTheta(_nsPose->getTheta());
         _wePose->setNumRotations(_nsPose->getNumRotations());
     }
-*/
+
 	printf("speed: %d\n", _speed);
     if (_speed == 0) {
 		printf("speed is zero\n");
@@ -355,12 +353,38 @@ void Robot::update() {
     	}
     }
 
+    //update the kalman constants
+    /*
+    float newX = 1000.0/getStrength(); 
+    float newY = 1500.0/getStrength();
+    float newTheta = 800.0/getStrength();
+    if (newX > 0.3) {
+        newX = .3;
+    }
+    if (newY > 0.3) {
+        newY = .3;
+    }
+    if (newTheta > 0.3) {
+        newTheta = .3;
+    }
+    */
+
     if (getRoom() == ROOM_2) {
-        _kalmanFilter->setNSUncertainty(0.1, 0.2, 0.2);
+        _kalmanFilter->setNSUncertainty(NS_X_UNCERTAIN+0.05, 
+                                        NS_Y_UNCERTAIN+0.15, 
+                                        NS_THETA_UNCERTAIN+0.05);
     } 
     else {
-        _kalmanFilter->setNSUncertainty(0.05, 0.05, 0.1);
+        _kalmanFilter->setNSUncertainty(NS_X_UNCERTAIN,
+                                        NS_Y_UNCERTAIN,
+                                        NS_THETA_UNCERTAIN);
     }
+
+    float weTurnUncertainty = (_numTurns / 5) * 0.01;
+    _kalmanFilter->setWEUncertainty(WE_X_UNCERTAIN,
+                                    WE_Y_UNCERTAIN,
+                                    WE_THETA_UNCERTAIN+weTurnUncertainty);
+
     // pass updated poses to kalman filter and update main pose
     _kalmanFilter->filter(_nsPose, _wePose);
 }
