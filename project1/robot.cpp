@@ -193,7 +193,8 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
             return thetaError;
         }
 
-        moveForward(4); // (int)1.0/(distGain)
+        float moveSpeed = (int)1.0/distGain;
+        moveForward(moveSpeed); // was 4
     } while (distError > MAX_DIST_ERROR);
 
     return 0; // no error when we've finished
@@ -229,15 +230,16 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
         printf("theta error:\t%f\n", thetaError);
 
         thetaGain = _thetaPID->updatePID(thetaError);
+        float turnSpeed = (int)1.0/thetaGain;
 
         if (thetaError < -thetaErrorLimit) {
             printf("turning right, theta error < -limit \n");
-            turnRight(7); // (int)1.0/thetaGain
+            turnRight(turnSpeed); // was 7
             numTurns++;
         }
         else if(thetaError > thetaErrorLimit){
             printf("turning left, theta error > limit\n");
-            turnLeft(7); // (int)1.0/thetaGain
+            turnLeft(turnSpeed); // was 7
             numTurns++;
         }
     } while (fabs(thetaError) > thetaErrorLimit);
@@ -268,14 +270,14 @@ void Robot::turnLeft(int speed) {
 	_turnDirection = 0;
 	_movingForward = false;
 	_speed = speed;
-    _robotInterface->Move(RI_TURN_LEFT_20DEG, speed);
+    _robotInterface->Move(RI_TURN_LEFT, speed);
 }
 
 void Robot::turnRight(int speed) {
 	_turnDirection = 1;
 	_movingForward = false;
 	_speed = speed;
-    _robotInterface->Move(RI_TURN_RIGHT_20DEG, speed);
+    _robotInterface->Move(RI_TURN_RIGHT, speed);
 }
 
 void Robot::stop() {
@@ -332,7 +334,7 @@ void Robot::update() {
 	printf("speed: %d\n", _speed);
     if (_speed == 0) {
 		printf("speed is zero\n");
-        //_kalmanFilter->setVelocity(0.0, 0.0, 0.0);
+        _kalmanFilter->setVelocity(0.0, 0.0, 0.0);
 		printf("Kalman pose: %f, %f, %f\n",_pose->getX(), _pose->getY(), _pose->getTotalTheta());
     }
     else {
@@ -341,11 +343,11 @@ void Robot::update() {
     		float speedY = (_speedDistance/_forwardSpeed[_speed])/**sin(_pose->getTheta())*/;
 			printf("Pose theta: %f\n", _pose->getTheta());
     		printf("speed: %f, %f\n", speedX, speedY);
-    		//_kalmanFilter->setVelocity(speedX, speedY, 0.0);
+    		_kalmanFilter->setVelocity(speedX, speedY, 0.0);
     	}
     	else {
     		printf("speed theta: %f\n", (2*PI)/_turnSpeed[_turnDirection][_speed]);
-    		//_kalmanFilter->setVelocity(0.0, 0.0, (2*PI)/_turnSpeed[_turnDirection][_speed]);
+    		_kalmanFilter->setVelocity(0.0, 0.0, (2*PI)/_turnSpeed[_turnDirection][_speed]);
     	}
     }
 
