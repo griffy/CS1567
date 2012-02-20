@@ -57,6 +57,7 @@ public:
     void setFailLimit(int limit);
     int getFailLimit();
     void update();
+    void rockOut();
     Pose* getPose();
 
     /// Self explanatory

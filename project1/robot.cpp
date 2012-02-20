@@ -1,6 +1,7 @@
 #include "robot.h"
 #include <math.h>
 
+// TODO: remove?
 #define MAX_TURNS 6
 
 Robot::Robot(std::string address, int id) {
@@ -103,28 +104,32 @@ Robot::~Robot() {
 }
 
 void Robot::prefillData() {
-    printf("Prefilling data...\n");
+    printf("prefilling data...\n");
     for (int i = 0; i < MAX_FILTER_TAPS; i++){
         update();
     }
 }
 
+void Robot::rockOut() {
+    for (int i = 0; i < 2; i++) {
+        _robotInterface->Move(RI_HEAD_UP, 1);
+        sleep(0.5);
+        _robotInterface->Move(RI_HEAD_DOWN, 1);
+        sleep(0.5);
+    }
+}
 // Moves to a location in the global coordinate system (in cm)
 void Robot::moveTo(float x, float y) {
     float thetaError;
 
-    //_robotInterface->Move(RI_HEAD_MIDDLE, 1);
+    prefillData();
 
-    printf("prefilling data for move...\n");
-    for (int i = 0; i < MAX_FILTER_TAPS; i++) {
-        update();
-    }
     printf("beginning move\n");
     do {
-		printf("We are in room: %d\n", getRoom());
+		printf("we are in room: %d\n", getRoom());
         thetaError = moveToUntil(x, y, MAX_THETA_ERROR);
 		float goal = Util::normalizeTheta(_pose->getTheta() + thetaError);
-		printf("Finished MoveTo ==> goal=%f\n", goal);
+		printf("finished moveTo ==> goal = %f\n", goal);
         if (thetaError != 0) {
             turnTo(goal, MAX_THETA_ERROR);
         }
@@ -133,7 +138,7 @@ void Robot::moveTo(float x, float y) {
     _distancePID->flushPID();
     _thetaPID->flushPID();
 
-    //_robotInterface->Move(RI_HEAD_DOWN, 1);
+    rockOut();
 }
 
 // Moves to a location in the global coordinate system (in cm) 
@@ -205,16 +210,8 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
     int numTurns = 0;
 
     printf("adjusting theta...\n");
-    do {
-/*	if (numTurns > MAX_TURNS) {
-	    for(int i = 0; i < MAX_FILTER_TAPS/2; i++) {
-                sleep(1.0);
-	        update();
-	    }
-            numTurns = 0;
-	}*/
-	
-	update();
+    do {	
+	    update();
 
         theta = _pose->getTheta();
         thetaError = thetaGoal - theta;
@@ -261,7 +258,7 @@ void Robot::moveForward(int speed) {
 		_robotInterface->Move(RI_MOVE_FORWARD, speed);
     }
     else {
-		printf("Error, something in the way\n");
+		printf("Error, something in the way (ooooOooooOohhh)\n");
 		stop();
         // TODO: remove? // turn 90 degrees
         turnTo(Util::normalizeTheta(_pose->getTheta()+DEGREE_90),
@@ -273,14 +270,14 @@ void Robot::turnLeft(int speed) {
 	_turnDirection = 0;
 	_movingForward = false;
 	_speed = speed;
-    _robotInterface->Move(RI_TURN_LEFT, speed);
+    _robotInterface->Move(RI_TURN_LEFT_20DEG, speed);
 }
 
 void Robot::turnRight(int speed) {
 	_turnDirection = 1;
 	_movingForward = false;
 	_speed = speed;
-    _robotInterface->Move(RI_TURN_RIGHT, speed);
+    _robotInterface->Move(RI_TURN_RIGHT_20DEG, speed);
 }
 
 void Robot::stop() {
@@ -327,13 +324,13 @@ void Robot::update() {
     if (newTheta > 0.3) {
         newTheta = .3;
     }
-/*
+
     if (getStrength()>13222) { // It's OVER 9000
         //reset the theta on the we
         _wePose->setTheta(_nsPose->getTheta());
         _wePose->setNumRotations(_nsPose->getNumRotations());
     }
-*/
+
 	printf("speed: %d\n", _speed);
     if (_speed == 0) {
 		printf("speed is zero\n");
@@ -353,10 +350,8 @@ void Robot::update() {
     		//_kalmanFilter->setVelocity(0.0, 0.0, (2*PI)/_turnSpeed[_turnDirection][_speed]);
     	}
     }
-    //_wePose->setTotalTheta(_nsPose->getTotalTheta());
-    //_wePose->setNumRotations(_nsPose->_numRotations);
     // pass updated poses to kalman filter and update main pose
-    
+    // FIXME: we're only using NS!
     _kalmanFilter->filter(_nsPose, _nsPose);
 }
 
