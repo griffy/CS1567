@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
 	Pose * bases[NUM_BASES];
 	bases[0] = new Pose(340, 0, 0); // base 1
 	bases[1] = new Pose(229, 183, 0); // base 2
-    bases[2] = new Pose(326, 183, 0); // fake base
+    bases[2] = new Pose(326, 163, 0); // fake base, should be 183 y
 	bases[3] = new Pose(392, 300, 0); // base 3
     bases[4] = new Pose(318, 386, 0); // fake base
     bases[5] = new Pose(49, 386, 0); // base 4
