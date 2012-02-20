@@ -45,7 +45,6 @@ int main(int argc, char *argv[]) {
 //		fprintf(fp, "Moving to base: %d...x=%f  y=%f\n", i, bases[i]->getX(), bases[i]->getY());
     	robot->moveTo(bases[i]->getX(), bases[i]->getY());
     	printf("reached base %d!\n\n\n\n\n\n\n\n\n\n\n\n\n\n", i+1);
-    	robot->rockOut();
 //		fprintf(fp, "reached base %d!\n", i+1);
     }
 
