@@ -28,7 +28,7 @@ int main(int argc, char *argv[]) {
 
     //Base locations within the global coordinate system
 	Pose * bases[NUMBASES];
-	bases[0] = new Pose(300, 0, 0); // base 1 (340 w/ WE data)
+	bases[0] = new Pose(340, 0, 0); // base 1 (340 w/ WE data)
 	bases[1] = new Pose(229, 183, 0); // base 2
     bases[2] = new Pose(326, 183, 0); // fake base
 	bases[3] = new Pose(392, 300, 0); // base 3
@@ -45,6 +45,7 @@ int main(int argc, char *argv[]) {
 //		fprintf(fp, "Moving to base: %d...x=%f  y=%f\n", i, bases[i]->getX(), bases[i]->getY());
     	robot->moveTo(bases[i]->getX(), bases[i]->getY());
     	printf("reached base %d!\n\n\n\n\n\n\n\n\n\n\n\n\n\n", i+1);
+    	robot->rockOut();
 //		fprintf(fp, "reached base %d!\n", i+1);
     }
 

@@ -137,8 +137,6 @@ void Robot::moveTo(float x, float y) {
 
     _distancePID->flushPID();
     _thetaPID->flushPID();
-
-    rockOut();
 }
 
 // Moves to a location in the global coordinate system (in cm) 
@@ -352,7 +350,7 @@ void Robot::update() {
     }
     // pass updated poses to kalman filter and update main pose
     // FIXME: we're only using NS!
-    _kalmanFilter->filter(_nsPose, _nsPose);
+    _kalmanFilter->filter(_nsPose, _wePose);
 }
 
 int Robot::getStrength(){
