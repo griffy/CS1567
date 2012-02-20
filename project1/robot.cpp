@@ -384,6 +384,9 @@ void Robot::update() {
     }
 
     float weTurnUncertainty = (_numTurns / 5) * 0.01;
+    if (weTurnUncertainty > 0.2) {
+        weTurnUncertainty = 0.2
+    }
     _kalmanFilter->setWEUncertainty(WE_X_UNCERTAIN+weTurnUncertainty,
                                     WE_Y_UNCERTAIN+weTurnUncertainty,
                                     WE_THETA_UNCERTAIN+weTurnUncertainty);

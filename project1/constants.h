@@ -32,7 +32,7 @@
 //#define MAX_THETA_ERROR 0.5236 // 30 degrees
 //#define MAX_THETA_ERROR 0.34906585 // 20 degrees
 #define MAX_THETA_ERROR 0.436332313 // 25 degrees
-#define MAX_DIST_ERROR 30.0 // in cm
+#define MAX_DIST_ERROR 20.0 // in cm
 
 // TODO: find out proper indexes for arrays below
 #define ROOM_2 0
