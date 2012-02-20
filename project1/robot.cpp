@@ -232,12 +232,12 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
 
         if (thetaError < -thetaErrorLimit) {
             printf("turning right, theta error < -limit \n");
-            turnRight(9); // (int)1.0/thetaGain
+            turnRight(6); // (int)1.0/thetaGain
             numTurns++;
         }
         else if(thetaError > thetaErrorLimit){
             printf("turning left, theta error > limit\n");
-            turnLeft(9); // (int)1.0/thetaGain
+            turnLeft(6); // (int)1.0/thetaGain
             numTurns++;
         }
     } while (fabs(thetaError) > thetaErrorLimit);
@@ -599,6 +599,9 @@ float Robot::_getNSTransY() {
     coords[0] = _getNSX();
     coords[1] = _getNSY();
 
+
+printf("raw NS X: %f \tY:%f\n",coords[0],coords[1]);
+
     transform[0] = sin(ROOM_ROTATION[room]);
     transform[1] = cos(ROOM_ROTATION[room]);
 
@@ -616,6 +619,7 @@ float Robot::_getNSTransY() {
 
     Util::mMult(transform, 1, 2, coords, 2, 1, &result);
 
+printf("transf Y:%f\n",result);
     //scale
     result /= ROOM_SCALE[room][1];
 

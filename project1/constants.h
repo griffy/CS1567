@@ -42,7 +42,7 @@
 // ROOM 2 stuff
 //const float ROOM_X_SHIFT[4] = {223, 48, 234, 389};
 //const float ROOM_Y_SHIFT[4] = {89, 242, 402, 264};
-const float ROOM_SCALE[4][2] =  {{49.2, 20.3}, {45.4, 57.6}, {59.6, 36.7}, {37.4, 53.5}};  //Rosie Data
+const float ROOM_SCALE[4][2] =  {{49.2, 37.1}, {45.4, 57.6}, {59.6, 36.7}, {37.4, 53.5}};  //Rosie Data
 				//{{27.2, 20.3}, {45.4, 57.6}, {59.6, 36.7}, {37.4, 53.5}};  //Rosie Data
 /*
 const float ROOM_SCALE[4][2] = {{27.2, 20.3},
@@ -73,7 +73,7 @@ const float ROOM_ROTATION[4] = {0, 1.5708, 0.0, 1.6005}; //Rosie data, radians, 
 			      //{80.7, -6.9, 95.7, 3.4}; Optimus Data
 const float ROOM_FLIPX[4] = {false, false, false, false}; //binary flag indicating whether to reflect x-coordinates over y-axis
 const float ROOM_FLIPY[4] = {false, false, false, false}; //binary flag indicating whether to reflect y-coordinates over x-axis
-const float THETA_SHIFT[4] = {-1.5708, 1.5708, -1.5708, 1.5708};
+const float THETA_SHIFT[4] = {-1.5708, 1.5708, -1.5708, 1.5708}; //Value necessary to push the theta = 0 onto the x-axis rather than the y
 
 // ROTATION is angle relative to room 2's base where 0 degrees is parallel to far wall
 //                                       |
