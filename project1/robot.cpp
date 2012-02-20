@@ -232,12 +232,12 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
 
         if (thetaError < -thetaErrorLimit) {
             printf("turning right, theta error < -limit \n");
-            turnRight(6); // (int)1.0/thetaGain
+            turnRight(7); // (int)1.0/thetaGain
             numTurns++;
         }
         else if(thetaError > thetaErrorLimit){
             printf("turning left, theta error > limit\n");
-            turnLeft(6); // (int)1.0/thetaGain
+            turnLeft(7); // (int)1.0/thetaGain
             numTurns++;
         }
     } while (fabs(thetaError) > thetaErrorLimit);
@@ -348,8 +348,14 @@ void Robot::update() {
     		//_kalmanFilter->setVelocity(0.0, 0.0, (2*PI)/_turnSpeed[_turnDirection][_speed]);
     	}
     }
+
+    if (getRoom() == ROOM_2) {
+        _kalmanFilter->setNSUncertainty(0.1, 0.2, 0.05);
+    } 
+    else {
+        _kalmanFilter->setNSUncertainty(0.05, 0.05, 0.05);
+    }
     // pass updated poses to kalman filter and update main pose
-    // FIXME: we're only using NS!
     _kalmanFilter->filter(_nsPose, _wePose);
 }
 
