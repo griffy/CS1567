@@ -1,6 +1,8 @@
 #include "robot.h"
 #include <math.h>
 
+#define GOOD_NS_STRENGTH 13222
+
 #define PROC_X_UNCERTAIN 0.05
 #define PROC_Y_UNCERTAIN 0.05
 #define PROC_THETA_UNCERTAIN 0.15
@@ -213,7 +215,7 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
             return thetaError;
         }
 
-        float moveSpeed = (int)1.0/distGain;
+        float moveSpeed = (int)(1.0/distGain);
         moveForward(moveSpeed); // was 4
     } while (distError > MAX_DIST_ERROR);
 
@@ -248,7 +250,7 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
         printf("theta error:\t%f\n", thetaError);
 
         thetaGain = _thetaPID->updatePID(thetaError);
-        float turnSpeed = (int)1.0/thetaGain;
+        float turnSpeed = (int)(1.0/thetaGain);
 
         if (thetaError < -thetaErrorLimit) {
             printf("turning right, theta error < -limit \n");
@@ -274,7 +276,7 @@ void Robot::moveForward(int speed) {
 		_robotInterface->Move(RI_MOVE_FORWARD, speed);
     }
     else {
-		printf("Error, something in the way (ooooOooooOohhh)\n");
+		printf("error, something in the way (ooooOooooOohhh)\n");
 		stop();
         // TODO: remove? // turn 90 degrees
         turnTo(Util::normalizeTheta(_pose->getTheta()-DEGREE_90),
@@ -328,7 +330,7 @@ void Robot::update() {
     _updateNSPose();
 
 
-    if (getStrength() > 13222 && _numTurns > 10) { // It's OVER 9000
+    if (getStrength() > GOOD_NS_STRENGTH && _numTurns > 10) { // It's OVER 9000
         //reset the theta on the we
         _wePose->setTheta(_nsPose->getTheta());
         _wePose->setNumRotations(_nsPose->getNumRotations());
@@ -724,12 +726,12 @@ float Robot::_getNSTransTheta() {
     float tempTheta;
     result -= (ROOM_ROTATION[room]);
 
-
+/*
     if(room == ROOM_2 && getStrength() < 8000) {
         tempTheta = .0000204488*_getNSX() + 1.4904;
 	    result = tempTheta;
     }
-
+*/
     result += THETA_SHIFT[room];
 
     // convert from [-pi, pi] to [0, 2pi]

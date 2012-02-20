@@ -29,10 +29,10 @@
 
 #define MAX_FILTER_TAPS 7
 
-//#define MAX_THETA_ERROR 0.5236 // 30 degrees
+#define MAX_THETA_ERROR 0.5236 // 30 degrees
 //#define MAX_THETA_ERROR 0.34906585 // 20 degrees
-#define MAX_THETA_ERROR 0.436332313 // 25 degrees
-#define MAX_DIST_ERROR 20.0 // in cm
+//#define MAX_THETA_ERROR 0.436332313 // 25 degrees
+#define MAX_DIST_ERROR 25.0 // in cm
 
 // TODO: find out proper indexes for arrays below
 #define ROOM_2 0
@@ -43,7 +43,10 @@
 // ROOM 2 stuff
 //const float ROOM_X_SHIFT[4] = {223, 48, 234, 389};
 //const float ROOM_Y_SHIFT[4] = {89, 242, 402, 264};
-const float ROOM_SCALE[4][2] =  {{49.2, 37.1}, {45.4, 57.6}, {59.6, 36.7}, {37.4, 53.5}};  //Rosie Data
+const float ROOM_SCALE[4][2] =  {{49.2, 37.1}, 
+								 {45.4, 57.6}, 
+								 {59.6, 36.7}, 
+								 {37.4, 53.5}};  //Rosie Data
 				//{{27.2, 20.3}, {45.4, 57.6}, {59.6, 36.7}, {37.4, 53.5}};  //Rosie Data
 /*
 const float ROOM_SCALE[4][2] = {{27.2, 20.3},

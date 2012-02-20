@@ -39,7 +39,7 @@ void Pose::setY(float y) {
 
 void Pose::setTheta(float theta) {
 	_theta = fmod(theta, 2*PI);
-	_totalTheta = _numRotations * 2*PI + _theta;
+	_totalTheta = fabs(_numRotations * 2*PI) + _theta;
 }
 
 void Pose::modifyRotations(int num) {
@@ -56,14 +56,17 @@ void Pose::setTotalTheta(float totalTheta) {
 }
 
 float Pose::getTotalTheta() {
+	return _totalTheta;
+	/*
 	float temp = _numRotations*2*PI;
 	temp += _theta;
 	return temp;
+	*/
 }
 
 void Pose::setNumRotations(int rot) {
 	_numRotations = rot;
-	_totalTheta = _numRotations * 2*PI + _theta;
+	_totalTheta = fabs(_numRotations * 2*PI) + _theta;
 }
 
 int Pose::getNumRotations() {
