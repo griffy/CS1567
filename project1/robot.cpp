@@ -497,8 +497,8 @@ float Robot::_getWETransDeltaX() {
     // is purely theta information
 
     // TODO: check logic of this for angles beyond first quadrant
-    //return Util::weToCM(_getWEDeltaY()) * cos(_wePose->getTheta());
-    return Util::weToCM(_getWEDeltaY()) * cos(_pose->getTheta());
+    return Util::weToCM(_getWEDeltaY()) * cos(_wePose->getTheta());
+    //return Util::weToCM(_getWEDeltaY()) * cos(_pose->getTheta());
 }
 
 // Returns: transformed wheel encoder y estimate in cm of where
@@ -508,8 +508,8 @@ float Robot::_getWETransDeltaY() {
     // is purely theta information
 
     // TODO: check logic of this for angles beyond first quadrant
-    //return Util::weToCM(_getWEDeltaY()) * sin(_wePose->getTheta());
-    return Util::weToCM(_getWEDeltaY()) * sin(_pose->getTheta());
+    return Util::weToCM(_getWEDeltaY()) * sin(_wePose->getTheta());
+    //return Util::weToCM(_getWEDeltaY()) * sin(_pose->getTheta());
 }
 
 // Returns: transformed wheel encoder theta estimate of where
@@ -694,11 +694,12 @@ float Robot::_getNSTransTheta() {
     float tempTheta;
     result -= (ROOM_ROTATION[room]);
 
+/*
     if(room == ROOM_2) {
     	tempTheta = .0000204488*_getNSX() + 1.4904;
 	result = tempTheta;
     }
-
+*/
     result += THETA_SHIFT[room];
 
     // convert from [-pi, pi] to [0, 2pi]
