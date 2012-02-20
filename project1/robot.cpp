@@ -3,13 +3,13 @@
 
 #define PROC_X_UNCERTAIN 0.05
 #define PROC_Y_UNCERTAIN 0.05
-#define PROC_THETA_UNCERTAIN 0.1
+#define PROC_THETA_UNCERTAIN 0.15
 
 #define NS_X_UNCERTAIN 0.025
 #define NS_Y_UNCERTAIN 0.025
-#define NS_THETA_UNCERTAIN 0.15
+#define NS_THETA_UNCERTAIN 0.1
 
-#define WE_X_UNCERTAIN 0.01
+#define WE_X_UNCERTAIN 0.05
 #define WE_Y_UNCERTAIN 0.01
 #define WE_THETA_UNCERTAIN 0.01 // was 0.05
 
@@ -384,12 +384,12 @@ void Robot::update() {
     }
 
     float weTurnUncertainty = (_numTurns / 5) * 0.01;
-    if (weTurnUncertainty > 0.2) {
-        weTurnUncertainty = 0.2;
+    if (weTurnUncertainty > 0.1) {
+        weTurnUncertainty = 0.1;
     }
     _kalmanFilter->setWEUncertainty(WE_X_UNCERTAIN+weTurnUncertainty,
                                     WE_Y_UNCERTAIN+weTurnUncertainty,
-                                    WE_THETA_UNCERTAIN+weTurnUncertainty);
+                                    WE_THETA_UNCERTAIN+(weTurnUncertainty*2.0);
 
     // pass updated poses to kalman filter and update main pose
     _kalmanFilter->filter(_nsPose, _wePose);
