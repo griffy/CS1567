@@ -11,7 +11,7 @@
 
 #define WE_X_UNCERTAIN 0.01
 #define WE_Y_UNCERTAIN 0.01
-#define WE_THETA_UNCERTAIN 0.05
+#define WE_THETA_UNCERTAIN 0.01 // was 0.05
 
 Robot::Robot(std::string address, int id) {
     _robotInterface = new RobotInterface(address, id);
