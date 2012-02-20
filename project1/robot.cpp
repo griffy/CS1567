@@ -356,7 +356,7 @@ void Robot::update() {
     }
 
     if (getRoom() == ROOM_2) {
-        _kalmanFilter->setNSUncertainty(0.2, 0.3, 0.2); // was .1, .2, .2
+        _kalmanFilter->setNSUncertainty(0.1, 0.2, 0.2);
     } 
     else {
         _kalmanFilter->setNSUncertainty(0.05, 0.05, 0.1);
@@ -497,8 +497,8 @@ float Robot::_getWETransDeltaX() {
     // is purely theta information
 
     // TODO: check logic of this for angles beyond first quadrant
-    return Util::weToCM(_getWEDeltaY()) * cos(_wePose->getTheta());
-}
+    //return Util::weToCM(_getWEDeltaY()) * cos(_wePose->getTheta());
+    return Util::weToCM(_getWEDeltaY()) * cos(_pose->getTheta());
 
 // Returns: transformed wheel encoder y estimate in cm of where
 //          robot should now be in global coordinate system
@@ -507,7 +507,8 @@ float Robot::_getWETransDeltaY() {
     // is purely theta information
 
     // TODO: check logic of this for angles beyond first quadrant
-    return Util::weToCM(_getWEDeltaY()) * sin(_wePose->getTheta());
+    //return Util::weToCM(_getWEDeltaY()) * sin(_wePose->getTheta());
+    return Util::weToCM(_getWEDeltaY()) * sin(_pose->getTheta());
 }
 
 // Returns: transformed wheel encoder theta estimate of where
