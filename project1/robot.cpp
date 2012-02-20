@@ -335,6 +335,7 @@ void Robot::update() {
     	else {
             float speedTheta = SPEED_TURN[_turnDirection][_speed];
     		printf("predicted speed theta in cm/s: %f\n", speedTheta);
+            _kalmanFilter->setVelocity(0.0, 0.0, 0.0);
     		//_kalmanFilter->setVelocity(0.0, 0.0, speedTheta);
     	}
     }
