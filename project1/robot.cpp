@@ -277,7 +277,7 @@ void Robot::moveForward(int speed) {
 		printf("Error, something in the way (ooooOooooOohhh)\n");
 		stop();
         // TODO: remove? // turn 90 degrees
-        turnTo(Util::normalizeTheta(_pose->getTheta()+DEGREE_90),
+        turnTo(Util::normalizeTheta(_pose->getTheta()-DEGREE_90),
                MAX_THETA_ERROR);
 	}
 }
@@ -383,8 +383,8 @@ void Robot::update() {
     }
 
     float weTurnUncertainty = (_numTurns / 5) * 0.01;
-    _kalmanFilter->setWEUncertainty(WE_X_UNCERTAIN,
-                                    WE_Y_UNCERTAIN,
+    _kalmanFilter->setWEUncertainty(WE_X_UNCERTAIN+weTurnUncertainty,
+                                    WE_Y_UNCERTAIN+weTurnUncertainty,
                                     WE_THETA_UNCERTAIN+weTurnUncertainty);
 
     // pass updated poses to kalman filter and update main pose
