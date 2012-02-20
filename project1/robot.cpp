@@ -6,7 +6,7 @@
 
 #define PROC_X_UNCERTAIN 0.05
 #define PROC_Y_UNCERTAIN 0.05
-#define PROC_THETA_UNCERTAIN 0.15
+#define PROC_THETA_UNCERTAIN 0.1
 
 #define NS_X_UNCERTAIN 0.025
 #define NS_Y_UNCERTAIN 0.025
@@ -369,6 +369,7 @@ void Robot::update() {
     }
 
     // the more we turn, the less reliable wheel encoders become
+    /*
     float weTurnUncertainty = (_numTurns / 5) * 0.01;
     if (weTurnUncertainty > 0.1) {
         weTurnUncertainty = 0.1;
@@ -376,7 +377,7 @@ void Robot::update() {
     _kalmanFilter->setWEUncertainty(WE_X_UNCERTAIN+weTurnUncertainty,
                                     WE_Y_UNCERTAIN+weTurnUncertainty,
                                     WE_THETA_UNCERTAIN+(weTurnUncertainty*2.0));
-
+    */
     // pass updated poses to kalman filter and update main pose
     _kalmanFilter->filter(_nsPose, _wePose);
 }
@@ -550,7 +551,7 @@ float Robot::_getNSTransX() {
     transform[0] = cos(ROOM_ROTATION[room]);
     transform[1] = -sin(ROOM_ROTATION[room]);
 
-    if(room == ROOM_2) {
+    if (room == ROOM_2) {
         tempTheta = .0000204488*coords[0] - .0804;
 
 	    transform[0] = cos(tempTheta);
@@ -626,7 +627,7 @@ float Robot::_getNSTransY() {
     transform[0] = sin(ROOM_ROTATION[room]);
     transform[1] = cos(ROOM_ROTATION[room]);
 
-    if(room == ROOM_2) {
+    if (room == ROOM_2) {
     	tempTheta = .0000204488*coords[1] - .0804;
 
 	    transform[0] = sin(tempTheta);
