@@ -5,8 +5,8 @@
 #define PROC_Y_UNCERTAIN 0.05
 #define PROC_THETA_UNCERTAIN 0.1
 
-#define NS_X_UNCERTAIN 0.05
-#define NS_Y_UNCERTAIN 0.05 
+#define NS_X_UNCERTAIN 0.025
+#define NS_Y_UNCERTAIN 0.025
 #define NS_THETA_UNCERTAIN 0.15
 
 #define WE_X_UNCERTAIN 0.01
@@ -327,6 +327,7 @@ void Robot::update() {
     _updateWEPose();
     _updateNSPose();
 
+/*
     if (getStrength() > 13222) { // It's OVER 9000
         //reset the theta on the we
         _wePose->setTheta(_nsPose->getTheta());
@@ -334,7 +335,7 @@ void Robot::update() {
         // reset our turn counter, since it's purely for WE uncertainty
         _numTurns = 0;
     }
-
+*/
 	printf("speed: %d\n", _speed);
     if (_speed == 0) {
 		printf("speed is zero\n");
