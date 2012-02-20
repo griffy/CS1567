@@ -63,7 +63,7 @@ float PID::updatePID(float error) {
 	//printf("dTerm = %f\n", dTerm);
 
 	float gain = pTerm+iTerm+dTerm;
-	if(gain>1.0) {
+	if (gain > 1.0) {
 		gain=1.0;
 	}
 

@@ -62,4 +62,17 @@ namespace Util {
         }
         return theta;
 	}
+
+	int nameFrom(std::string address) {
+		for (int i = 0; i < NUM_ROBOTS; i++) {
+			if (ROBOTS[i] == address) {
+				return i;
+			}
+		}
+		for (int i = 0; i < NUM_ROBOTS; i++) {
+			if (ROBOT_ADDRESSES[i] == address) {
+				return i;
+			}
+		}
+	}
 };

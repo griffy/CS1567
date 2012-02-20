@@ -1,4 +1,5 @@
 #include "robot.h"
+#include "phrases.h"
 #include <math.h>
 
 #define GOOD_NS_STRENGTH 13222
@@ -13,10 +14,25 @@
 
 #define WE_X_UNCERTAIN 0.05
 #define WE_Y_UNCERTAIN 0.01
-#define WE_THETA_UNCERTAIN 0.01 // was 0.05
+#define WE_THETA_UNCERTAIN 0.025 // was 0.05
 
 Robot::Robot(std::string address, int id) {
+    _name = Util::nameFrom(address);
+    
+    // track when each sensor says we've passed 2PI
+    _passed2PIns = false;
+    _passed2PIwe = false;
+    _numTurns = 0;
+
+    _turnDirection = 0;
+    _movingForward = true;
+    _speed = 0;
+
+    setFailLimit(MAX_NUM_FAILS);
+
     _robotInterface = new RobotInterface(address, id);
+
+    printf("robot interface loaded\n");
 
     _nsXFilter = new FIRFilter("filters/ns_x.ffc");
     _nsYFilter = new FIRFilter("filters/ns_y.ffc");
@@ -25,13 +41,7 @@ Robot::Robot(std::string address, int id) {
     _weRightFilter = new FIRFilter("filters/we.ffc");
     _weRearFilter = new FIRFilter("filters/we.ffc");
 
-    name = address;
-    
-    _passed2PIns = false;
-    _passed2PIwe = false;
-    _numTurns = 0;
-
-    setFailLimit(MAX_NUM_FAILS);
+    printf("fir filters initialized\n");
 
     _wePose = new Pose(0, 0, 0);
     _nsPose = new Pose(0, 0, 0);
@@ -39,60 +49,6 @@ Robot::Robot(std::string address, int id) {
 
     // bind _pose to the kalman filter
     _kalmanFilter = new Kalman(_pose);
-
-    printf("kf initialized\n");
-
-    PIDConstants distancePIDConstants = {PID_DIST_KP, PID_DIST_KI, PID_DIST_KD};
-    PIDConstants thetaPIDConstants = {PID_THETA_KP, PID_THETA_KI, PID_THETA_KD};
-
-    _distancePID = new PID(&distancePIDConstants, MAX_DIST_GAIN, MIN_DIST_GAIN);
-    _thetaPID = new PID(&thetaPIDConstants, MAX_THETA_GAIN, MIN_THETA_GAIN);
-
-    printf("pid controllers initialized\n");
-
-	// forward time constants
-	_forwardSpeed[0] = 0.0;
-	_forwardSpeed[1] = 3.5;
-	_forwardSpeed[2] = 3.5;
-	_forwardSpeed[3] = 3.5;
-	_forwardSpeed[4] = 3.7;
-	_forwardSpeed[5] = 3.7;
-	_forwardSpeed[6] = 3.9;
-	_forwardSpeed[7] = 4.6;
-	_forwardSpeed[8] = 4.6;
-	_forwardSpeed[9] = 4.8;
-	_forwardSpeed[10] = 4.9;
-
-	// left time constants
-	_turnSpeed[0][0] = 0.0;
-	_turnSpeed[0][1] = 1.8;
-	_turnSpeed[0][2] = 1.9;
-	_turnSpeed[0][3] = 2.23;
-	_turnSpeed[0][4] = 2.36;
-	_turnSpeed[0][5] = 2.87;
-	_turnSpeed[0][6] = 2.8;
-	_turnSpeed[0][7] = 4.6;
-	_turnSpeed[0][8] = 4.75;
-	_turnSpeed[0][9] = 5.35;
-	_turnSpeed[0][10] = 5.3;
-
-	//right time constants
-	_turnSpeed[1][0] = 0.0;
-	_turnSpeed[1][1] = 1.6;
-	_turnSpeed[1][2] = 2.0;
-	_turnSpeed[1][3] = 2.2;
-	_turnSpeed[1][4] = 2.3;
-	_turnSpeed[1][5] = 2.8;
-	_turnSpeed[1][6] = 2.8;
-	_turnSpeed[1][7] = 4.75;
-	_turnSpeed[1][8] = 4.75;
-	_turnSpeed[1][9] = 5.35;
-	_turnSpeed[1][10] = 5.45;
-
-	_turnDirection = 0;
-	_movingForward = true;
-	_speedDistance = 116.0; // cm
-	_speed = 0;
 
     _kalmanFilter->setUncertainty(PROC_X_UNCERTAIN,
                                   PROC_Y_UNCERTAIN,
@@ -104,7 +60,15 @@ Robot::Robot(std::string address, int id) {
                                   WE_Y_UNCERTAIN,
                                   WE_THETA_UNCERTAIN);
 
-    prefillData();
+    printf("kalman filter initialized\n");
+
+    PIDConstants distancePIDConstants = {PID_DIST_KP, PID_DIST_KI, PID_DIST_KD};
+    PIDConstants thetaPIDConstants = {PID_THETA_KP, PID_THETA_KI, PID_THETA_KD};
+
+    _distancePID = new PID(&distancePIDConstants, MAX_DIST_GAIN, MIN_DIST_GAIN);
+    _thetaPID = new PID(&thetaPIDConstants, MAX_THETA_GAIN, MIN_THETA_GAIN);
+
+    printf("pid controllers initialized\n");
 }
 
 Robot::~Robot() {
@@ -121,6 +85,8 @@ Robot::~Robot() {
     delete _nsPose;
     delete _pose;
 
+    delete _kalmanFilter;
+
     delete _distancePID;
     delete _thetaPID;
 }
@@ -130,6 +96,22 @@ void Robot::prefillData() {
     for (int i = 0; i < MAX_FILTER_TAPS; i++){
         update();
     }
+    printf("sufficient data collected\n");
+}
+
+void Robot::printBeginPhrase() {
+    printf(BEGIN_PHRASES[_name].c_str());
+    printf("\n");
+}
+
+void Robot::printSuccessPhrase() {
+    printf(SUCCESS_PHRASES[_name].c_str());
+    printf("\n");
+}
+
+void Robot::printFailPhrase() {
+    printf(FAIL_PHRASES[_name].c_str());
+    printf("\n");
 }
 
 void Robot::rockOut() {
@@ -142,16 +124,13 @@ void Robot::rockOut() {
 }
 // Moves to a location in the global coordinate system (in cm)
 void Robot::moveTo(float x, float y) {
-    float thetaError;
-
     prefillData();
 
     printf("beginning move\n");
+    float thetaError;
     do {
-		printf("we are in room: %d\n", getRoom());
         thetaError = moveToUntil(x, y, MAX_THETA_ERROR);
 		float goal = Util::normalizeTheta(_pose->getTheta() + thetaError);
-		printf("finished moveTo ==> goal = %f\n", goal);
         if (thetaError != 0) {
             turnTo(goal, MAX_THETA_ERROR);
         }
@@ -193,8 +172,6 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
         thetaDesired = atan2(yError, xError);
         thetaDesired = Util::normalizeTheta(thetaDesired);
 
-        printf("desired theta: %f\n", thetaDesired);
-
         thetaError = thetaDesired - _pose->getTheta();
         thetaError = Util::normalizeThetaError(thetaError);
 
@@ -203,19 +180,21 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
         // TODO: remove
         printf("x error:\t%f\n", xError);
         printf("y error:\t%f\n", yError);
+        printf("desired theta: %f\n", thetaDesired);
         printf("theta error:\t%f\n", thetaError);
         printf("distance error:\t%f\n", distError);
 
         distGain = _distancePID->updatePID(distError);
         _thetaPID->updatePID(thetaError);
-		printf("Distance gain: %f\n", distGain);
+		printf("distance gain: %f\n", distGain);
 
-        if (fabs(thetaError) > thetaErrorLimit/* && xError < MAX_DIST_ERROR+20*/) {
-			printf("Returning with error: %f\n", thetaError);
+        if (fabs(thetaError) > thetaErrorLimit) {
+			printf("theta error of %f too great\n", thetaError);
             return thetaError;
         }
 
-        float moveSpeed = (int)(1.0/distGain);
+        int moveSpeed = (int)(1.0/distGain);
+        printf("moving forward at speed %d\n", moveSpeed);
         moveForward(moveSpeed); // was 4
     } while (distError > MAX_DIST_ERROR);
 
@@ -228,7 +207,7 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
 
     float thetaGain;
 
-    printf("adjusting theta...\n");
+    printf("adjusting theta\n");
     do {	
 	    update();
 
@@ -250,35 +229,39 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
         printf("theta error:\t%f\n", thetaError);
 
         thetaGain = _thetaPID->updatePID(thetaError);
-        float turnSpeed = (int)(1.0/thetaGain);
+
+        printf("theta gain: %f\n", thetaGain);
 
         if (thetaError < -thetaErrorLimit) {
-            printf("turning right, theta error < -limit \n");
+            printf("turning right, since theta error < -limit \n");
+            int turnSpeed = (int)(1.0/thetaGain);
+            printf("turning at speed %d\n", turnSpeed);
             turnRight(turnSpeed); // was 7
             _numTurns++;
         }
         else if(thetaError > thetaErrorLimit){
-            printf("turning left, theta error > limit\n");
+            printf("turning left, since theta error > limit\n");
+            int turnSpeed = (int)(1.0/thetaGain);
+            printf("turning at speed %d\n", turnSpeed);
             turnLeft(turnSpeed); // was 7
             _numTurns++;
         }
     } while (fabs(thetaError) > thetaErrorLimit);
 
-    printf("theta acceptable!\n");
+    printf("theta acceptable\n");
 }
 
 void Robot::moveForward(int speed) {
 	_movingForward=true;
-	printf("Moving forward\n");
 	
     if (!isThereABitchInMyWay()) {
 		_speed = speed;
 		_robotInterface->Move(RI_MOVE_FORWARD, speed);
     }
     else {
-		printf("error, something in the way (ooooOooooOohhh)\n");
+		printf("something in the way (ooooOooooOohhh)\n");
 		stop();
-        // TODO: remove? // turn 90 degrees
+        printf("turning 90 degrees to compensate...\n");
         turnTo(Util::normalizeTheta(_pose->getTheta()-DEGREE_90),
                MAX_THETA_ERROR);
 	}
@@ -339,23 +322,20 @@ void Robot::update() {
     }
 */
 
-	printf("speed: %d\n", _speed);
     if (_speed == 0) {
-		printf("speed is zero\n");
         _kalmanFilter->setVelocity(0.0, 0.0, 0.0);
-		printf("Kalman pose: %f, %f, %f\n",_pose->getX(), _pose->getY(), _pose->getTotalTheta());
     }
     else {
-    	if(_movingForward){
-    		float speedX = (_speedDistance/_forwardSpeed[_speed])*cos(_pose->getTheta());
-    		float speedY = (_speedDistance/_forwardSpeed[_speed])*sin(_pose->getTheta());
-			printf("Pose theta: %f\n", _pose->getTheta());
-    		printf("speed: %f, %f\n", speedX, speedY);
+    	if (_movingForward) {
+    		float speedX = (SPEED_FORWARD[_speed]);//*cos(_pose->getTheta());
+    		float speedY = (SPEED_FORWARD[_speed]);//*sin(_pose->getTheta());
+    		printf("predicted speed x and y in cm/s: %f, %f\n", speedX, speedY);
     		_kalmanFilter->setVelocity(speedX, speedY, 0.0);
     	}
     	else {
-    		printf("speed theta: %f\n", (2*PI)/_turnSpeed[_turnDirection][_speed]);
-    		//_kalmanFilter->setVelocity(0.0, 0.0, (2*PI)/_turnSpeed[_turnDirection][_speed]);
+            float speedTheta = SPEED_TURN[_turnDirection][_speed];
+    		printf("predicted speed theta in cm/s: %f\n", speedTheta);
+    		//_kalmanFilter->setVelocity(0.0, 0.0, speedTheta);
     	}
     }
 
@@ -375,6 +355,7 @@ void Robot::update() {
     }
     */
 
+    // if we're in room 2, don't trust north star so much
     if (getRoom() == ROOM_2) {
         _kalmanFilter->setNSUncertainty(NS_X_UNCERTAIN+0.05, 
                                         NS_Y_UNCERTAIN+0.15, 
@@ -386,6 +367,7 @@ void Robot::update() {
                                         NS_THETA_UNCERTAIN);
     }
 
+    // the more we turn, the less reliable wheel encoders become
     float weTurnUncertainty = (_numTurns / 5) * 0.01;
     if (weTurnUncertainty > 0.1) {
         weTurnUncertainty = 0.1;
@@ -531,7 +513,6 @@ float Robot::_getWETransDeltaX() {
 
     // TODO: check logic of this for angles beyond first quadrant
     return Util::weToCM(_getWEDeltaY()) * cos(_wePose->getTheta());
-    //return Util::weToCM(_getWEDeltaY()) * cos(_pose->getTheta());
 }
 
 // Returns: transformed wheel encoder y estimate in cm of where
@@ -542,7 +523,6 @@ float Robot::_getWETransDeltaY() {
 
     // TODO: check logic of this for angles beyond first quadrant
     return Util::weToCM(_getWEDeltaY()) * sin(_wePose->getTheta());
-    //return Util::weToCM(_getWEDeltaY()) * sin(_pose->getTheta());
 }
 
 // Returns: transformed wheel encoder theta estimate of where
@@ -565,15 +545,15 @@ float Robot::_getNSTransX() {
 
     coords[0] = _getNSX();
     coords[1] = _getNSY();
- //   printf("ns x to start: %f\n", coords[1]);
+
     transform[0] = cos(ROOM_ROTATION[room]);
     transform[1] = -sin(ROOM_ROTATION[room]);
 
     if(room == ROOM_2) {
-    	tempTheta = .0000204488*coords[0] - .0804;
+        tempTheta = .0000204488*coords[0] - .0804;
 
-	transform[0] = cos(tempTheta);
-	transform[1] = -sin(tempTheta);
+	    transform[0] = cos(tempTheta);
+	    transform[1] = -sin(tempTheta);
     }
 
     if (ROOM_FLIPX[room]) {
@@ -583,17 +563,13 @@ float Robot::_getNSTransX() {
 
     Util::mMult(transform, 1, 2, coords, 2, 1, &result);
 
-//    printf("ns x after transform: %f\n", result);
     //scale
     result /= ROOM_SCALE[room][0];
-
-//    printf("ns x after scale: %f\n", result);
 
     //move
     float roomShiftX = COL_OFFSET[0] + ROOM_ORIGINS_FROM_COL[room][0];
     result += roomShiftX;
 
- //   printf("ns x after shift: %f\n", result);
     return result;
 }
 
@@ -646,17 +622,14 @@ float Robot::_getNSTransY() {
     coords[0] = _getNSX();
     coords[1] = _getNSY();
 
-
-printf("raw NS X: %f \tY:%f\n",coords[0],coords[1]);
-
     transform[0] = sin(ROOM_ROTATION[room]);
     transform[1] = cos(ROOM_ROTATION[room]);
 
     if(room == ROOM_2) {
     	tempTheta = .0000204488*coords[1] - .0804;
 
-	transform[0] = sin(tempTheta);
-	transform[1] = cos(tempTheta);
+	    transform[0] = sin(tempTheta);
+	    transform[1] = cos(tempTheta);
     }
 
     if (ROOM_FLIPY[room]) {
@@ -666,7 +639,6 @@ printf("raw NS X: %f \tY:%f\n",coords[0],coords[1]);
 
     Util::mMult(transform, 1, 2, coords, 2, 1, &result);
 
-printf("transf Y:%f\n",result);
     //scale
     result /= ROOM_SCALE[room][1];
 
@@ -751,6 +723,7 @@ void Robot::_updateWEPose() {
    
     float newTheta = Util::normalizeTheta(lastTheta + dTheta);
     
+    // account for rotations
     if ((lastTheta > (3/2.0)*PI && newTheta < PI/2.0) || 
         (lastTheta < PI/2.0 && newTheta > (3/2.0)*PI)) {
         _passed2PIwe = !_passed2PIwe;
@@ -765,7 +738,6 @@ void Robot::_updateWEPose() {
         _passed2PIwe = false;
     }
     
-
     printf("WE lastTheta: %f\n", lastTheta);
     printf("WE deltaTheta: %f\n", dTheta);
     printf("WE newTheta: %f\n", newTheta);
@@ -784,6 +756,7 @@ void Robot::_updateNSPose() {
     float newY = _getNSTransY();
     float newTheta = _getNSTransTheta();
     
+    // account for rotations
     if ((lastTheta > (3/2.0)*PI && newTheta < PI/2.0) || 
         (lastTheta < PI/2.0 && newTheta > (3/2.0)*PI)) {
         _passed2PIns = !_passed2PIns;
