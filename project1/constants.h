@@ -32,7 +32,7 @@
 #define MAX_THETA_ERROR 0.5236 // 30 degrees
 //#define MAX_THETA_ERROR 0.34906585 // 20 degrees
 //#define MAX_THETA_ERROR 0.436332313 // 25 degrees
-#define MAX_DIST_ERROR 25.0 // in cm
+#define MAX_DIST_ERROR 35.0 // in cm
 
 #define ROOM_2 0
 #define ROOM_3 1
