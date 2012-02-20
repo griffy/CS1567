@@ -83,7 +83,7 @@ Robot::Robot(std::string address, int id) {
 	_speed = 0;
 
     _kalmanFilter->setUncertainty(0.05, 0.05, 0.1,
-                                  0.05, 0.05, 0.1,
+                                  0.01, 0.01, 0.1,
                                   0.05, 0.05, 0.05);
 
     prefillData();
@@ -694,12 +694,12 @@ float Robot::_getNSTransTheta() {
     float tempTheta;
     result -= (ROOM_ROTATION[room]);
 
-/*
-    if(room == ROOM_2) {
-    	tempTheta = .0000204488*_getNSX() + 1.4904;
-	result = tempTheta;
+
+    if(room == ROOM_2 && getStrength() < 8000) {
+        tempTheta = .0000204488*_getNSX() + 1.4904;
+	    result = tempTheta;
     }
-*/
+
     result += THETA_SHIFT[room];
 
     // convert from [-pi, pi] to [0, 2pi]
