@@ -523,7 +523,7 @@ float Robot::_getNSTransX() {
     transform[1] = -sin(ROOM_ROTATION[room]);
 
     if(room == ROOM_2) {
-    	tempTheta = .00001697925*coords[0] - .1030;
+    	tempTheta = .0000204488*coords[0] - .0804;
 
 	transform[0] = cos(tempTheta);
 	transform[1] = -sin(tempTheta);
@@ -603,7 +603,7 @@ float Robot::_getNSTransY() {
     transform[1] = cos(ROOM_ROTATION[room]);
 
     if(room == ROOM_2) {
-    	tempTheta = .00001697925*coords[1] - .1030;
+    	tempTheta = .0000204488*coords[1] - .0804;
 
 	transform[0] = sin(tempTheta);
 	transform[1] = cos(tempTheta);
@@ -677,11 +677,11 @@ float Robot::_getNSTransTheta() {
     result -= (ROOM_ROTATION[room]);
 
     if(room == ROOM_2) {
-    	tempTheta = .00001697925*_getNSX() - .1030;
+    	tempTheta = .0000204488*_getNSX() + 1.4904;
 	result = tempTheta;
     }
 
-    result += 1.5707;
+    result += THETA_SHIFT[room];
 
     // convert from [-pi, pi] to [0, 2pi]
     result = Util::normalizeTheta(result);

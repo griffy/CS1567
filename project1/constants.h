@@ -42,8 +42,8 @@
 // ROOM 2 stuff
 //const float ROOM_X_SHIFT[4] = {223, 48, 234, 389};
 //const float ROOM_Y_SHIFT[4] = {89, 242, 402, 264};
-const float ROOM_SCALE[4][2] = {{27.2, 20.3}, {45.4, 57.6}, {59.6, 36.7}, {37.4, 53.5}};  //Rosie Data
-
+const float ROOM_SCALE[4][2] =  {{49.2, 20.3}, {45.4, 57.6}, {59.6, 36.7}, {37.4, 53.5}};  //Rosie Data
+				//{{27.2, 20.3}, {45.4, 57.6}, {59.6, 36.7}, {37.4, 53.5}};  //Rosie Data
 /*
 const float ROOM_SCALE[4][2] = {{27.2, 20.3},
 								{45.4, 57.6},
@@ -67,13 +67,13 @@ const float ROOM_ORIGINS_FROM_COL[4][2] = {{18.0, -124.0},
 //const float ROOM_Y_SHIFT[4]= {255, 281, 449, 303};
 //const float ROOM_SCALE[2][4]= {{27.2, 45.4, 59.6, 37.4}, // x
 //							   {27.3, 57.6, 36.7, 53.5}}; // y (based on Rosie Data)
-const float ROOM_ROTATION[4] = {0.0, 1.5708, 0.0, 1.6005}; //Rosie data, radians, correct!
+const float ROOM_ROTATION[4] = {0, 1.5708, 0.0, 1.6005}; //Rosie data, radians, correct!
 //ALL OF THIS IS WRONG		{1.349, 0.0, 1.62, .059}; //Rosie Data, radians
 //				{77.3, 0.0, 92.8, 3.4} //Rosie data, degrees
 			      //{80.7, -6.9, 95.7, 3.4}; Optimus Data
 const float ROOM_FLIPX[4] = {false, false, false, false}; //binary flag indicating whether to reflect x-coordinates over y-axis
 const float ROOM_FLIPY[4] = {false, false, false, false}; //binary flag indicating whether to reflect y-coordinates over x-axis
-
+const float THETA_SHIFT[4] = {-1.5708, 1.5708, -1.5708, 1.5708};
 
 // ROTATION is angle relative to room 2's base where 0 degrees is parallel to far wall
 //                                       |

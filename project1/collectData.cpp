@@ -69,7 +69,7 @@ int main(int argc, char *argv[]) {
 	
 	
 
-    for (int i = 0; i< 60; i++) {
+    for (int i = 0; i< 30; i++) {
         robot->moveForward(5);
         robot->update();
 		//printf(" WE %f %f %d\t\t",robot->_wePose->getTotalTheta(), robot->_wePose->getTheta(), robot->_wePose->getNumRotations());
@@ -78,6 +78,7 @@ int main(int argc, char *argv[]) {
         printf("%d %f,%f,%f \n",robot->_robotInterface->RoomID(),robot->_getNSTransX(),robot->_getNSTransY(),robot->_getNSTransTheta());
         //fprintf(outfileglobal,"%d %f,%f,%f %f %f\n",robot->_robotInterface->RoomID(),robot->_getNSTransX(),robot->_getNSTransY(),robot->_getNSTransTheta(), robot->_getNSHalfTransX(),robot->_getNSHalfTransY());
         //write to global position file
+        	printf("raw northstar: %f %f %f\n", robot->_getNSX(), robot->_getNSY(), robot->_getNSTheta()); 
 		printf("current pose: %f %f %f\n", robot->getPose()->getX(), robot->getPose()->getY(), robot->getPose()->getTheta());
 		printf("current ns pose: \t\t\t%f %f %f\n", robot->_nsPose->getX(), robot->_nsPose->getY(), robot->_nsPose->getTheta());
 		printf("current we pose: \t\t\t\t\t%f %f %f\n", robot->_wePose->getX(), robot->_wePose->getY(), robot->_wePose->getTheta());
