@@ -140,8 +140,8 @@ void Robot::moveTo(float x, float y) {
     _thetaPID->flushPID();
 
     // reset wheel encoder pose to be north star
-    _wePose->setX(_nsPose->getX());
-    _wePose->setY(_nsPose->getY());
+    //_wePose->setX(_nsPose->getX());
+    //_wePose->setY(_nsPose->getY());
     _wePose->setTheta(_nsPose->getTheta());
     _wePose->setNumRotations(_nsPose->getNumRotations());
 }
