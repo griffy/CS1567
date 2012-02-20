@@ -199,7 +199,7 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
             return thetaError;
         }
 
-        int moveSpeed = 4;//(int)(1.0/distGain);
+        int moveSpeed = (int)(1.0/distGain);
         printf("moving forward at speed %d\n", moveSpeed);
         moveForward(moveSpeed);
     } while (distError > MAX_DIST_ERROR);
@@ -240,14 +240,14 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
 
         if (thetaError < -thetaErrorLimit) {
             printf("turning right, since theta error < -limit \n");
-            int turnSpeed = 7;//(int)(1.0/thetaGain);
+            int turnSpeed = (int)(1.0/thetaGain);
             printf("turning at speed %d\n", turnSpeed);
             turnRight(turnSpeed);
             _numTurns++;
         }
         else if(thetaError > thetaErrorLimit){
             printf("turning left, since theta error > limit\n");
-            int turnSpeed = 7;//(int)(1.0/thetaGain);
+            int turnSpeed = (int)(1.0/thetaGain);
             printf("turning at speed %d\n", turnSpeed);
             turnLeft(turnSpeed);
             _numTurns++;
