@@ -83,7 +83,7 @@ void Pose::toArrayForKalman(float *arr) {
 	arr[0] = _x;
 	arr[1] = _y;
 	float totalTheta = getTotalTheta();
-	arr[2] = fabs(totalTheta);
+	arr[2] = totalTheta; // used fabs(totalTheta);
 }
 
 float Pose::getX() {
