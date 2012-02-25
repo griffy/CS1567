@@ -40,43 +40,40 @@
 #define ROOM_5 3
 
 const float ROOM_SCALE[4][2] =  {{49.2, 37.1}, 
-								 {45.4, 57.6}, 
-								 {59.6, 36.7}, 
-								 {37.4, 53.5}};  //Rosie Data
-/*
-const float ROOM_SCALE[4][2] = {{27.2, 20.3},
-								{45.4, 57.6},
-							    {59.6, 36.7},
-							    {37.4, 53.5}};
-*/	
+				 {45.4, 57.6}, 
+				 {59.6, 36.7}, 
+				 {37.4, 53.5}};  //Rosie Data
 			   
+
+// ROTATION is angle relative to room 2's base where 0 degrees is parallel to far wall
+// Theta increases counter-clockwise     |
+//    |-door-|                           |
+//                     __4__             |
+//                    |     |		 |
+//                  3 |     | 5          |
+//                    |*____|            |
+//                       2               |
+//     theta = pi/2                      |
+//     ^                                 |
+//     |                                 |
+//     y                                 |
+//     |                                 |
+//     *-x--> theta = 0                  |
+//     ^                                 |
+//     origin                            |
+//_______________________________________|
+
 // store the distance of column top-right corner from base 0
 const float COL_OFFSET[2] = {193.0, 234.0};
-// store the distances of origins from column top-right corner
+// store the distances of origins from column corner (labeled with a * in above map)
 const float ROOM_ORIGINS_FROM_COL[4][2] = {{18.0, -124.0},
 										   {-147.0, 8.0},
 										   {41.0, 168.0},
 										   {196.0, 30.0}};
 
 const float ROOM_ROTATION[4] = {0, 1.5708, 0.0, 1.6005}; //Rosie data, radians, correct!
-//                             {1.349, 0.0, 1.62, .059}; //Rosie Data, radians
 
-const float ROOM_FLIPX[4] = {false, false, false, false}; //binary flag indicating whether to reflect x-coordinates over y-axis
-const float ROOM_FLIPY[4] = {false, false, false, false}; //binary flag indicating whether to reflect y-coordinates over x-axis
 const float THETA_SHIFT[4] = {-1.5708, 1.5708, -1.5708, 1.5708}; //Value necessary to push the theta = 0 onto the x-axis rather than the y
 
-// ROTATION is angle relative to room 2's base where 0 degrees is parallel to far wall
-//                                       |
-//                     _4_               |
-//                    |   |              |
-//                  3 |___| 5            |
-//                      2                |
-//     theta = 90                        |
-//     ^                                 |
-//     |                                 |
-//     y                                 |
-//     |                                 |
-//     *-x--> theta = 0                  |
-//________________________________________
 
 #endif
