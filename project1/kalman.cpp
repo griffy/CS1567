@@ -1,5 +1,6 @@
 #include "kalman.h"
 #include "constants.h"
+#include "logger.h"
 #include <stdio.h>
 
 Kalman::Kalman(Pose *initialPose) {
@@ -45,9 +46,10 @@ void Kalman::filter(Pose *nsPose, Pose *wePose) {
     // update the kalman filter with the new data
 	rovioKalmanFilter(&_kf, nsPoseArr, wePoseArr, _track);
     // update the current pose to its new estimate
-	_pose->setX(_track[0]);
+	LOG.write(LOG_MED, "kalman track", 
+              "%f,%f,%f", _track[0], _track[1], _track[2]);
+    _pose->setX(_track[0]);
 	_pose->setY(_track[1]);
-	printf("track total theta: %f\n", _track[2]);
 	_pose->setTotalTheta(_track[2]);
 }
 

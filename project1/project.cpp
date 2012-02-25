@@ -1,4 +1,5 @@
 #include "robot.h"
+#include "logger.h"
 #include <iostream>
 #include <time.h>
 #include <sys/time.h>
@@ -16,6 +17,8 @@ int main(int argc, char *argv[]) {
 		printf("ERROR: need argument for robot name\n");
 		return -1;
 	}
+
+    LOG.setImportanceLevel(LOG_OFF);
 
     //Base locations within the global coordinate system
 	Pose * bases[NUM_BASES];

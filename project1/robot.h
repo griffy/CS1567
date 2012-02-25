@@ -74,6 +74,7 @@ public:
 	int getStrength();
 
     int getRoom();
+    int getBattery();
 
     void printBeginPhrase();
     void printSuccessPhrase();

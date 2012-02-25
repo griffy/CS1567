@@ -3,6 +3,12 @@
 
 #include <string>
 
+#define DEFAULT_IMP 0
+
+#define HIGH_IMP 2
+#define MEDIUM_IMP 1
+#define LOW_IMP 0
+
 #define NUM_ROBOTS 6
 
 #define ROSIE 0
@@ -31,20 +37,20 @@ const std::string ROBOT_ADDRESSES[] = {
 };
 
 namespace Util {
-	float nsToCM(float ticks); // converts North Star ticks to cm
+    float nsToCM(float ticks); // converts North Star ticks to cm
 
-	float weToCM(float ticks); // converts Wheel Encoder ticks to cm
+    float weToCM(float ticks); // converts Wheel Encoder ticks to cm
 
-	float cmToNS(float cm); // converts cm to North Star ticks
+    float cmToNS(float cm); // converts cm to North Star ticks
 
-	float cmToWE(float cm); // converts cm to Wheel Encoder ticks
+    float cmToWE(float cm); // converts cm to Wheel Encoder ticks
 
-	void mMult(float (*mA), int lA, int hA, float (*mB), int lB, int hB, float (*mC));
+    void mMult(float (*mA), int lA, int hA, float (*mB), int lB, int hB, float (*mC));
 
-	float normalizeThetaError(float thetaError);
-	float normalizeTheta(float theta);
+    float normalizeThetaError(float thetaError);
+    float normalizeTheta(float theta);
 
-	int nameFrom(std::string);
+    int nameFrom(std::string);
 };
 
 #endif
