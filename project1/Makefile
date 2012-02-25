@@ -7,11 +7,9 @@ LIB_LINK=-lhighgui -lcv -lcxcore -lm -lgslcblas -L/usr/lib64/atlas -lclapack
 LIB_LINK_NEW=-lopencv_core -lopencv_imgproc -lopencv_highgui -lm -lgslcblas -L/usr/lib64/atlas -llapack
 
 
+# Build main project
 all: $(OBJS)
 	g++ $(CFLAGS) -o project.out $(OBJS) $(CPP_LIB_FLAGS) $(LIB_LINK)
-
-data: $(DATA_OBJS)
-	g++ $(CFLAGS) -o collectData.out $(DATA_OBJS) $(CPP_LIB_FLAGS) $(LIB_LINK)
 
 new: $(OBJS) 
 	g++ $(CFLAGS) -o project.out $(OBJS) $(CPP_LIB_FLAGS) $(LIB_LINK_NEW)
@@ -40,11 +38,19 @@ utilities.o: utilities.cpp utilities.h logger.h
 PID.o: PID.cpp PID.h logger.h
 	g++ $(CFLAGS) -c PID.cpp
 
-collectData.o: collectData.cpp logger.h
-	g++ $(CFLAGS) -c collectData.cpp
 
 logger.o: logger.cpp logger.h
 	g++ $(CFLAGS) -c logger.cpp
+
+# Build data collector
+data: $(DATA_OBJS)
+	g++ $(CFLAGS) -o collectData.out $(DATA_OBJS) $(CPP_LIB_FLAGS) $(LIB_LINK)
+
+data_new: $(DATA_OBJS)
+	g++ $(CFLAGS) -o collectData.out $(DATA_OBJS) $(CPP_LIB_FLAGS) $(LIB_LINK_NEW)
+
+collectData.o: collectData.cpp logger.h
+	g++ $(CFLAGS) -c collectData.cpp
 
 clean:
 	rm -f *.o

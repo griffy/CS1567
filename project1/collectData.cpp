@@ -43,7 +43,6 @@ int main(int argc, char *argv[]) {
         case MOVE_FORWARD:
             robot->moveForward(5);
             break;
-        default:
         }
     }
 
