@@ -20,7 +20,7 @@ public:
 	float _velocity[3];
 	float _uncertainties[9];
 private:
-	kalmanFilter *_kf;
+	kalmanFilter _kf;
 	float _track[9];
 
 	Pose *_pose;

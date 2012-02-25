@@ -15,7 +15,6 @@ Pose::~Pose() {
 }
 
 //gets the difference between 2 poses
-// make sure to delete after use
 void Pose::difference(Pose* returnPose, Pose* pose1, Pose* pose2) {
 	delete returnPose;
 	returnPose = new Pose(pose2->getX()-pose1->getX(), 
@@ -24,7 +23,6 @@ void Pose::difference(Pose* returnPose, Pose* pose1, Pose* pose2) {
 }
 
 //gets the distance (x/y) between 2 poses
-// make sure to delete after use
 float Pose::distance(Pose* pose1, Pose* pose2) {
 	float xerr = pose2->getX()-pose1->getX();
 	float yerr = pose2->getY()-pose1->getY();
@@ -41,6 +39,7 @@ void Pose::setY(float y) {
 
 void Pose::setTheta(float theta) {
 	_theta = fmod(theta, 2*PI);
+	_totalTheta = _numRotations * 2*PI + _theta;
 }
 
 void Pose::modifyRotations(int num) {
@@ -58,6 +57,11 @@ void Pose::setTotalTheta(float totalTheta) {
 
 float Pose::getTotalTheta() {
 	return _totalTheta;
+	/*
+	float temp = _numRotations*2*PI;
+	temp += _theta;
+	return temp;
+	*/
 }
 
 void Pose::setNumRotations(int rot) {
@@ -79,7 +83,7 @@ void Pose::toArrayForKalman(float *arr) {
 	arr[0] = _x;
 	arr[1] = _y;
 	float totalTheta = getTotalTheta();
-	arr[2] = fabs(totalTheta);
+	arr[2] = totalTheta; // used fabs(totalTheta);
 }
 
 float Pose::getX() {

@@ -14,30 +14,38 @@
 #include <robot_if++.h>
 #include <string>
 
-#define ROSIE 0
-#define BENDER 1
-#define JOHNNY5 2
-#define OPTIMUS 3
-#define WALLE 4
-#define GORT 5
+#define NUM_SPEEDS 11
 
-const std::string ROBOTS[] = {
-    "rosie",
-    "bender",
-    "johnny5",
-    "optimus",
-    "walle",
-    "gort"
+const float TIME_DISTANCE = 116.0; // cm
+
+// average speed to move forward TIME_DISTANCE at integer robot speeds
+const float SPEED_FORWARD[NUM_SPEEDS] = {
+    TIME_DISTANCE/0.0,
+    TIME_DISTANCE/3.5,
+    TIME_DISTANCE/3.5,
+    TIME_DISTANCE/3.5,
+    TIME_DISTANCE/3.7,
+    TIME_DISTANCE/3.7,
+    TIME_DISTANCE/3.9,
+    TIME_DISTANCE/4.6,
+    TIME_DISTANCE/4.6,
+    TIME_DISTANCE/4.8,
+    TIME_DISTANCE/4.9
 };
 
-// FIXME: replace with real addresses
-const std::string ROBOT_ADDRESSES[] = {
-    "192.168.1.41",
-    "192.168.1.42",
-    "192.168.1.43",
-    "192.168.1.44",
-    "192.168.1.45",
-    "192.168.1.46"
+// average speed for left and right turns at integer robot speeds
+const float SPEED_TURN[][NUM_SPEEDS] = {
+    {0.0, 0.0},
+    {(2*PI)/1.8, (2*PI)/1.6},
+    {(2*PI)/1.9, (2*PI)/2.0},
+    {(2*PI)/2.23, (2*PI)/2.2},
+    {(2*PI)/2.36, (2*PI)/2.3},
+    {(2*PI)/2.87, (2*PI)/2.8},
+    {(2*PI)/2.8, (2*PI)/2.8},
+    {(2*PI)/4.6, (2*PI)/4.75},
+    {(2*PI)/4.75, (2*PI)/4.75},
+    {(2*PI)/5.35, (2*PI)/5.35},
+    {(2*PI)/5.35, (2*PI)/5.45}
 };
 
 class Robot {
@@ -57,20 +65,20 @@ public:
     void setFailLimit(int limit);
     int getFailLimit();
     void update();
+    void rockOut();
     Pose* getPose();
 
     /// Self explanatory
-    //TODO: FINDBITCHES
+    // TODO: FINDBITCHES
     bool isThereABitchInMyWay();
 	int getStrength();
 
     int getRoom();
+    int getBattery();
 
-    void printBeginDialog();
-    void printSuccessDialog();
-    void printFailDialog();
-
-    std::string name;
+    void printBeginPhrase();
+    void printSuccessPhrase();
+    void printFailPhrase();
 
     // FIXME: Temporarily public members (for testing)
     //        below
@@ -117,6 +125,7 @@ public:
 	
 private:
     // RobotInterface *_robotInterface;
+    int _name;
 
     FIRFilter *_nsXFilter;
     FIRFilter *_nsYFilter;
@@ -129,17 +138,9 @@ private:
 
 	bool _passed2PIns;
 	bool _passed2PIwe;
-	
+	int _numTurns;
 	// stores the most recent speed that the robot was told. set during both turns and moving straight instructions
-	int _speed;
-	
-	// distance the robot traveled in the time specified below
-	float _speedDistance;
-	//time values for forward velocity, in terms of time per _speedDistance.  must divide by _speedDistance to get velocity
-	float _forwardSpeed[11];
-	//time values for turning velocity. need to be divided by a constant to get it into radians
-	//these times are time to turn 2*PI radians
-	float _turnSpeed[2][11];	
+	int _speed;	
 	char _turnDirection;			// value of 1 means turning right, 0 means left
 	bool _movingForward;		// set if moving forward/stopped
 

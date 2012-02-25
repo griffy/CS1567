@@ -12,7 +12,7 @@ const std::string BEGIN_PHRASES[] = {
     "I don't know who I am"
 };
 
-const std::string FAILURE_PHRASES[] = {
+const std::string FAIL_PHRASES[] = {
     "Again?",
     "I just messed up",
     "I'm Johnny5, and I crashed",

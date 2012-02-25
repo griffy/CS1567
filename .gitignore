@@ -19,3 +19,5 @@
 *.lai
 *.la
 *.a
+
+project[0-9]/logs
