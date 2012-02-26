@@ -1,7 +1,0 @@
-We need to have a permanent, global coordinate system so that we can say "Move to x,y" and it will never change.
-
-When the robot first starts up, it has no way of knowing which direction it's facing with the wheel encoders. North Star will give it a "global" position. Use this initially to find where we are based on the room number and theta. 
-
-This information needs to be saved and constantly updated so that the transformations are done correctly.
-
-The coefficients *should* add up to 1.0, but ours don't quite.
