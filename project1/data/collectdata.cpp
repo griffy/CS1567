@@ -1,5 +1,5 @@
-#include "robot.h"
-#include "logger.h"
+#include "../robot.h"
+#include "../logger.h"
 #include <stdio.h>
 
 #define NUM_BASES 7
