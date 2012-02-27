@@ -29,7 +29,7 @@ Robot::Robot(std::string address, int id) {
     _movingForward = true;
     _speed = 0;
 
-    setFailLimit(MAX_NUM_FAILS);
+    setFailLimit(MAX_UPDATE_FAILS);
 
     _robotInterface = new RobotInterface(address, id);
 

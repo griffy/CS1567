@@ -1,14 +1,6 @@
 #include "robot.h"
 #include "logger.h"
-#include <iostream>
-#include <time.h>
-#include <sys/time.h>
-#include <string>
-#include <math.h>
-#include <unistd.h>
 #include <stdio.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 
 #define NUM_BASES 7
 
@@ -37,7 +29,7 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < NUM_BASES; i++) {
     	printf("moving to base %d...\n", i+1);
     	robot->moveTo(bases[i]->getX(), bases[i]->getY());
-    	printf("reached base %d!\n\n\n\n\n\n\n\n\n\n\n\n\n\n", i+1);
+    	printf("reached base %d!\n", i+1);
     }
 
     printf("done!\n");
