@@ -13,6 +13,7 @@ int FIRFilter::getOrder() {
     return _order;
 }
 
+/* Seeds the samples array with values from a file */
 void FIRFilter::seedFromFile(std::string fileName) {
     std::vector<float> samples(getOrder()+1);
     std::ifstream f(fileName.c_str());
@@ -23,6 +24,7 @@ void FIRFilter::seedFromFile(std::string fileName) {
     seed(&samples);
 }
 
+/* Seeds the samples array with the given values */
 void FIRFilter::seed(std::vector<float> *samples) {
     int numSamples = getOrder()+1;
     if (samples->size() < numSamples) {
@@ -54,6 +56,7 @@ float FIRFilter::filter(float val) {
     return sum;
 }
 
+/* Reads in the taps (coefficients) from a file, line by line */
 int FIRFilter::_readTaps(std::string fileName) {
     std::ifstream f(fileName.c_str());
     std::string line;

@@ -6,6 +6,8 @@ Pose::Pose(float x, float y, float theta) {
 	_x = x;
 	_y = y;
 	_theta = theta;
+    // total theta is tracked as well so that it can be used in the
+    // kalman filter without returning a weird average for theta
 	_totalTheta = theta;
 	_numRotations = 0;
 }
@@ -19,7 +21,8 @@ void Pose::difference(Pose* returnPose, Pose* pose1, Pose* pose2) {
 	delete returnPose;
 	returnPose = new Pose(pose2->getX()-pose1->getX(), 
 						  pose2->getY()-pose1->getY(),
-						  pose2->getTotalTheta()-pose1->getTotalTheta());
+						  pose2->getTheta()-pose1->getTheta());
+    returnPose->setTotalTheta(pose2->getTotalTheta()-pose1->getTotalTheta());
 }
 
 //gets the distance (x/y) between 2 poses
@@ -46,6 +49,7 @@ void Pose::modifyRotations(int num) {
 	setNumRotations(_numRotations + num);
 }
 
+
 void Pose::setTotalTheta(float totalTheta) {
 	_totalTheta = totalTheta;
 	_numRotations = (int) _totalTheta/(2*PI);
@@ -57,11 +61,6 @@ void Pose::setTotalTheta(float totalTheta) {
 
 float Pose::getTotalTheta() {
 	return _totalTheta;
-	/*
-	float temp = _numRotations*2*PI;
-	temp += _theta;
-	return temp;
-	*/
 }
 
 void Pose::setNumRotations(int rot) {

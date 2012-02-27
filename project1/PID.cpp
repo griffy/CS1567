@@ -1,9 +1,4 @@
 #include "PID.h"
-/**
- * @author Shawn Hanna
- * @group_number 1
- * @date 2/7/2012
-**/
 
 /** constructor with arguments for the constants structure. Defaults to having max/min value of +-1/3 for the iTerm**/
 PID::PID(PIDConstants *newConstants) {

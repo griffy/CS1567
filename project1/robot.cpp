@@ -577,7 +577,6 @@ float Robot::_getWETransDeltaX() {
     // the robot's x motion should be ignored (since we are not strafing), as that
     // is purely theta information
 
-    // TODO: check logic of this for angles beyond first quadrant
     return Util::weToCM(_getWEDeltaY()) * cos(_wePose->getTheta());
 }
 
@@ -587,7 +586,6 @@ float Robot::_getWETransDeltaY() {
     // the robot's x motion should be ignored (since we are not strafing), as that
     // is purely theta information
 
-    // TODO: check logic of this for angles beyond first quadrant
     return Util::weToCM(_getWEDeltaY()) * sin(_wePose->getTheta());
 }
 
@@ -596,7 +594,6 @@ float Robot::_getWETransDeltaY() {
 float Robot::_getWETransDeltaTheta() {
     float rearDeltaX = _getWEDeltaXRear();
 
-    // TODO: Should the delta be adjusted according to previous (global) theta?
     return -Util::weToCM(rearDeltaX)/(ROBOT_DIAMETER / 2.0);
 }
 

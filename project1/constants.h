@@ -43,16 +43,16 @@
 
 // the average ticks per cm in x and y per room
 const float ROOM_SCALE[4][2] =  {{49.2, 37.1}, 
-				 {45.4, 57.6}, 
-				 {59.6, 36.7}, 
-				 {37.4, 53.5}};  //Rosie Data
+                 				 {45.4, 57.6}, 
+				                 {59.6, 36.7}, 
+			                	 {37.4, 53.5}};  //Rosie Data
 			   
 
 // ROTATION is angle relative to room 2's base where 0 degrees is parallel to far wall
 // Theta increases counter-clockwise     |
 //    |-door-|                           |
 //                     __4__             |
-//                    |     |		 |
+//                    |     |		     |
 //                  3 |     | 5          |
 //                    |*____|            |
 //                       2               |
@@ -66,15 +66,16 @@ const float ROOM_SCALE[4][2] =  {{49.2, 37.1},
 //     origin                            |
 //_______________________________________|
 
-// store the distance of column top-right corner from base 0
+const float ROOM_ROTATION[4] = {0, 1.5708, 0.0, 1.6005}; //Rosie data, radians, correct!
+
+// the distance of column top-right corner from base 0
 const float COL_OFFSET[2] = {193.0, 234.0};
-// store the distances of origins from column corner (labeled with a * in above map)
+// the distances of origins from column corner (labeled with a * in above map)
 const float ROOM_ORIGINS_FROM_COL[4][2] = {{18.0, -124.0},
 										   {-147.0, 8.0},
 										   {41.0, 168.0},
 										   {196.0, 30.0}};
 
-const float ROOM_ROTATION[4] = {0, 1.5708, 0.0, 1.6005}; //Rosie data, radians, correct!
 
 const float THETA_SHIFT[4] = {-1.5708, 1.5708, -1.5708, 1.5708}; //Value necessary to push the theta = 0 onto the x-axis rather than the y
 
