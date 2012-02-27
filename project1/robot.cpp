@@ -270,7 +270,7 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
         if (thetaError < -thetaErrorLimit) {
             LOG.write(LOG_MED, "turn_adjust", 
                       "direction: right, since theta error < -limit");
-            int turnSpeed = (int)(1.0/thetaGain);
+            int turnSpeed = (int)fabs((1.0/thetaGain));
             if (turnSpeed > 6) {
                 turnSpeed = 6;
             }
@@ -283,7 +283,7 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
         else if(thetaError > thetaErrorLimit){
             LOG.write(LOG_MED, "turn_adjust", 
                       "direction: left, since theta error > limit");
-            int turnSpeed = (int)(1.0/thetaGain);
+            int turnSpeed = (int)fabs((1.0/thetaGain));
             if (turnSpeed > 6) {
                 turnSpeed = 6;
             }
@@ -364,22 +364,26 @@ void Robot::update() {
     _updateNSPose();
 
 /*
-    if (getStrength() > GOOD_NS_STRENGTH && _numTurns > 10) { // It's OVER 9000
-        //reset the theta on the we
-        _wePose->setTheta(_nsPose->getTheta());
-        _wePose->setNumRotations(_nsPose->getNumRotations());
-        // reset our turn counter, since it's purely for WE uncertainty
-        _numTurns = 0;
-    }
-*/
+ * Legacy tuning function
+ * 	Knowing that our WE theta value often deviated from real behavior, we opted to trust the NS value after a few turns had been executed,
+ * 	under conditions of high signal strength
+ *
+ *  if (getStrength() > GOOD_NS_STRENGTH && _numTurns > 10) { // It's OVER 9000
+ *      //reset the theta on the we
+ *      _wePose->setTheta(_nsPose->getTheta());
+ *      _wePose->setNumRotations(_nsPose->getNumRotations());
+ *      // reset our turn counter, since it's purely for WE uncertainty
+ *      _numTurns = 0;
+ *  }
+ */
 
     if (_speed == 0) {
         _kalmanFilter->setVelocity(0.0, 0.0, 0.0);
     }
     else {
     	if (_movingForward) {
-    		float speedX = (SPEED_FORWARD[_speed]);//*cos(_pose->getTheta());
-    		float speedY = (SPEED_FORWARD[_speed]);//*sin(_pose->getTheta());
+    		float speedX = (SPEED_FORWARD[_speed]);
+    		float speedY = (SPEED_FORWARD[_speed]);
 
             LOG.write(LOG_MED, "update_predictions", 
                       "speed x (cm/s): %f \t speed y (cm/s): %f",
@@ -389,7 +393,7 @@ void Robot::update() {
     		_kalmanFilter->setVelocity(speedX, speedY, 0.0);
     	}
     	else {
-            float speedTheta = SPEED_TURN[_turnDirection][_speed];
+            float speedTheta = SPEED_TURN[_turnDirection][_speed]; //Fetch turning speed in radians per second
 
             LOG.write(LOG_MED, "update_predictions", 
                       "speed theta (cm/s): %f", speedTheta);
@@ -426,7 +430,8 @@ void Robot::update() {
                                         NS_Y_UNCERTAIN,
                                         NS_THETA_UNCERTAIN);
     }
-
+  
+    //Legacy tuning function, attempting to dynamically modify trust of the robot's state due to known deviations in WE theta from real behavior
     // the more we turn, the less reliable wheel encoders become
     /*
     float weTurnUncertainty = (_numTurns / 5) * 0.01;
@@ -597,82 +602,50 @@ float Robot::_getWETransDeltaTheta() {
 
 // Returns: transformed north star x estimate of where
 //          robot should now be in global coordinate system
+//          NorthStar data is: 	- rotated to fit global coordinate system
+//				- scaled to centimeters
+//				- shifted to global coordinate origin
 float Robot::_getNSTransX() {
     float result;
-    int room = getRoom()-2;
+    int room = getRoom()-2; //Room IDs used to index transformation constants
     float coords[2];
     float transform[2];
     float tempTheta;
 
+    //Get NS data
     coords[0] = _getNSX();
     coords[1] = _getNSY();
 
+    //Build rotation matrix
     transform[0] = cos(ROOM_ROTATION[room]);
     transform[1] = -sin(ROOM_ROTATION[room]);
 
+    //Apply specific linear transformation to Room 2, to correct for theta skew
     if (room == ROOM_2) {
-        tempTheta = .0000204488*coords[0] - .0804;
+        tempTheta = .0000204488*coords[0] - .0804; //Linear fit from observed NS data
 
 	    transform[0] = cos(tempTheta);
 	    transform[1] = -sin(tempTheta);
     }
 
-    if (ROOM_FLIPX[room]) {
-        transform[1] = -transform[1];
-        transform[0] = -transform[0];
-    }
-
+    //Perform matrix multiplication
     Util::mMult(transform, 1, 2, coords, 2, 1, &result);
 
-    //scale
+    //Scale to centimeters
     result /= ROOM_SCALE[room][0];
 
-    //move
+    //Shift to global coordinate zero 
     float roomShiftX = COL_OFFSET[0] + ROOM_ORIGINS_FROM_COL[room][0];
     result += roomShiftX;
 
     return result;
 }
 
-
-// TEMP FUNCTION!
-//
-// Returns: transformed north star x estimate of where
-//          robot should now be in global coordinate system
-// TODO?
-float Robot::_getNSHalfTransX() {
-    float result;
-    int room = getRoom();
-    float coords[2];
-    float transform[2];
-
-    coords[0] = _getNSX();
-    coords[1] = _getNSY();
-    transform[0] = cos(ROOM_ROTATION[room-2]);
-    transform[1] = -sin(ROOM_ROTATION[room-2]);
-
-    if (ROOM_FLIPX[room-2]) {
-        transform[1] = -transform[1];
-        transform[0] = -transform[0];
-    }
-
-    Util::mMult(transform, 1, 2, coords, 2, 1, &result);
-
-    //scale
-    //result /= ROOM_SCALE[room][0];
-
-    //move
-    float roomShiftX = COL_OFFSET[0] + ROOM_ORIGINS_FROM_COL[room-2][0];
-    result += roomShiftX;
-
-    return result;
-}
-
-
-// Returns: transformed north star y estimate of where
 // Returns: transformed north star y estimate of where
 //          robot should now be in global coordinate system
-// TODO?
+//          NorthStar data is: 	- rotated to fit global coordinate system
+//				- scaled to centimeters
+//				- shifted to global coordinate origin
 float Robot::_getNSTransY() {
     float result;
     int room = getRoom()-2;
@@ -680,92 +653,54 @@ float Robot::_getNSTransY() {
     float transform[2];
     float tempTheta;
 
+    //Get NS data
     coords[0] = _getNSX();
     coords[1] = _getNSY();
 
+    //Build rotation matrix
     transform[0] = sin(ROOM_ROTATION[room]);
     transform[1] = cos(ROOM_ROTATION[room]);
 
+    //Apply specific linear transformation to Room 2, to correct for theta skew
     if (room == ROOM_2) {
-    	tempTheta = .0000204488*coords[1] - .0804;
+    	tempTheta = .0000204488*coords[1] - .0804; //Linear fit from observed NS data
 
 	    transform[0] = sin(tempTheta);
 	    transform[1] = cos(tempTheta);
     }
 
-    if (ROOM_FLIPY[room]) {
-        transform[1] = -transform[1];
-        transform[0] = -transform[0];
-    }
-
+    //Perform matrix multiplication
     Util::mMult(transform, 1, 2, coords, 2, 1, &result);
 
-    //scale
+    //Scale to centimeters
     result /= ROOM_SCALE[room][1];
 
-    //move
+    //Shift to global coordinate zero 
     float roomShiftY = COL_OFFSET[1] + ROOM_ORIGINS_FROM_COL[room][1];
     result += roomShiftY;
 
-    //Correction for skew in room 2
-    //if (room == ROOM_2) {
-    //    result += .75*_getNSTransX();
-    //}
-
     return result;
 }
 
-
-// TEMP FUNCTION!
-//
-// Returns: transformed north star y estimate of where
-//          robot should now be in global coordinate system
-// TODO?
-float Robot::_getNSHalfTransY() {
-    float result;
-    int room = getRoom();
-    float coords[2];
-    float transform[2];
-
-    coords[0] = _getNSX();
-    coords[1] = _getNSY();
-
-    transform[0] = sin(ROOM_ROTATION[room-2]);
-    transform[1] = cos(ROOM_ROTATION[room-2]);
-
-    if (ROOM_FLIPY[room-2]) {
-        transform[1] = -transform[1];
-        transform[0] = -transform[0];
-    }
-
-    Util::mMult(transform, 1, 2, coords, 2, 1, &result);
-
-    //scale
-    //result /= ROOM_SCALE[1][room-2];
-
-    //move
-    float roomShiftY = COL_OFFSET[1] + ROOM_ORIGINS_FROM_COL[room-2][1];
-    result += roomShiftY;
-
-    return result;
-}
 
 
 // Returns: transformed north star theta estimate of where
 //          robot should now be in global coordinate system
-// TODO?
 float Robot::_getNSTransTheta() {
     float result = _getNSTheta();
     int room = getRoom()-2;
     float tempTheta;
+
+    //Rotate theta to match offset of NorthStar axes from global coordinate systwm
     result -= (ROOM_ROTATION[room]);
 
-/*
+/*  Theta does not require fix in Room 2 coordinate system, so this has been commented out
     if(room == ROOM_2 && getStrength() < 8000) {
         tempTheta = .0000204488*_getNSX() + 1.4904;
 	    result = tempTheta;
     }
 */
+    //Add additional theta shift for varying definitions of axes between NS and global coords
     result += THETA_SHIFT[room];
 
     // convert from [-pi, pi] to [0, 2pi]
@@ -784,7 +719,7 @@ void Robot::_updateWEPose() {
    
     float newTheta = Util::normalizeTheta(lastTheta + dTheta);
     
-    // account for rotations
+    // Account for rotations
     if ((lastTheta > (3/2.0)*PI && newTheta < PI/2.0) || 
         (lastTheta < PI/2.0 && newTheta > (3/2.0)*PI)) {
         _passed2PIwe = !_passed2PIwe;
