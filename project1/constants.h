@@ -2,6 +2,9 @@
 #define CS1567_CONSTANTS_H
 
 #define PI 3.14159265358979323846
+
+#define DEGREE_20 0.34906585
+#define DEGREE_25 0.436332313
 #define DEGREE_30 0.523598776 // pi/6
 #define DEGREE_60 1.04719755 // pi/6
 #define DEGREE_90 1.57079633 // pi/2
@@ -12,10 +15,11 @@
 
 #define ROBOT_DIAMETER 29 // cm
 
-#define MAX_NUM_FAILS 5
+#define MAX_UPDATE_FAILS 5
 
 #define MIN_DIST_GAIN -0.1
 #define MAX_DIST_GAIN 0.1
+
 #define MIN_THETA_GAIN -0.05
 #define MAX_THETA_GAIN 0.05
 
@@ -29,16 +33,15 @@
 
 #define MAX_FILTER_TAPS 7
 
-#define MAX_THETA_ERROR 0.5236 // 30 degrees
-//#define MAX_THETA_ERROR 0.34906585 // 20 degrees
-//#define MAX_THETA_ERROR 0.436332313 // 25 degrees
 #define MAX_DIST_ERROR 35.0 // in cm
+#define MAX_THETA_ERROR DEGREE_30
 
 #define ROOM_2 0
 #define ROOM_3 1
 #define ROOM_4 2
 #define ROOM_5 3
 
+// the average ticks per cm in x and y per room
 const float ROOM_SCALE[4][2] =  {{49.2, 37.1}, 
 								 {45.4, 57.6}, 
 								 {59.6, 36.7}, 

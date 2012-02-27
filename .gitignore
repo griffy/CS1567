@@ -20,4 +20,5 @@
 *.la
 *.a
 
+# Run logs
 project[0-9]/logs
