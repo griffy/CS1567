@@ -15,10 +15,7 @@ public:
     void add(float deltaX, float deltaY, float deltaTheta);
     void toArrayForKalman(float *arr);
 
-	//gets the pose difference between the 2 poses
 	void difference(Pose* destination, Pose* pose1, Pose* pose2);
-
-	//gets the distance (x/y) between the 2 poses
 	float distance(Pose* pose1, Pose* pose2);
 	
 	void setNumRotations(int rot);

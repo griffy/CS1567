@@ -3,12 +3,6 @@
 
 #include <string>
 
-#define DEFAULT_IMP 0
-
-#define HIGH_IMP 2
-#define MEDIUM_IMP 1
-#define LOW_IMP 0
-
 #define NUM_ROBOTS 6
 
 #define ROSIE 0

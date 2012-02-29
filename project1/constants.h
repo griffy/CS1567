@@ -15,26 +15,41 @@
 
 #define ROBOT_DIAMETER 29 // cm
 
-#define MAX_UPDATE_FAILS 5
+#define MAX_UPDATE_FAILS 5 // max allowable fails to update robot interface
 
+// Kalman uncertainties
+#define PROC_X_UNCERTAIN 0.05
+#define PROC_Y_UNCERTAIN 0.05
+#define PROC_THETA_UNCERTAIN 0.1
+
+#define NS_X_UNCERTAIN 0.025
+#define NS_Y_UNCERTAIN 0.025
+#define NS_THETA_UNCERTAIN 0.1
+
+#define WE_X_UNCERTAIN 0.05
+#define WE_Y_UNCERTAIN 0.01
+#define WE_THETA_UNCERTAIN 0.025 // was 0.05
+
+// PID gains min and max
 #define MIN_DIST_GAIN -0.1
 #define MAX_DIST_GAIN 0.1
-
 #define MIN_THETA_GAIN -0.05
 #define MAX_THETA_GAIN 0.05
 
+// PID tuning constants
 #define PID_DIST_KP 0.8
 #define PID_DIST_KI 0.05
 #define PID_DIST_KD 0.05
-
 #define PID_THETA_KP 0.65
 #define PID_THETA_KI 0.001
 #define PID_THETA_KD 0.001
 
-#define MAX_FILTER_TAPS 7
-
+// acceptable proximities from base
 #define MAX_DIST_ERROR 35.0 // in cm
 #define MAX_THETA_ERROR DEGREE_30
+
+// the largest filter size (used for prefilling data)
+#define MAX_FILTER_TAPS 7
 
 #define ROOM_2 0
 #define ROOM_3 1

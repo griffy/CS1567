@@ -4,6 +4,7 @@
 #include <sys/stat.h>
 #include <errno.h>
 
+/* Creates a new logger with a default importance of low */
 Logger::Logger()
 : _files(), _importanceLevel(LOG_LOW) {}
 
@@ -15,6 +16,17 @@ Logger::~Logger() {
     }
 }
 
+/* Sets the importance level of the logger to some new value.
+ * Importance works as follows:
+ * 
+ * A logger, when set to some importance level, will perform
+ * writes if the thing being written has an importance level
+ * at the same level as the logger or above.
+ *
+ * For example, setting the logger to have an importance level
+ * of 1 will result in all messages of importance >= 1 being
+ * written, to file or screen or both depending on the method.
+ */
 void Logger::setImportanceLevel(int importanceLevel) {
     _importanceLevel = importanceLevel;
 }

@@ -20,7 +20,7 @@ const float TIME_DISTANCE = 116.0; // cm
 
 // average speed to move forward TIME_DISTANCE at integer robot speeds
 const float SPEED_FORWARD[NUM_SPEEDS] = {
-    TIME_DISTANCE/0.0,
+    0.0,
     TIME_DISTANCE/3.5,
     TIME_DISTANCE/3.5,
     TIME_DISTANCE/3.5,
@@ -69,7 +69,6 @@ public:
     Pose* getPose();
 
     /// Self explanatory
-    // TODO: FINDBITCHES
     bool isThereABitchInMyWay();
 	int getStrength();
 

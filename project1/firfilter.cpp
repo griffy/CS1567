@@ -5,10 +5,12 @@
 
 FIRFilter::FIRFilter(std::string fileName) 
 : _order(0), _coefficients(), _samples(), _nextSample(0) {
+    // read in the taps from the specified .ffc file and set the order
     int numTaps = _readTaps(fileName);
     _order = numTaps-1;
 }
 
+/* Returns the order of the filter (taps-1) */
 int FIRFilter::getOrder() {
     return _order;
 }
@@ -41,14 +43,17 @@ float FIRFilter::filter(float val) {
     float sum = 0;
     int i, j;
 
+    // add this value as the next sample
     _samples[_nextSample] = val;
     for (i = 0, j = _nextSample; i < getOrder()+1; i++) {
         sum += _coefficients[i] * _samples[j++];
+        // if j has passed our filter size, reset it to 0
         if (j == getOrder()+1) {
             j = 0;
         }
     }
 
+    // the next sample should be put at 0 if we've reached our size
     if (++_nextSample == getOrder()+1) {
         _nextSample = 0;
     }

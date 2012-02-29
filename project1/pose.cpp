@@ -12,20 +12,16 @@ Pose::Pose(float x, float y, float theta) {
 	_numRotations = 0;
 }
 
-Pose::~Pose() {
-	
-}
+Pose::~Pose() {}
 
-//gets the difference between 2 poses
+/* Sets the difference between 2 poses in a given result pose */
 void Pose::difference(Pose* returnPose, Pose* pose1, Pose* pose2) {
-	delete returnPose;
-	returnPose = new Pose(pose2->getX()-pose1->getX(), 
-						  pose2->getY()-pose1->getY(),
-						  pose2->getTheta()-pose1->getTheta());
-    returnPose->setTotalTheta(pose2->getTotalTheta()-pose1->getTotalTheta());
+    returnPose->setX(pose2->getX() - pose1->getX());
+    returnPose->setY(pose2->getY() - pose1->getY());
+    returnPose->setTotalTheta(pose2->getTotalTheta() - pose1->getTotalTheta());
 }
 
-//gets the distance (x/y) between 2 poses
+/* Returns the distance (x/y) between 2 poses */
 float Pose::distance(Pose* pose1, Pose* pose2) {
 	float xerr = pose2->getX()-pose1->getX();
 	float yerr = pose2->getY()-pose1->getY();
@@ -40,16 +36,20 @@ void Pose::setY(float y) {
 	_y = y;
 }
 
+/* Sets theta, as well as total theta according to the number of rotations */
 void Pose::setTheta(float theta) {
 	_theta = fmod(theta, 2*PI);
 	_totalTheta = _numRotations * 2*PI + _theta;
 }
 
+/* Adds the given number to the pre-existing number of stored rotations */
 void Pose::modifyRotations(int num) {
 	setNumRotations(_numRotations + num);
 }
 
-
+/* Directly sets total theta, which in turn sets the number of rotations
+ * as well as theta
+ */
 void Pose::setTotalTheta(float totalTheta) {
 	_totalTheta = totalTheta;
 	_numRotations = (int) _totalTheta/(2*PI);
@@ -63,6 +63,9 @@ float Pose::getTotalTheta() {
 	return _totalTheta;
 }
 
+/* Sets the number of rotations, which track how many times theta has
+ * passed over 2PI 
+ */
 void Pose::setNumRotations(int rot) {
 	_numRotations = rot;
 	_totalTheta = _numRotations * 2*PI + _theta;
@@ -72,12 +75,16 @@ int Pose::getNumRotations() {
 	return _numRotations;
 }
 
+/* Adds the deltas to the current pose, resulting in a new one */
 void Pose::add(float deltaX, float deltaY, float deltaTheta) {
 	_x += deltaX;
 	_y += deltaY;
 	_theta += deltaTheta;
 }
 
+/* Sets a 3-element array to have x, y, and total theta to be used
+ * by a Kalman filter
+ */
 void Pose::toArrayForKalman(float *arr) {
 	arr[0] = _x;
 	arr[1] = _y;

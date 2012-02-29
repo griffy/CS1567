@@ -5,11 +5,13 @@
 #include <string>
 #include <cstdarg>
 
+// some default importance levels
 #define LOG_OFF 99
 #define LOG_HIGH 2
 #define LOG_MED 1
 #define LOG_LOW 0
 
+// A macro to return the static instance from any file
 #define LOG Logger::getInstance()
 
 class Logger {

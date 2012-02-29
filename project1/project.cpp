@@ -12,7 +12,7 @@ int main(int argc, char *argv[]) {
 
     LOG.setImportanceLevel(LOG_OFF);
 
-    //Base locations within the global coordinate system
+    // Base locations in cm within the global coordinate system
 	Pose * bases[NUM_BASES];
 	bases[0] = new Pose(340, 0, 0); // base 1
 	bases[1] = new Pose(229, 183, 0); // base 2

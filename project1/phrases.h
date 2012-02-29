@@ -3,6 +3,10 @@
 
 #include <string.h>
 
+/* Below are the phrases, indexed according to robot number, which
+ * may be said throughout the life of the program
+ */
+
 const std::string BEGIN_PHRASES[] = {
     "I swear on my mother's rechargable batteries",
     "Bender here",

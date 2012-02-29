@@ -1,6 +1,9 @@
 #include "PID.h"
+#include "logger.h"
 
-/** constructor with arguments for the constants structure. Defaults to having max/min value of +-1/3 for the iTerm**/
+/** Constructor with arguments for the constants structure. 
+ *  Defaults to having max/min value of +-1/20 for the iTerm
+ */
 PID::PID(PIDConstants *newConstants) {
 	_constants.kp = newConstants->kp;
 	_constants.ki = newConstants->ki;
@@ -9,7 +12,9 @@ PID::PID(PIDConstants *newConstants) {
 	_minValue = -1/20.0;
 }
 
-/** constructor with arguments for the constants structure, and min/max values for the iTerm **/
+/** Constructor with arguments for the constants structure, 
+ *  and min/max values for the iTerm 
+ */
 PID::PID(PIDConstants *newConstants, float max_value, float min_value) {
 	_constants.kp = newConstants->kp;
 	_constants.ki = newConstants->ki;
@@ -53,13 +58,13 @@ float PID::updatePID(float error) {
     // multiply by the change in error (this one minus the previous)
 	dTerm = _constants.kd * (error - prevError);
 
-	//printf("pTerm = %f\n", pTerm);
-	//printf("iTerm = %f\n", iTerm);
-	//printf("dTerm = %f\n", dTerm);
+    LOG.write(LOG_LOW, "pid terms", "pTerm = %f\n", pTerm);
+	LOG.write(LOG_LOW, "pid terms", "iTerm = %f\n", iTerm);
+	LOG.write(LOG_LOW, "pid terms", "dTerm = %f\n", dTerm);
 
-	float gain = pTerm+iTerm+dTerm;
+	float gain = pTerm + iTerm + dTerm;
 	if (gain > 1.0) {
-		gain=1.0;
+		gain = 1.0;
 	}
 
 	return gain;
