@@ -23,9 +23,16 @@ void Pose::difference(Pose* returnPose, Pose* pose1, Pose* pose2) {
 
 /* Returns the distance (x/y) between 2 poses */
 float Pose::distance(Pose* pose1, Pose* pose2) {
-	float xerr = pose2->getX()-pose1->getX();
-	float yerr = pose2->getY()-pose1->getY();
+	float xerr = pose2->getX() - pose1->getX();
+	float yerr = pose2->getY() - pose1->getY();
 	return sqrt(xerr*xerr + yerr*yerr);
+}
+
+void Pose::reset(float x, float y, float theta, int numRotations) {
+	setX(x);
+	setY(y);
+	setTheta(theta);
+	setNumRotations(numRotations);
 }
 
 void Pose::setX(float x) {
@@ -38,7 +45,7 @@ void Pose::setY(float y) {
 
 /* Sets theta, as well as total theta according to the number of rotations */
 void Pose::setTheta(float theta) {
-	_theta = fmod(theta, 2*PI);
+	_theta = Util::normalizeTheta(theta);
 	_totalTheta = _numRotations * 2*PI + _theta;
 }
 
@@ -53,10 +60,13 @@ void Pose::modifyRotations(int num) {
 void Pose::setTotalTheta(float totalTheta) {
 	_totalTheta = totalTheta;
 	_numRotations = (int) _totalTheta/(2*PI);
+	_theta = Util::normalizeTheta(totalTheta);
+	/*
 	_theta = fmod(totalTheta, 2*PI);
 	if (_theta < 0) {
 		_theta += 2*PI;
 	}
+	*/
 }
 
 float Pose::getTotalTheta() {
@@ -102,4 +112,36 @@ float Pose::getY(){
 
 float Pose::getTheta(){
 	return _theta;
+}
+
+void Pose::rotateEach(float xAngle, float yAngle, float thetaAngle) {
+	float newX = getX() * cos(xAngle) - getY() * sin(xAngle);
+	float newY = getX() * sin(yAngle) + getY() * cos(yAngle);
+	float newTheta = getTheta() - thetaAngle;
+    setX(newX);
+    setY(newY);
+    setTheta(newTheta);
+}
+
+void Pose::rotate(float angle) {
+	float newX = getX() * cos(angle) - getY() * sin(angle);
+	float newY = getX() * sin(angle) + getY() * cos(angle);
+	float newTheta = getTheta() - angle;
+    setX(newX);
+    setY(newY);
+    setTheta(newTheta);
+}
+
+void Pose::scale(float sx, float sy) {
+	float newX = getX() * sx;
+	float newY = getY() * sy;
+    setX(newX);
+    setY(newY);
+}
+
+void Pose::translate(float tx, float ty) {
+	float newX = getX() + tx;
+	float newY = getY() + ty;
+    setX(newX);
+    setY(newY);
 }

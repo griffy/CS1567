@@ -1,4 +1,4 @@
-OBJS=project.o robot.o pose.o firfilter.o kalman.o rovioKalmanFilter.o utilities.o logger.o PID.o
+OBJS=project.o robot.o wheel_encoders.o north_star.o position_sensor.o pose.o fir_filter.o kalman_filter.o rovioKalmanFilter.o utilities.o logger.o PID.o
 CFLAGS=-ggdb -g3
 LIB_FLAGS=-L. -lrobot_if
 CPP_LIB_FLAGS=$(LIB_FLAGS) -lrobot_if++
@@ -11,23 +11,35 @@ all: $(OBJS)
 new: $(OBJS) 
 	g++ $(CFLAGS) -o project.out $(OBJS) $(CPP_LIB_FLAGS) $(LIB_LINK_NEW)
 
+robot_camera.o: robot_camera.cpp
+	g++ $(CFLAGS) -c robot_camera.cpp
+
 project.o: project.cpp
 	g++ $(CFLAGS) -c project.cpp
 
 robot.o: robot.cpp robot.h
 	g++ $(CFLAGS) -c robot.cpp
 
+position_sensor.o: position_sensor.cpp position_sensor.h
+	g++ $(CFLAGS) -c position_sensor.cpp
+
+wheel_encoders.o: wheel_encoders.cpp wheel_encoders.h
+	g++ $(CFLAGS) -c wheel_encoders.cpp
+
+north_star.o: north_star.cpp north_star.h
+	g++ $(CFLAGS) -c north_star.cpp
+
 pose.o: pose.cpp pose.h
 	g++ $(CFLAGS) -c pose.cpp
 
-firfilter.o: firfilter.cpp firfilter.h
-	g++ $(CFLAGS) -c firfilter.cpp
+fir_filter.o: fir_filter.cpp fir_filter.h
+	g++ $(CFLAGS) -c fir_filter.cpp
 
-kalman.o: kalman.cpp kalman.h
-	g++ $(CFLAGS) -c kalman.cpp
+kalman_filter.o: kalman_filter.cpp kalman_filter.h
+	g++ $(CFLAGS) -c kalman_filter.cpp
 
-rovioKalmanFilter.o: kalmanfilter/rovioKalmanFilter.c
-	g++ ${CFLAGS} -Ikalmanfilter -c kalmanfilter/rovioKalmanFilter.c	
+rovioKalmanFilter.o: lib/kalman/rovioKalmanFilter.c
+	g++ ${CFLAGS} -Ilib/kalman -c lib/kalman/rovioKalmanFilter.c	
 
 utilities.o: utilities.cpp utilities.h
 	g++ $(CFLAGS) -c utilities.cpp

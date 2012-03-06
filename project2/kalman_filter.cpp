@@ -1,9 +1,9 @@
-#include "kalman.h"
+#include "kalman_filter.h"
 #include "constants.h"
 #include "logger.h"
 #include <stdio.h>
 
-Kalman::Kalman(Pose *initialPose) {
+KalmanFilter::KalmanFilter(Pose *initialPose) {
     // make the current pose point to the initial pose
     // such that any modifications made to the value
     // will also update the reference outside this class
@@ -27,9 +27,9 @@ Kalman::Kalman(Pose *initialPose) {
     			   0.05, 0.05, 0.05);
 }
 
-Kalman::~Kalman() {}
+KalmanFilter::~KalmanFilter() {}
 
-void Kalman::filter(Pose *nsPose, Pose *wePose) {
+void KalmanFilter::filter(Pose *nsPose, Pose *wePose) {
     // convert the poses to 3-element arrays, where last
     // is total theta
 	float nsPoseArr[3];
@@ -55,7 +55,7 @@ void Kalman::filter(Pose *nsPose, Pose *wePose) {
 }
 
 /* Modifies the Kalman velocity estimate */
-void Kalman::setVelocity(float x, float y, float theta){
+void KalmanFilter::setVelocity(float x, float y, float theta){
 	_velocity[0] = x;
 	_velocity[1] = y;
 	_velocity[2] = theta;
@@ -64,7 +64,7 @@ void Kalman::setVelocity(float x, float y, float theta){
 }
 
 /* Sets the uncertainties of the various sensors and overall process */
-void Kalman::setUncertainty(float procX, float procY, float procTheta, 
+void KalmanFilter::setUncertainty(float procX, float procY, float procTheta, 
 						    float nsX, float nsY, float nsTheta, 
 						    float weX, float weY, float weTheta) {
 	_uncertainties[0] = procX;
@@ -81,7 +81,7 @@ void Kalman::setUncertainty(float procX, float procY, float procTheta,
 }
 
 /* Sets the process uncertainty */
-void Kalman::setProcUncertainty(float x, float y, float theta) {
+void KalmanFilter::setProcUncertainty(float x, float y, float theta) {
 	_uncertainties[0] = x;
 	_uncertainties[1] = y;
 	_uncertainties[2] = theta;
@@ -90,7 +90,7 @@ void Kalman::setProcUncertainty(float x, float y, float theta) {
 }
 
 /* Sets the north star uncertainty */
-void Kalman::setNSUncertainty(float x, float y, float theta) {
+void KalmanFilter::setNSUncertainty(float x, float y, float theta) {
 	_uncertainties[3] = x;
 	_uncertainties[4] = y;
 	_uncertainties[5] = theta;
@@ -99,7 +99,7 @@ void Kalman::setNSUncertainty(float x, float y, float theta) {
 }
 
 /* Sets the wheel encoder uncertainty */
-void Kalman::setWEUncertainty(float x, float y, float theta) {
+void KalmanFilter::setWEUncertainty(float x, float y, float theta) {
 	_uncertainties[6] = x;
 	_uncertainties[7] = y;
 	_uncertainties[8] = theta;

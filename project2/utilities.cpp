@@ -5,29 +5,9 @@
 #include <math.h>
 
 namespace Util {
-    // Converts north star ticks to cm based off NS_TICKS constant
-    float nsToCM(float ticks) {
-        return ticks / NS_TICKS;
-    }
-
-    // Converts wheel encoder ticks to cm based off WE_TICKS constant
-    float weToCM(float ticks) {
-        return ticks / WE_TICKS;
-    }
-
-    // Converts cm to north star ticks based off NS_TICKS constant
-    float cmToNS(float cm) {
-        return cm * NS_TICKS;
-    }
-
-    // Converts cm to wheel encoder ticks based off WE_TICKS constant
-    float cmToWE(float cm) {
-        return cm * WE_TICKS;
-    }
-
     // Performs a matrix multiplication of two matrices, A and B,
     // storing the result in a third matrix, C
-    void mMult(float *mA, int lA, int hA, float *mB, int lB, int hB, float *mC) {
+    void matrixMult(float *mA, int lA, int hA, float *mB, int lB, int hB, float *mC) {
         if (hA != lB) {
             printf("Inner matrix dimensions do not match!\n");
             return;
@@ -59,7 +39,9 @@ namespace Util {
        Returns: A number in range [0, 2pi]
     */
     float normalizeTheta(float theta) {
-        theta = fmod(theta, 2*PI);
+        while (theta >= 2*PI) {
+            theta -= 2*PI;
+        }
         while (theta < 0) {
             theta += 2*PI;
         }

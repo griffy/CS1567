@@ -1,4 +1,4 @@
-OBJS=collectcameradata.o ../robot.o ../pose.o ../firfilter.o ../kalman.o ../rovioKalmanFilter.o ../utilities.o ../logger.o ../PID.o 
+OBJS=collect_camera_data.o ../robot.o ../pose.o ../fir_filter.o ../kalman.o ../rovioKalmanFilter.o ../utilities.o ../logger.o ../PID.o 
 CFLAGS=-ggdb -g3
 LIB_FLAGS=-L. -lrobot_if
 CPP_LIB_FLAGS=$(LIB_FLAGS) -lrobot_if++
@@ -7,16 +7,16 @@ LIB_LINK_NEW=-lopencv_core -lopencv_imgproc -lopencv_highgui -lm -lgslcblas -L/u
 
 all: $(OBJS)
 	cd ..; make
-	g++ $(CFLAGS) -o collectcameradata.out $(OBJS) $(CPP_LIB_FLAGS) $(LIB_LINK)
+	g++ $(CFLAGS) -o collect_camera_data.out $(OBJS) $(CPP_LIB_FLAGS) $(LIB_LINK)
 
 new: $(OBJS)
 	cd ..; make new
-	g++ $(CFLAGS) -o collectcameradata.out $(OBJS) $(CPP_LIB_FLAGS) $(LIB_LINK_NEW)
+	g++ $(CFLAGS) -o collect_camera_data.out $(OBJS) $(CPP_LIB_FLAGS) $(LIB_LINK_NEW)
 
-collectcameradata.o: collectcameradata.cpp
-	g++ $(CFLAGS) -c collectcameradata.cpp
+collect_camera_data.o: collect_camera_data.cpp
+	g++ $(CFLAGS) -c collect_camera_data.cpp
 
 clean:
 	rm -f *.o
 	rm -f *.gch
-	rm -f collectcameradata.out
+	rm -f collect_camera_data.out

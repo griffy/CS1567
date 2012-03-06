@@ -9,12 +9,6 @@ Robot::Robot(std::string address, int id) {
     // store the robot's name as an int to be used later
     _name = Util::nameFrom(address);
     
-    // track when each sensor says we've passed 2PI
-    _passed2PIns = false;
-    _passed2PIwe = false;
-    
-    //_numTurns = 0;
-
     // initialize movement variables
     _turnDirection = 0;
     _movingForward = true;
@@ -26,24 +20,14 @@ Robot::Robot(std::string address, int id) {
 
     printf("robot interface loaded\n");
 
-    // initialize filters for sensors
-    _nsXFilter = new FIRFilter("filters/ns_x.ffc");
-    _nsYFilter = new FIRFilter("filters/ns_y.ffc");
-    _nsThetaFilter = new FIRFilter("filters/ns_theta.ffc"); // empty filter for now
-    _weLeftFilter = new FIRFilter("filters/we.ffc");
-    _weRightFilter = new FIRFilter("filters/we.ffc");
-    _weRearFilter = new FIRFilter("filters/we.ffc");
-
-    printf("fir filters initialized\n");
-
-    // initialize robot poses for sensors and kalman
-    _wePose = new Pose(0, 0, 0);
-    _nsPose = new Pose(0, 0, 0);
+    // initialize position sensors
+    _wheelEncoders = new WheelEncoders(_robotInterface);
+    _northStar = new NorthStar(_robotInterface);
+    
+    // initialize global pose
     _pose = new Pose(0, 0, 0);
-
     // bind _pose to the kalman filter
-    _kalmanFilter = new Kalman(_pose);
-
+    _kalmanFilter = new KalmanFilter(_pose);
     _kalmanFilter->setUncertainty(PROC_X_UNCERTAIN,
                                   PROC_Y_UNCERTAIN,
                                   PROC_THETA_UNCERTAIN,
@@ -68,21 +52,20 @@ Robot::Robot(std::string address, int id) {
 Robot::~Robot() {
     delete _robotInterface;
 
-    delete _nsXFilter;
-    delete _nsYFilter;
-    delete _nsThetaFilter;
-    delete _weLeftFilter;
-    delete _weRightFilter;
-    delete _weRearFilter;
+    delete _wheelEncoders;
+    delete _northStar;
 
-    delete _wePose;
-    delete _nsPose;
     delete _pose;
 
     delete _kalmanFilter;
 
     delete _distancePID;
     delete _thetaPID;
+}
+
+/* Returns a reference to the Kalman pose */
+Pose* Robot::getPose() {
+    return _pose;
 }
 
 void Robot::prefillData() {
@@ -137,10 +120,7 @@ void Robot::moveTo(float x, float y) {
     _thetaPID->flushPID();
 
     // reset wheel encoder pose to be north star since we hit our base
-    _wePose->setX(_nsPose->getX());
-    _wePose->setY(_nsPose->getY());
-    _wePose->setTheta(_nsPose->getTheta());
-    _wePose->setNumRotations(_nsPose->getNumRotations());
+    _wheelEncoders->resetPose(_northStar->getPose());
 }
 
 // Moves to a location in the global coordinate system (in cm) 
@@ -161,16 +141,16 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
 
         LOG.write(LOG_LOW, "move_we_pose",
                   "x: %f \t y: %f \t theta: %f \t totalTheta: %f", 
-                  _wePose->getX(),
-                  _wePose->getY(),
-                  _wePose->getTheta(),
-                  _wePose->getTotalTheta()); 
+                  _wheelEncoders->getPose()->getX(),
+                  _wheelEncoders->getPose()->getY(),
+                  _wheelEncoders->getPose()->getTheta(),
+                  _wheelEncoders->getPose()->getTotalTheta()); 
         LOG.write(LOG_LOW, "move_ns_pose",
                   "x: %f \t y: %f \t theta: %f \t totalTheta: %f", 
-                  _nsPose->getX(),
-                  _nsPose->getY(),
-                  _nsPose->getTheta(),
-                  _nsPose->getTotalTheta()); 
+                  _northStar->getPose()->getX(),
+                  _northStar->getPose()->getY(),
+                  _northStar->getPose()->getTheta(),
+                  _northStar->getPose()->getTotalTheta()); 
         LOG.write(LOG_LOW, "move_kalman_pose",
                   "x: %f \t y: %f \t theta: %f \t totalTheta: %f", 
                   _pose->getX(),
@@ -234,16 +214,16 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
 
         LOG.write(LOG_LOW, "turn_we_pose",
                   "x: %f \t y: %f \t theta: %f \t totalTheta: %f", 
-                  _wePose->getX(),
-                  _wePose->getY(),
-                  _wePose->getTheta(),
-                  _wePose->getTotalTheta()); 
+                  _wheelEncoders->getPose()->getX(),
+                  _wheelEncoders->getPose()->getY(),
+                  _wheelEncoders->getPose()->getTheta(),
+                  _wheelEncoders->getPose()->getTotalTheta()); 
         LOG.write(LOG_LOW, "turn_ns_pose",
                   "x: %f \t y: %f \t theta: %f \t totalTheta: %f", 
-                  _nsPose->getX(),
-                  _nsPose->getY(),
-                  _nsPose->getTheta(),
-                  _nsPose->getTotalTheta()); 
+                  _northStar->getPose()->getX(),
+                  _northStar->getPose()->getY(),
+                  _northStar->getPose()->getTheta(),
+                  _northStar->getPose()->getTotalTheta()); 
         LOG.write(LOG_LOW, "turn_kalman_pose",
                   "x: %f \t y: %f \t theta: %f \t totalTheta: %f", 
                   _pose->getX(),
@@ -276,7 +256,6 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
             LOG.write(LOG_MED, "pid_speeds", "turn: %d", turnSpeed);
 
             turnRight(turnSpeed);
-            //_numTurns++;
         }
         else if(thetaError > thetaErrorLimit){
             LOG.write(LOG_MED, "turn_adjust", 
@@ -289,7 +268,6 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
             LOG.write(LOG_MED, "pid_speeds", "turn: %d", turnSpeed);
 
             turnLeft(turnSpeed);
-            //_numTurns++;
         }
     } while (fabs(thetaError) > thetaErrorLimit);
 
@@ -343,20 +321,13 @@ int Robot::getBattery() {
     return _robotInterface->Battery();
 }
 
+int Robot::getStrength(){
+    return _robotInterface->NavStrengthRaw();
+}
+
 /* Returns true if something is blocking our robot */
 bool Robot::isThereABitchInMyWay() {
     return _robotInterface->IR_Detected();
-}
-
-/* Sets the amount of times an attempt to update the robot's
- * interface can fail before we give up
- */
-void Robot::setFailLimit(int limit) {
-    _failLimit = limit;
-}
-
-int Robot::getFailLimit() {
-    return _failLimit;
 }
 
 // Updates the robot pose in terms of the global coordinate system
@@ -365,8 +336,8 @@ void Robot::update() {
     // update the robot interface
     _updateInterface();
     // update each pose estimate
-    _updateWEPose();
-    _updateNSPose();
+    _wheelEncoders->updatePose(getRoom());
+    _northStar->updatePose(getRoom());
 
 /*
  * Legacy tuning function
@@ -375,8 +346,8 @@ void Robot::update() {
  *
  *  if (getStrength() > GOOD_NS_STRENGTH && _numTurns > 10) { // It's OVER 9000
  *      //reset the theta on the we
- *      _wePose->setTheta(_nsPose->getTheta());
- *      _wePose->setNumRotations(_nsPose->getNumRotations());
+ *      _wheelEncoders->getPose()->setTheta(_northStar->getPose()->getTheta());
+ *      _wheelEncoders->getPose()->setNumRotations(_northStar->getPose()->getNumRotations());
  *      // reset our turn counter, since it's purely for WE uncertainty
  *      _numTurns = 0;
  *  }
@@ -448,16 +419,8 @@ void Robot::update() {
                                     WE_THETA_UNCERTAIN+(weTurnUncertainty*2.0));
     */
     // pass updated poses to kalman filter and update main pose
-    _kalmanFilter->filter(_nsPose, _wePose);
-}
-
-int Robot::getStrength(){
-    return _robotInterface->NavStrengthRaw();
-}
-
-/* Returns a reference to the Kalman pose */
-Pose* Robot::getPose() {
-    return _pose;
+    _kalmanFilter->filter(_northStar->getPose(), 
+                          _wheelEncoders->getPose());
 }
 
 // Attempts to update the robot
@@ -478,305 +441,13 @@ bool Robot::_updateInterface() {
     return true;
 }
 
-// Returns: filtered wheel encoder (delta) ticks for the left wheel
-float Robot::_getWEDeltaLeft() {
-    int left = _robotInterface->getWheelEncoder(RI_WHEEL_LEFT);
-    return _weLeftFilter->filter((float) left);
+/* Sets the amount of times an attempt to update the robot's
+ * interface can fail before we give up
+ */
+void Robot::setFailLimit(int limit) {
+    _failLimit = limit;
 }
 
-// Returns: filtered wheel encoder (delta) ticks for the right wheel
-float Robot::_getWEDeltaRight() {
-    int right = _robotInterface->getWheelEncoder(RI_WHEEL_RIGHT);
-    return _weRightFilter->filter((float) right);
-}
-
-// Returns: filtered wheel encoder (delta) ticks for the rear wheel
-float Robot::_getWEDeltaRear() {
-    int rear = _robotInterface->getWheelEncoder(RI_WHEEL_REAR);
-    return _weRearFilter->filter((float) rear);
-}
-
-// Returns: filtered north star x in ticks
-float Robot::_getNSX() {
-    int x = _robotInterface->X();
-    return _nsXFilter->filter((float) x);
-}
-
-// Returns: filtered north star y in ticks
-float Robot::_getNSY() {
-    int y = _robotInterface->Y();
-    return _nsYFilter->filter((float) y);
-}
-
-// Returns: filtered north star theta
-float Robot::_getNSTheta() {
-    float theta = _robotInterface->Theta();
-    return _nsThetaFilter->filter(theta);
-}
-
-// Returns: filtered wheel encoder delta x for left wheel in ticks
-//          in terms of robot axis
-float Robot::_getWEDeltaXLeft() {
-    float deltaX = _getWEDeltaLeft();
-    deltaX *= sin(DEGREE_150);
-    return deltaX;
-}
-
-// Returns: filtered wheel encoder delta y for left wheel in ticks
-//          in terms of robot axis
-float Robot::_getWEDeltaYLeft() {
-    float deltaY = _getWEDeltaLeft();
-    deltaY *= cos(DEGREE_150);
-    return -deltaY;
-}
-
-// Returns: filtered wheel encoder delta x for right wheel in ticks
-//          in terms of robot axis
-float Robot::_getWEDeltaXRight() {
-    float deltaX = _getWEDeltaRight();
-    deltaX *= sin(DEGREE_30);
-    return deltaX;
-}
-
-// Returns: filtered wheel encoder delta y for right wheel in ticks
-//          in terms of robot axis
-float Robot::_getWEDeltaYRight() {
-    float deltaY = _getWEDeltaRight();
-    deltaY *= cos(DEGREE_30);
-    return deltaY;
-}
-
-// Returns: filtered wheel encoder delta x for rear wheel in ticks
-//          in terms of robot axis
-float Robot::_getWEDeltaXRear() {
-    return _getWEDeltaRear();
-}
-
-// Returns: filtered wheel encoder delta y for rear wheel in ticks
-//          in terms of robot axis
-float Robot::_getWEDeltaYRear() {
-    return 0;
-}
-
-// Returns: filtered wheel encoder overall delta x in ticks
-//          in terms of robot axis
-float Robot::_getWEDeltaX() {
-    float leftDeltaX = _getWEDeltaXLeft();
-    float rightDeltaX = _getWEDeltaXRight();
-    float rearDeltaX =_getWEDeltaRear();
-
-    return (leftDeltaX + rightDeltaX + rearDeltaX) / 3.0;
-}
-
-// Returns: filtered wheel encoder overall delta y in ticks
-//          in terms of robot axis
-float Robot::_getWEDeltaY() {
-    float leftDeltaY = _getWEDeltaYLeft();
-    float rightDeltaY = _getWEDeltaYRight();
-
-    return (leftDeltaY + rightDeltaY) / 2.0;
-}
-
-// Returns: transformed wheel encoder delta x estimate in cm of where
-//          robot moved in global coordinate system
-float Robot::_getWETransDeltaX() {
-    // the robot's x motion should be ignored (since we are not strafing), as that
-    // is purely theta information
-    return Util::weToCM(_getWEDeltaY()) * cos(_wePose->getTheta());
-}
-
-// Returns: transformed wheel encoder delta y estimate in cm of where
-//          robot moved in global coordinate system
-float Robot::_getWETransDeltaY() {
-    // the robot's x motion should be ignored (since we are not strafing), as that
-    // is purely theta information
-    return Util::weToCM(_getWEDeltaY()) * sin(_wePose->getTheta());
-}
-
-// Returns: transformed wheel encoder delta theta estimate of angle
-//          robot moved at in global coordinate system
-float Robot::_getWETransDeltaTheta() {
-    float rearDeltaX = _getWEDeltaXRear();
-
-    return -Util::weToCM(rearDeltaX)/(ROBOT_DIAMETER / 2.0);
-}
-
-// Returns: transformed north star x estimate of where
-//          robot should now be in global coordinate system
-//          NorthStar data is: 	
-//              - rotated to fit global coordinate system
-//				- scaled to centimeters
-//				- shifted to global coordinate origin
-float Robot::_getNSTransX() {
-    float result;
-    int room = getRoom()-2; //Room IDs used to index transformation constants
-    float coords[2];
-    float transform[2];
-    float tempTheta;
-
-    //Get NS data
-    coords[0] = _getNSX();
-    coords[1] = _getNSY();
-
-    //Build rotation matrix
-    transform[0] = cos(ROOM_ROTATION[room]);
-    transform[1] = -sin(ROOM_ROTATION[room]);
-
-    //Apply specific linear transformation to Room 2, to correct for theta skew
-    if (room == ROOM_2) {
-        tempTheta = .0000204488*coords[0] - .0804; //Linear fit from observed NS data
-
-	    transform[0] = cos(tempTheta);
-	    transform[1] = -sin(tempTheta);
-    }
-
-    //Perform matrix multiplication
-    Util::mMult(transform, 1, 2, coords, 2, 1, &result);
-
-    //Scale to centimeters
-    result /= ROOM_SCALE[room][0];
-
-    //Shift to global coordinate zero 
-    float roomShiftX = COL_OFFSET[0] + ROOM_ORIGINS_FROM_COL[room][0];
-    result += roomShiftX;
-
-    return result;
-}
-
-// Returns: transformed north star y estimate of where
-//          robot should now be in global coordinate system
-//          NorthStar data is:
-//              - rotated to fit global coordinate system
-//				- scaled to centimeters
-//				- shifted to global coordinate origin
-float Robot::_getNSTransY() {
-    float result;
-    int room = getRoom()-2;
-    float coords[2];
-    float transform[2];
-    float tempTheta;
-
-    //Get NS data
-    coords[0] = _getNSX();
-    coords[1] = _getNSY();
-
-    //Build rotation matrix
-    transform[0] = sin(ROOM_ROTATION[room]);
-    transform[1] = cos(ROOM_ROTATION[room]);
-
-    //Apply specific linear transformation to Room 2, to correct for theta skew
-    if (room == ROOM_2) {
-    	tempTheta = .0000204488*coords[1] - .0804; //Linear fit from observed NS data
-
-	    transform[0] = sin(tempTheta);
-	    transform[1] = cos(tempTheta);
-    }
-
-    //Perform matrix multiplication
-    Util::mMult(transform, 1, 2, coords, 2, 1, &result);
-
-    //Scale to centimeters
-    result /= ROOM_SCALE[room][1];
-
-    //Shift to global coordinate zero 
-    float roomShiftY = COL_OFFSET[1] + ROOM_ORIGINS_FROM_COL[room][1];
-    result += roomShiftY;
-
-    return result;
-}
-
-
-
-// Returns: transformed north star theta estimate of where
-//          robot should now be in global coordinate system
-float Robot::_getNSTransTheta() {
-    float result = _getNSTheta();
-    int room = getRoom()-2;
-
-    //Rotate theta to match offset of NorthStar axes from global coordinate systwm
-    result -= (ROOM_ROTATION[room]);
-
-/*  Theta does not require fix in Room 2 coordinate system, so this has been commented out
-    if(room == ROOM_2 && getStrength() < 8000) {
-        result = .0000204488*_getNSX() + 1.4904;
-    }
-*/
-    //Add additional theta shift for varying definitions of axes between NS and global coords
-    result += THETA_SHIFT[room];
-
-    // convert from [-pi, pi] to [0, 2pi]
-    result = Util::normalizeTheta(result);
-    return result;
-}
-
-// Updates transformed wheel encoder pose estimate of where
-// robot should now be in global coordinate system
-void Robot::_updateWEPose() {
-    float lastTheta = _wePose->getTheta();
-    
-    float deltaX = _getWETransDeltaX();
-    float deltaY = _getWETransDeltaY();
-    float dTheta = _getWETransDeltaTheta();
-   
-    float newTheta = Util::normalizeTheta(lastTheta + dTheta);
-    
-    // Account for rotations
-    if ((lastTheta > (3/2.0)*PI && newTheta < PI/2.0) || 
-        (lastTheta < PI/2.0 && newTheta > (3/2.0)*PI)) {
-        _passed2PIwe = !_passed2PIwe;
-    }
-    
-    if (_passed2PIwe && (lastTheta > PI && newTheta < PI)) {
-        _wePose->modifyRotations(1);
-        _passed2PIwe = false;
-    }
-    else if(_passed2PIwe && (lastTheta < PI && newTheta > PI)) {
-        _wePose->modifyRotations(-1);
-        _passed2PIwe = false;
-    }
-    
-    LOG.write(LOG_MED, "update_we",
-              "lastTheta: %f \t deltaTheta: %f \t newTheta: %f",
-              lastTheta,
-              dTheta,
-              newTheta);
-
-    _wePose->setX(_wePose->getX()+deltaX);
-    _wePose->setY(_wePose->getY()+deltaY);
-    _wePose->setTheta(newTheta);
-}
- 
-// Updates transformed north star pose estimate of where
-// robot should now be in global coordinate system
-void Robot::_updateNSPose() {
-    float lastTheta = _nsPose->getTheta();
-
-    float newX = _getNSTransX();
-    float newY = _getNSTransY();
-    float newTheta = _getNSTransTheta();
-    
-    // account for rotations
-    if ((lastTheta > (3/2.0)*PI && newTheta < PI/2.0) || 
-        (lastTheta < PI/2.0 && newTheta > (3/2.0)*PI)) {
-        _passed2PIns = !_passed2PIns;
-    }
-    
-    if (_passed2PIns && (lastTheta > PI && newTheta < PI)) {
-        _nsPose->modifyRotations(1);
-        _passed2PIns = false;
-    }
-    else if(_passed2PIns && (lastTheta < PI && newTheta > PI)) {
-        _nsPose->modifyRotations(-1);
-        _passed2PIns = false;
-    }
-
-    LOG.write(LOG_MED, "update_ns",
-              "lastTheta: %f \t deltaTheta: %f \t newTheta: %f",
-              lastTheta,
-              newTheta-lastTheta,
-              newTheta);
-
-    _nsPose->setX(newX);
-    _nsPose->setY(newY);
-    _nsPose->setTheta(newTheta);
+int Robot::getFailLimit() {
+    return _failLimit;
 }

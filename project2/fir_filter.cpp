@@ -1,4 +1,4 @@
-#include "firfilter.h"
+#include "fir_filter.h"
 
 #include <cstdlib>
 #include <fstream>

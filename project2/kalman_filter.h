@@ -2,14 +2,14 @@
 #define CS1567_KALMANFILTER_H
 
 extern "C" {
-	#include "kalmanfilter/kalmanFilterDef.h"
+	#include "lib/kalman/kalmanFilterDef.h"
 }
 #include "pose.h"
 
-class Kalman {
+class KalmanFilter {
 public:
-	Kalman(Pose *initialPose);
-	~Kalman();
+	KalmanFilter(Pose *initialPose);
+	~KalmanFilter();
 	void filter(Pose *nsPose, Pose *wePose);
 	void setUncertainty(float px, float py, float ptheta,
                         float nsx, float nsy, float nstheta,

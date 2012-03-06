@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
 
 	Robot *robot = new Robot(argv[1], 0);
 
-	printf("battery: %d\n", robot->_robotInterface->Battery());
+	printf("battery: %d\n", robot->getBattery());
 
     for (int i = 0; i < NUM_BASES; i++) {
     	printf("moving to base %d...\n", i+1);

@@ -2,11 +2,14 @@
 #define CS1567_ROBOT_H
 
 #include "pose.h"
-#include "firfilter.h"
-#include "kalman.h"
+#include "wheel_encoders.h"
+#include "north_star.h"
+#include "fir_filter.h"
+#include "kalman_filter.h"
 #include "PID.h"
 #include "utilities.h"
 #include "constants.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -57,127 +60,50 @@ public:
     float moveToUntil(float x, float y, float thetaErrorLimit);
     void turnTo(float theta, float thetaErrorLimit);
 
+    void setFailLimit(int limit);
+    int getFailLimit();
 	void prefillData();
+    void update();
+
     void moveForward(int speed);
     void turnLeft(int speed);
     void turnRight(int speed);
     void stop();
-    void setFailLimit(int limit);
-    int getFailLimit();
-    void update();
-    void rockOut();
+
     Pose* getPose();
 
-    /// Self explanatory
+    // Self explanatory
     bool isThereABitchInMyWay();
 	int getStrength();
-
     int getRoom();
     int getBattery();
 
     void printBeginPhrase();
     void printSuccessPhrase();
     void printFailPhrase();
-
-    // FIXME: Temporarily public members (for testing)
-    //        below
-    RobotInterface *_robotInterface;
-    bool _updateInterface();
-    float _getWEDeltaLeft();
-    float _getWEDeltaRight();
-    float _getWEDeltaRear();
-    float _getNSX();
-    float _getNSY();
-    float _getNSTheta();
-
-    float _getWEDeltaXLeft();
-    float _getWEDeltaYLeft();
-    float _getWEDeltaXRight();
-    float _getWEDeltaYRight();
-    float _getWEDeltaXRear();
-    float _getWEDeltaYRear();
-    float _getWEDeltaX();
-    float _getWEDeltaY();
-    float _getWEDeltaTheta();
-
-    float _getWETransDeltaX();
-    float _getWETransDeltaY();
-    float _getWETransDeltaTheta();
-
-    float _getNSTransX();
-    float _getNSHalfTransX();
-    float _getNSTransY();
-    float _getNSHalfTransY();
-    float _getNSTransTheta();
-
-    void _updateWEPose();
-    void _updateNSPose();
-
-    PID* _distancePID;
-    PID* _thetaPID;
-	
-	
-    Pose *_wePose;
-    Pose *_nsPose;
-    Pose *_pose;
-	
-	
+    void rockOut();
 private:
-    // RobotInterface *_robotInterface;
+    RobotInterface *_robotInterface;
     int _name;
 
-    FIRFilter *_nsXFilter;
-    FIRFilter *_nsYFilter;
-    FIRFilter *_nsThetaFilter;
-    FIRFilter *_weLeftFilter;
-    FIRFilter *_weRightFilter;
-    FIRFilter *_weRearFilter;
-
-	Pose *_startingNSPose;
-
-	bool _passed2PIns;
-	bool _passed2PIwe;
-	int _numTurns;
 	// stores the most recent speed that the robot was told. set during both turns and moving straight instructions
 	int _speed;	
 	char _turnDirection;			// value of 1 means turning right, 0 means left
 	bool _movingForward;		// set if moving forward/stopped
 
+    PID* _distancePID;
+    PID* _thetaPID;
+
     int _failLimit;
 
+    Pose *_pose;
 
-    Kalman *_kalmanFilter;
-    // FIXME: Temporarily not private members (for testing)
-    //        below
-    // bool _update();
+    WheelEncoders *_wheelEncoders;
+    NorthStar *_northStar;
 
-    // float _getWEDeltaLeft();
-    // float _getWEDeltaRight();
-    // float _getWEDeltaRear();
-    // float _getNSX();
-    // float _getNSY();
-    // float _getNSTheta();
+    KalmanFilter *_kalmanFilter;
 
-    // float _getWEDeltaXLeft();
-    // float _getWEDeltaYLeft();
-    // float _getWEDeltaXRight();
-    // float _getWEDeltaYRight();
-    // float _getWEDeltaXRear();
-    // float _getWEDeltaYRear();
-    // float _getWEDeltaX();
-    // float _getWEDeltaY();
-    // float _getWEDeltaTheta();
-
-    // float _getWETransDeltaX();
-    // float _getWETransDeltaY();
-    // float _getWETransDeltaTheta();
-
-    // float _getNSTransX();
-    // float _getNSTransY();
-    // float _getNSTransTheta();
-
-    // void _updateWEPose();
-    // void _updateNSPose();
+    bool _updateInterface();
 };
 
 #endif
