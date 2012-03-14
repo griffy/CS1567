@@ -5,6 +5,9 @@
 
 #define GOOD_NS_STRENGTH 13222
 
+#define MAX_CAMERA_BRIGHTNESS (0x7F)
+#define CAMERA_FRAMERATE 5
+
 Robot::Robot(std::string address, int id) {
     // store the robot's name as an int to be used later
     _name = Util::nameFrom(address);
@@ -450,4 +453,14 @@ void Robot::setFailLimit(int limit) {
 
 int Robot::getFailLimit() {
     return _failLimit;
+}
+
+bool Robot::setCameraResolution(int resolution, int quality){
+	return !(_robotInterface->CameraCfg(MAX_CAMERA_BRIGHTNESS,RI_CAMERA_DEFAULT_CONTRAST,CAMERA_FRAMERATE, resolution, quality));
+}
+
+bool Robot::getImage(CameraImage * image){
+	IplImage* img = cvCreateImage(cvSize(640,480), IPL_DEPTH_8U, 3);
+	hsv = cvCreateImage(cvSize(640, 480), IPL_DEPTH_8U, 3);
+	if (
 }
