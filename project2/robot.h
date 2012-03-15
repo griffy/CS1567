@@ -2,6 +2,7 @@
 #define CS1567_ROBOT_H
 
 #include "pose.h"
+#include "camera.h"
 #include "wheel_encoders.h"
 #include "north_star.h"
 #include "fir_filter.h"
@@ -62,6 +63,7 @@ public:
 
     void setFailLimit(int limit);
     int getFailLimit();
+    void setCameraResolution(int resolution, int quality);
 	void prefillData();
     void update();
 
@@ -82,6 +84,8 @@ public:
     void printSuccessPhrase();
     void printFailPhrase();
     void rockOut();
+
+    Camera *_camera;
 private:
     RobotInterface *_robotInterface;
     int _name;
@@ -98,6 +102,7 @@ private:
 
     Pose *_pose;
 
+    //Camera *_camera;
     WheelEncoders *_wheelEncoders;
     NorthStar *_northStar;
 

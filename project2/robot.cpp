@@ -23,6 +23,9 @@ Robot::Robot(std::string address, int id) {
 
     printf("robot interface loaded\n");
 
+    // initialize camera
+    _camera = new Camera(_robotInterface);
+
     // initialize position sensors
     _wheelEncoders = new WheelEncoders(_robotInterface);
     _northStar = new NorthStar(_robotInterface);
@@ -54,6 +57,8 @@ Robot::Robot(std::string address, int id) {
 
 Robot::~Robot() {
     delete _robotInterface;
+
+    delete _camera;
 
     delete _wheelEncoders;
     delete _northStar;
@@ -338,6 +343,8 @@ bool Robot::isThereABitchInMyWay() {
 void Robot::update() {
     // update the robot interface
     _updateInterface();
+    // update the camera with a new image
+    _camera->update();
     // update each pose estimate
     _wheelEncoders->updatePose(getRoom());
     _northStar->updatePose(getRoom());
@@ -455,12 +462,7 @@ int Robot::getFailLimit() {
     return _failLimit;
 }
 
-bool Robot::setCameraResolution(int resolution, int quality){
-	return !(_robotInterface->CameraCfg(MAX_CAMERA_BRIGHTNESS,RI_CAMERA_DEFAULT_CONTRAST,CAMERA_FRAMERATE, resolution, quality));
-}
-
-bool Robot::getImage(CameraImage * image){
-	IplImage* img = cvCreateImage(cvSize(640,480), IPL_DEPTH_8U, 3);
-	hsv = cvCreateImage(cvSize(640, 480), IPL_DEPTH_8U, 3);
-	if (
+void Robot::setCameraResolution(int resolution, int quality) {
+    _camera->setResolution(resolution);
+    _camera->setQuality(quality);
 }

@@ -1,7 +1,8 @@
 #include "robot.h"
 #include "logger.h"
 #include <stdio.h>
-
+#include <opencv/cv.h>
+#include <opencv/highgui.h>
 
 int main(int argc, char *argv[]) {
 	if (argc < 2) {
@@ -13,20 +14,21 @@ int main(int argc, char *argv[]) {
 
 	Robot *robot = new Robot(argv[1], 0);
 
-	printf("battery: %d\n", robot->getBattery());
+	cvNamedWindow("BGR Image", CV_WINDOW_AUTOSIZE);
+	cvNamedWindow("Thresholded Image", CV_WINDOW_AUTOSIZE);
 
-	CameraImage image;
-	while(1){
-		if(!robot->update()){
-			print("Error, could not update\n");
-			continue;
-		}
-		robot->getImage();
-		image = new CameraImage();
-		cvShowImage(image.getImage());
-		delete(image);
-	}
+	robot->update();
+	IplImage *bgr = robot->_camera->getBGRImage();
+	IplImage *thresholded = robot->_camera->getThresholdedImage();
+	cvShowImage("BGR Image", bgr);
+	cvShowImage("Thresholded Image", thresholded);
+
+	cvWaitKey(0);
+
+	cvReleaseImage(&bgr);
+	cvReleaseImage(&thresholded);
 
 	delete robot;
+
 	return 0;
 }
