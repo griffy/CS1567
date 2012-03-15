@@ -5,7 +5,7 @@
 Camera::Camera(RobotInterface *robotInterface) {
     _robotInterface = robotInterface;
     setQuality(RI_CAMERA_QUALITY_HIGH);
-    setResolution(RI_CAMERA_RES_320);
+    setResolution(RI_CAMERA_RES_640);
     _pinkThresholded = NULL;
     _yellowThresholded = NULL;
     _pinkSquares = NULL;

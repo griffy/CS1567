@@ -1,5 +1,6 @@
 #include "robot.h"
 #include "logger.h"
+#include "camera.h"
 #include <stdio.h>
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
@@ -11,23 +12,29 @@ int main(int argc, char *argv[]) {
 		return -1;
 	}
 
-    LOG.setImportanceLevel(LOG_OFF);
+    LOG.setImportanceLevel(LOG_LOW);
 
 	Robot *robot = new Robot(argv[1], 0);
 
 	cvNamedWindow("BGR Image", CV_WINDOW_AUTOSIZE);
 	cvNamedWindow("Thresholded Image", CV_WINDOW_AUTOSIZE);
 
-	robot->update();
-	IplImage *bgr = robot->_camera->getBGRImage();
-	IplImage *thresholded = robot->_camera->getThresholdedImage(RC_PINK_LOW, RC_PINK_HIGH);
-	cvShowImage("BGR Image", bgr);
-	cvShowImage("Thresholded Image", thresholded);
+	while(1) {
+		robot->update();
+		IplImage *bgr = robot->_camera->getBGRImage();
+		IplImage *thresholded = robot->_camera->getThresholdedImage(RC_PINK_LOW, RC_PINK_HIGH);
 
-	cvWaitKey(0);
+		LOG.printfScreen(LOG_LOW, "screenError", "Left error: %d\n", robot->_camera->leftSquareDistanceError(COLOR_PINK));
+		LOG.printfScreen(LOG_LOW, "screenError", "Right error: %d\n", robot->_camera->rightSquareDistanceError(COLOR_PINK));
 
-	cvReleaseImage(&bgr);
-	cvReleaseImage(&thresholded);
+		cvShowImage("BGR Image", bgr);
+		cvShowImage("Thresholded Image", thresholded);
+
+		cvWaitKey(0);
+
+		cvReleaseImage(&bgr);
+		cvReleaseImage(&thresholded);
+	}
 
 	delete robot;
 
