@@ -22,15 +22,15 @@ public:
 	squares_t* findSquares(IplImage *img, int areaThreshold);
 	IplImage* getHSVImage();
 	IplImage* getBGRImage();
-	IplImage* getThresholdedImage();
+	IplImage* getThresholdedImage(CvScalar low, CvScalar high);
 private:
 	RobotInterface *_robotInterface;
 	int _quality;
 	int _resolution;
 	IplImage *_pinkThresholded;
 	IplImage *_yellowThresholded;
-	squares_t _pinkSquares;
-	squares_t _yellowSquares;
+	squares_t *_pinkSquares;
+	squares_t *_yellowSquares;
 };
 
 #endif

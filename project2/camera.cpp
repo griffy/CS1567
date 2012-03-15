@@ -1,4 +1,6 @@
 #include "camera.h"
+#include "logger.h"
+#include <robot_color.h>
 
 Camera::Camera(RobotInterface *robotInterface) {
     _robotInterface = robotInterface;
@@ -18,7 +20,7 @@ Camera::~Camera() {
 }
 
 void Camera::setQuality(int quality) {
-    if (robot->CameraCfg(RI_CAMERA_DEFAULT_BRIGHTNESS, 
+    if (_robotInterface->CameraCfg(RI_CAMERA_DEFAULT_BRIGHTNESS, 
                         RI_CAMERA_DEFAULT_CONTRAST, 
                         5, 
                         _resolution, 
@@ -32,7 +34,7 @@ void Camera::setQuality(int quality) {
 }
 
 void Camera::setResolution(int resolution) {
-    if (robot->CameraCfg(RI_CAMERA_DEFAULT_BRIGHTNESS, 
+    if (_robotInterface->CameraCfg(RI_CAMERA_DEFAULT_BRIGHTNESS, 
                         RI_CAMERA_DEFAULT_CONTRAST, 
                         5, 
                         resolution, 
@@ -66,7 +68,7 @@ int Camera::leftSquareDistanceError(int color) {
         break;
     case COLOR_YELLOW:
         thresholded = _yellowThresholded;
-        square = _yellowSquares;
+        squares = _yellowSquares;
         break;
     }
 
@@ -105,7 +107,7 @@ int Camera::rightSquareDistanceError(int color) {
         break;
     case COLOR_YELLOW:
         thresholded = _yellowThresholded;
-        square = _yellowSquares;
+        squares = _yellowSquares;
         break;
     }
 
@@ -290,7 +292,7 @@ IplImage* Camera::getHSVImage() {
     return hsv;
 }
 
-IplImage* Camera::getThresholdedImage(int low, int high) {
+IplImage* Camera::getThresholdedImage(CvScalar low, CvScalar high) {
     IplImage *hsv = getHSVImage();
     if (hsv == NULL) {
         return NULL;
