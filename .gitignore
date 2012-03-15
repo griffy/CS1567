@@ -22,3 +22,6 @@
 
 # Run logs
 project[0-9]/logs
+
+# Image logs
+project2/data/logs/2012-03-02
