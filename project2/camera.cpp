@@ -52,6 +52,18 @@ void Camera::setResolution(int resolution) {
 }
 
 void Camera::update() {
+    if (_pinkThresholded != NULL) {
+        cvReleaseImage(&_pinkThresholded);
+    }
+    if (_yellowThresholded != NULL) {
+        cvReleaseImage(&_yellowThresholded);
+    }
+    if (_pinkSquares != NULL) {
+        delete(_pinkSquares);
+    }
+    if (_yellowSquares != NULL) {
+        delete(_yellowSquares);
+    }
     _pinkThresholded = getThresholdedImage(RC_PINK_LOW, RC_PINK_HIGH);
     _yellowThresholded = getThresholdedImage(RC_YELLOW_LOW, RC_YELLOW_HIGH);
     _pinkSquares = findSquaresOf(COLOR_PINK, DEFAULT_SQUARE_SIZE);
