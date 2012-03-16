@@ -1,6 +1,7 @@
 #ifndef CS1567_CAMERA_H
 #define CS1567_CAMERA_H
 
+#include "fir_filter.h"
 #include <opencv/cv.h>
 #include <robot_if++.h>
 
@@ -16,6 +17,7 @@ public:
 	void setQuality(int quality);
 	void setResolution(int resolution);
 	void update();
+	int centerDistanceError(int color);
 	int leftSquareDistanceError(int color);
 	int rightSquareDistanceError(int color);
 	squares_t* findSquaresOf(int color, int areaThreshold);
@@ -25,6 +27,8 @@ public:
 	IplImage* getThresholdedImage(CvScalar low, CvScalar high);
 private:
 	RobotInterface *_robotInterface;
+	FIRFilter *_leftDistanceErrorFilter;
+	FIRFilter *_rightDistanceErrorFilter;
 	int _quality;
 	int _resolution;
 	IplImage *_pinkThresholded;

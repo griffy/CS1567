@@ -4,6 +4,8 @@
 
 Camera::Camera(RobotInterface *robotInterface) {
     _robotInterface = robotInterface;
+    _leftDistanceErrorFilter = new FIRFilter("filters/camera_distance_error.ffc");
+    _rightDistanceErrorFilter = new FIRFilter("filters/camera_distance_error.ffc");
     setQuality(RI_CAMERA_QUALITY_HIGH);
     setResolution(RI_CAMERA_RES_640);
     _pinkThresholded = NULL;
@@ -13,6 +15,8 @@ Camera::Camera(RobotInterface *robotInterface) {
 }
 
 Camera::~Camera() {
+    delete _leftDistanceErrorFilter;
+    delete _rightDistanceErrorFilter;
     delete _pinkThresholded;
     delete _yellowThresholded;
     delete _pinkSquares;
@@ -54,6 +58,40 @@ void Camera::update() {
     _yellowSquares = findSquaresOf(COLOR_YELLOW, DEFAULT_SQUARE_SIZE);
 }
 
+int Camera::centerDistanceError(int color) {
+    int width;
+    switch (color) {
+    case COLOR_PINK:
+        width = _pinkThresholded->width;
+        break;
+    case COLOR_YELLOW:
+        width = _yellowThresholded->width;
+        break;
+    }
+
+    int filteredLeftError;
+    int filteredRightError;
+    for (int i = 0; i < _leftDistanceErrorFilter->getOrder()+1; i++) {
+        update();
+
+        int leftError = leftSquareDistanceError(color);
+        int rightError = rightSquareDistanceError(color);
+
+        if (leftError == -1) {
+            // the left square is out of view, so we
+            // set the error to the max it could be
+            return width / 2;
+        }
+        else if (rightError == -1) {
+            return -width / 2;
+        }
+
+        filteredLeftError = (int)_leftDistanceErrorFilter->filter((float)leftError);
+        filteredRightError = (int)_rightDistanceErrorFilter->filter((float)rightError);
+    }
+    return filteredLeftError - filteredRightError;
+}
+
 /* Error is defined to be the distance of the square
    from the center of the camera
  */
@@ -73,27 +111,29 @@ int Camera::leftSquareDistanceError(int color) {
     }
 
     int center = thresholded->width / 2;
-    squares_t *cur_square = squares;
-    squares_t *largest_square;
-    while (cur_square != NULL) {
-        if (cur_square->center.x < center) {
-            if (largest_square == NULL) {
-                largest_square = cur_square;
+    squares_t *curSquare = squares;
+    squares_t *largestSquare;
+    while (curSquare != NULL) {
+        if (curSquare->center.x < center) {
+            if (largestSquare == NULL) {
+                largestSquare = curSquare;
             }
             else {
-                if (cur_square->area > largest_square->area) {
-                    largest_square = cur_square;
+                if (curSquare->area > largestSquare->area) {
+                    largestSquare = curSquare;
                 }
             }
         }
-        cur_square = cur_square->next;
+        curSquare = curSquare->next;
     }
 
-    if (largest_square == NULL) {
+    // if we don't have a largest square,
+    // that means it's out of view
+    if (largestSquare == NULL) {
         return -1;
     }
 
-    return center - largest_square->center.x;
+    return largestSquare->center.x - center;
 }
 
 int Camera::rightSquareDistanceError(int color) {
@@ -112,27 +152,29 @@ int Camera::rightSquareDistanceError(int color) {
     }
 
     int center = thresholded->width / 2;
-    squares_t *cur_square = squares;
-    squares_t *largest_square;
-    while (cur_square != NULL) {
-        if (cur_square->center.x > center) {
-            if (largest_square == NULL) {
-                largest_square = cur_square;
+    squares_t *curSquare = squares;
+    squares_t *largestSquare;
+    while (curSquare != NULL) {
+        if (curSquare->center.x > center) {
+            if (largestSquare == NULL) {
+                largestSquare = curSquare;
             }
             else {
-                if (cur_square->area > largest_square->area) {
-                    largest_square = cur_square;
+                if (curSquare->area > largestSquare->area) {
+                    largestSquare = curSquare;
                 }
             }
         }
-        cur_square = cur_square->next;
+        curSquare = curSquare->next;
     }
 
-    if (largest_square == NULL) {
+    // if we don't have a largest square,
+    // that means it's out of view
+    if (largestSquare == NULL) {
         return -1;
     }
 
-    return largest_square->center.x - center;
+    return center - largestSquare->center.x;
 }
 
 // Finds squares of a given color in the passed image
