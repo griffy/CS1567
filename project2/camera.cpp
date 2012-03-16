@@ -84,7 +84,7 @@ int Camera::centerDistanceError(int color) {
     int filteredLeftError;
     int filteredRightError;
     for (int i = 0; i < _leftDistanceErrorFilter->getOrder()+1; i++) {
-        update();
+        //update();
 
         int leftError = leftSquareDistanceError(color);
         int rightError = rightSquareDistanceError(color);
