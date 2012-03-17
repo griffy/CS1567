@@ -81,6 +81,40 @@ int Camera::centerDistanceError(int color) {
         break;
     }
 
+    int center = width / 2;
+
+    squares_t *leftSquare = leftBiggestSquare(color);
+    squares_t *rightSquare = rightBiggestSquare(color);
+
+    if (leftSquare != NULL && rightSquare != NULL) {
+        if (!onSamePlane(leftSquare, rightSquare)) {
+            // if they're not on the same plane,
+            // set the square with the smallest area to
+            // be the one too far back
+            if (leftSquare->area > rightSquare->area) {
+                rightSquare = NULL;
+            }
+            else {
+                leftSquare = NULL;
+            }
+        }
+    }
+
+    if (leftSquare == NULL) {
+        // it's out of view, so we set the error to 
+        // the max it could be
+        return center;
+    }
+    else if (rightSquare == NULL) {
+        return -center;
+    }
+
+    int leftError = center - leftSquare->center.x;
+    int rightError = rightSquare->center.x - center;
+
+    return leftError + rightError;
+
+/*  
     int filteredLeftError;
     int filteredRightError;
     for (int i = 0; i < _leftDistanceErrorFilter->getOrder()+1; i++) {
@@ -102,12 +136,19 @@ int Camera::centerDistanceError(int color) {
         filteredRightError = (int)_rightDistanceErrorFilter->filter((float)rightError);
     }
     return filteredLeftError - filteredRightError;
+*/
 }
 
 /* Error is defined to be the distance of the square
    from the center of the camera
  */
-int Camera::leftSquareDistanceError(int color) {
+
+bool Camera::onSamePlane(squares_t *leftSquare, squares_t *rightSquare) {
+    int difference = abs(leftSquare->center.y - rightSquare->center.y);
+    return (difference <= MAX_PLANE_SLOPE);
+}
+
+squares_t* Camera::leftBiggestSquare(int color) {
     IplImage *thresholded;
     squares_t *squares;
 
@@ -139,16 +180,10 @@ int Camera::leftSquareDistanceError(int color) {
         curSquare = curSquare->next;
     }
 
-    // if we don't have a largest square,
-    // that means it's out of view
-    if (largestSquare == NULL) {
-        return -1;
-    }
-
-    return center - largestSquare->center.x;
+    return largestSquare;
 }
 
-int Camera::rightSquareDistanceError(int color) {
+squares_t* Camera::rightBiggestSquare(int color) {
     IplImage *thresholded;
     squares_t *squares;
 
@@ -180,13 +215,7 @@ int Camera::rightSquareDistanceError(int color) {
         curSquare = curSquare->next;
     }
 
-    // if we don't have a largest square,
-    // that means it's out of view
-    if (largestSquare == NULL) {
-        return -1;
-    }
-
-    return largestSquare->center.x - center;
+    return largestSquare;
 }
 
 // Finds squares of a given color in the passed image
@@ -239,10 +268,6 @@ squares_t* Camera::findSquares(IplImage *img, int areaThreshold) {
         
     // Dilate canny output to remove potential holes between edge segments 
     cvDilate(canny, canny, 0, 2);
-
-#ifdef DEBUG_SQUARE_CANNY
-    cvShowImage("Debug - CANNY", canny);
-#endif
         
     // Find the contours and store them all as a list
     cvFindContours(canny, storage, &contours, sizeof(CvContour), CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE, cvPoint(0,0));
@@ -258,25 +283,24 @@ squares_t* Camera::findSquares(IplImage *img, int areaThreshold) {
         // Note: absolute value of an area is used because
         // area may be positive or negative - in accordance with the
         // contour orientation
-                if(result->total == 4 && fabs(cvContourArea(result,CV_WHOLE_SEQ,0)) > areaThreshold && cvCheckContourConvexity(result)) {
+        if(result->total == 4 && fabs(cvContourArea(result,CV_WHOLE_SEQ,0)) > areaThreshold && cvCheckContourConvexity(result)) {
             s=0;
-                        for(i=0; i<5; i++) {
+            for(i=0; i<5; i++) {
                             // Find the minimum angle between joint edges (maximum of cosine)
                 if(i >= 2) {
                     t = fabs(ri_angle((CvPoint*)cvGetSeqElem(result, i),(CvPoint*)cvGetSeqElem(result, i-2),(CvPoint*)cvGetSeqElem( result, i-1 )));
                     s = s > t ? s : t;
-                            }
+                }
             }
-                    
+                
             // If cosines of all angles are small (all angles are ~90 degree) then write the vertices to the sequence 
             if( s < 0.2 ) {
                 for( i = 0; i < 4; i++ ) {
                     cvSeqPush(squares, (CvPoint*)cvGetSeqElem(result, i));
                 }
             }
-                }
-                
-                // Get the next contour
+        }    
+        // Get the next contour
         contours = contours->h_next;
     }
 
