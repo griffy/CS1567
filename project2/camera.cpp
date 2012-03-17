@@ -84,7 +84,7 @@ int Camera::centerDistanceError(int color) {
     int filteredLeftError;
     int filteredRightError;
     for (int i = 0; i < _leftDistanceErrorFilter->getOrder()+1; i++) {
-        //update();
+        update();
 
         int leftError = leftSquareDistanceError(color);
         int rightError = rightSquareDistanceError(color);
@@ -145,7 +145,7 @@ int Camera::leftSquareDistanceError(int color) {
         return -1;
     }
 
-    return largestSquare->center.x - center;
+    return center - largestSquare->center.x;
 }
 
 int Camera::rightSquareDistanceError(int color) {
@@ -186,7 +186,7 @@ int Camera::rightSquareDistanceError(int color) {
         return -1;
     }
 
-    return center - largestSquare->center.x;
+    return largestSquare->center.x - center;
 }
 
 // Finds squares of a given color in the passed image
