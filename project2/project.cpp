@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
 
 		LOG.printfScreen(LOG_LOW, "screenError", "Left error: %d\n", robot->_camera->leftSquareDistanceError(COLOR_PINK));
 		LOG.printfScreen(LOG_LOW, "screenError", "Right error: %d\n", robot->_camera->rightSquareDistanceError(COLOR_PINK));
-		LOG.printfScreen(LOG_LOW, "screenError", "Center error: %d\n", robot->_camera->centerDistanceError(COLOR_PINK));
+		//LOG.printfScreen(LOG_LOW, "screenError", "Center error: %d\n", robot->_camera->centerDistanceError(COLOR_PINK));
 
 		cvShowImage("BGR Image", bgr);
 		cvShowImage("Thresholded Image", thresholded);

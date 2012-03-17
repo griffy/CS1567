@@ -71,6 +71,8 @@ void Camera::update() {
 }
 
 int Camera::centerDistanceError(int color) {
+	static int rightMissCount = 0, leftMissCount = 0;
+
     int width;
     switch (color) {
     case COLOR_PINK:
@@ -92,14 +94,37 @@ int Camera::centerDistanceError(int color) {
         if (leftError == -1) {
             // the left square is out of view, so we
             // set the error to the max it could be
-            return width / 2;
+            leftMissCount++;
+			leftError=_leftDistanceErrorFilter->getValue();
+            //return width / 2;
         }
-        else if (rightError == -1) {
-            return -width / 2;
+        else{
+			leftMissCount=0;
+		}
+        if (rightError == -1) {
+			rightMissCount++;
+			rightError=_rightDistanceErrorFilter->getValue();
+            //return -width / 2;
         }
+        else {
+			rightMissCount=0;
+		}
 
-        filteredLeftError = (int)_leftDistanceErrorFilter->filter((float)leftError);
-        filteredRightError = (int)_rightDistanceErrorFilter->filter((float)rightError);
+		//arbitrary constant, could change based on testing
+		filteredLeftError = (int)_leftDistanceErrorFilter->filter((float)leftError);
+		if(leftMissCount>=2){
+			filteredLeftError=width/2;
+			if(leftMissCount==2){
+				_leftDistanceErrorFilter->seed(width/2);
+			}
+		}
+		filteredRightError = (int)_rightDistanceErrorFilter->filter((float)rightError);
+		if(rightMissCount>=2){
+			filteredRightError=-width/2;
+			if(rightMissCount==2){
+				_rightDistanceErrorFilter->seed(-width/2);
+			}
+		}
     }
     return filteredLeftError - filteredRightError;
 }

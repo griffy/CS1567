@@ -282,6 +282,44 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
     printf("theta acceptable\n");
 }
 
+void Robot::turnToCamera(int max_error) {
+	int centerDistanceErr = _camera->centerDistanceError(COLOR_PINK);
+	while(abs(centerDistanceErr) < max_error){
+		if (centerDistanceErr > max_error) {
+			LOG.write(LOG_MED, "turn_adjust", 
+						"direction: right, since theta error < -limit");
+			
+			log.write(LOG_LOW,"turn left\n");
+			
+			int turnSpeed = (int)fabs((1.0/thetaGain));
+			// cap our speed at 6, since turning too slow causes problems
+			if (turnSpeed > 6) {
+				turnSpeed = 6;
+			}
+
+			LOG.write(LOG_MED, "pid_speeds", "turn: %d", turnSpeed);
+
+			turnRight(turnSpeed);
+		}
+		else if(centerDistanceErr < -max_error){
+			LOG.write(LOG_MED, "turn_adjust", 
+						"direction: left, since theta error > limit");
+			int turnSpeed = (int)fabs((1.0/thetaGain));
+			if (turnSpeed > 6) {
+				turnSpeed = 6;
+			}
+
+			LOG.write(LOG_MED, "pid_speeds", "turn: %d", turnSpeed);
+
+			turnLeft(turnSpeed);
+			log.write(LOG_LOW,"turn right\n");
+		}
+		else{
+			log.write(LOG_LOW,"close enough, go straight\n");
+		}
+		}
+}
+
 void Robot::moveForward(int speed) {
 	_movingForward=true;
 	
