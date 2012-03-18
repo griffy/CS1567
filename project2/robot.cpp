@@ -362,7 +362,7 @@ void Robot::update() {
  *      _numTurns = 0;
  *  }
  */
-
+    #ifdef JOEL
     if (_speed == 0) {
         _kalmanFilter->setVelocity(0.0, 0.0, 0.0);
     }
@@ -431,6 +431,7 @@ void Robot::update() {
     // pass updated poses to kalman filter and update main pose
     _kalmanFilter->filter(_northStar->getPose(), 
                           _wheelEncoders->getPose());
+    #endif
 }
 
 // Attempts to update the robot

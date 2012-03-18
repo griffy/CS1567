@@ -58,12 +58,27 @@ void Camera::update() {
     if (_yellowThresholded != NULL) {
         cvReleaseImage(&_yellowThresholded);
     }
-    if (_pinkSquares != NULL) {
-        delete(_pinkSquares);
+    while (_pinkSquares != NULL) {
+        squares_t *square = _pinkSquares;
+        squares_t *prevSquare = NULL;
+        while (square->next != NULL) {
+            prevSquare = square;
+            square = square->next;
+        }
+        prevSquare->next = NULL;
+        delete square;
     }
-    if (_yellowSquares != NULL) {
-        delete(_yellowSquares);
+    while (_yellowSquares != NULL) {
+        squares_t *square = _yellowSquares;
+        squares_t *prevSquare = NULL;
+        while (square->next != NULL) {
+            prevSquare = square;
+            square = square->next;
+        }
+        prevSquare->next = NULL;
+        delete square;
     }
+
     _pinkThresholded = getThresholdedImage(RC_PINK_LOW, RC_PINK_HIGH);
     _yellowThresholded = getThresholdedImage(RC_YELLOW_LOW, RC_YELLOW_HIGH);
     _pinkSquares = findSquaresOf(COLOR_PINK, DEFAULT_SQUARE_SIZE);
@@ -164,8 +179,9 @@ squares_t* Camera::leftBiggestSquare(int color) {
     }
 
     int center = thresholded->width / 2;
+
     squares_t *curSquare = squares;
-    squares_t *largestSquare;
+    squares_t *largestSquare = NULL;
     while (curSquare != NULL) {
         if (curSquare->center.x < center) {
             if (largestSquare == NULL) {
@@ -199,8 +215,9 @@ squares_t* Camera::rightBiggestSquare(int color) {
     }
 
     int center = thresholded->width / 2;
+    
     squares_t *curSquare = squares;
-    squares_t *largestSquare;
+    squares_t *largestSquare = NULL;
     while (curSquare != NULL) {
         if (curSquare->center.x > center) {
             if (largestSquare == NULL) {
