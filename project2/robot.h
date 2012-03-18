@@ -60,6 +60,7 @@ public:
     void moveTo(float x, float y);
     float moveToUntil(float x, float y, float thetaErrorLimit);
     void turnTo(float theta, float thetaErrorLimit);
+    void centerSelf(int maxError);
 
     void setFailLimit(int limit);
     int getFailLimit();

@@ -9,6 +9,7 @@
 #define COLOR_YELLOW 1
 
 #define DEFAULT_SQUARE_SIZE 250
+#define MAX_PLANE_SLOPE 5 // in pixels
 
 class Camera {
 public:
@@ -23,8 +24,9 @@ public:
 	void setResolution(int resolution);
 	void update();
 	int centerDistanceError(int color);
-	int leftSquareDistanceError(int color);
-	int rightSquareDistanceError(int color);
+	bool onSamePlane(squares_t *leftSquare, squares_t *rightSquare);
+	squares_t* leftBiggestSquare(int color);
+	squares_t* rightBiggestSquare(int color);
 	squares_t* findSquaresOf(int color, int areaThreshold);
 	squares_t* findSquares(IplImage *img, int areaThreshold);
 	IplImage* getHSVImage();
