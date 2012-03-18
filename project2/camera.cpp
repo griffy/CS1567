@@ -2,6 +2,9 @@
 #include "logger.h"
 #include <robot_color.h>
 
+#define MINIMUM_SLOPE_DIFFERENCE 0.12
+
+
 Camera::Camera(RobotInterface *robotInterface) {
     _robotInterface = robotInterface;
     _leftDistanceErrorFilter = new FIRFilter("filters/camera_distance_error.ffc");
@@ -82,12 +85,12 @@ void Camera::update() {
     _pinkSquares = findSquaresOf(COLOR_PINK, DEFAULT_SQUARE_SIZE);
     _yellowSquares = findSquaresOf(COLOR_YELLOW, DEFAULT_SQUARE_SIZE);
 	float returnYellow = findPos(_yellowSquares);
-	LOG.write(LOG_HIGH, "camera image", "position returned for yellow: %f\n", returnYellow);
+	LOG.printfScreen(LOG_HIGH, "camera image", "position returned for yellow: %f\n", returnYellow);
 	float returnPink = findPos(_yellowSquares);
-	LOG.write(LOG_HIGH, "camera image", "position returned for pink: %f\n", returnPink);
+	LOG.printfScreen(LOG_HIGH, "camera image", "position returned for pink: %f\n", returnPink);
 }
 
-/* ****************************************
+/** ***************************************
  * Corridor Slope Error Function 
  * Parameters: color flag corresponding to square color of interest
  * Returns: integer corresponding to difference in slope of flags on the corridor walls
@@ -102,15 +105,32 @@ int Camera::corridorSlopeError(int color) {
     regressionLine rightSide = leastSquaresRegression(color, SIDE_RIGHT);
 
     //For now, to debug/make meaningful observations about line fits
-    LOG.printfScreen(LOG_HIGH, "left square linear regression stat", "Linear regression performed. Left squares found: %d\n", leftSide.numSquares);
-    LOG.printfScreen(LOG_HIGH, "right square linear regression stat", "Linear regression performed. Right squares found: %d\n", rightSide.numSquares);
+    LOG.printfScreen(LOG_HIGH, "regression", "Linear regression performed. Left squares found: %d\n", leftSide.numSquares);
+    LOG.printfScreen(LOG_HIGH, "regression", "Linear regression performed. Right squares found: %d\n", rightSide.numSquares);
 
-    LOG.printfScreen(LOG_HIGH, "left square regression equation", "Left equation: Y = %f*X + %f\n", leftSide.slope, leftSide.intercept);
-    LOG.printfScreen(LOG_HIGH, "right square regression equation", "Right equation: Y = %f*X + %f\n", rightSide.slope, rightSide.intercept);
+    LOG.printfScreen(LOG_HIGH, "regression", "Left equation: Y = %f*X + %f\n", leftSide.slope, leftSide.intercept);
+    LOG.printfScreen(LOG_HIGH, "regression", "Right equation: Y = %f*X + %f\n", rightSide.slope, rightSide.intercept);
 
     //TODO: Make this into a useful error value for robot control
     if(leftSide.numSquares >= 2 && rightSide.numSquares >= 2) { //if lines are found on both sides...
-	//do something to define error relative to the differences of the slopes	
+		//do something to define error relative to the differences of the slopes
+		if(rightSide.slope > 0 || (rightSide.slope == -999.0 && rightSide.intercept == -999.0)){
+			LOG.printfScreen(LOG_HIGH, "regression","Possible error on right side... slope > 0 or doesn't exist\n");
+		}
+		if(leftSide.slope < 0 || (leftSide.slope == -999.0 && leftSide.intercept == -999.0)){
+			LOG.printfScreen(LOG_HIGH, "regression", "Possible error on left side... slope < 0 or doesn't exist\n");
+		}
+		float difference = leftSide.slope + rightSide.slope;
+		
+		if (fabs(difference) <= MINIMUM_SLOPE_DIFFERENCE){
+			LOG.printfScreen(LOG_HIGH, "regression", "It seems to be going straight... continue\n");
+		}
+		else if(difference > 0){
+			LOG.printfScreen(LOG_HIGH, "regression", "Probably too far to the left... try strafing right\n");
+		}
+		else if(difference < 0){
+			LOG.printfScreen(LOG_HIGH, "regression", "Probably too far to the right... try strafing left\n");
+		}
     } else if (leftSide.numSquares >= 2) {
         //do something to define error in order to move to the left, as we are over too far right to see the slope
     } else if (rightSide.numSquares >= 2) {
@@ -396,14 +416,14 @@ squares_t* Camera::rightBiggestSquare(int color) {
 **/
 
 void Camera::calculateSlope(squares_t *squares, lineStruct *line){
-	squares_t *currSqr=(squares_t*) squares;
+	squares_t *currSqr = squares;
 	float xAvg, yAvg;
 	float sumx = 0, sumy=0, sumxy=0;
 	int count=0;
 	// calculate average x and y values
 	while(currSqr != NULL){
-		sumx+=currSqr->center.x;
-		sumy+=currSqr->center.y;
+		sumx+=(float) currSqr->center.x;
+		sumy+=(float) currSqr->center.y;
 		count++;
 		currSqr=currSqr->next;
 	}
@@ -435,8 +455,8 @@ void Camera::calculateSlope(squares_t *squares, lineStruct *line){
 }
 
 /**
- * @return the location of the robot in the grid based on a scale of 0..1
- * 		with 0 being farthest left in the grid, and 1 being farthest right
+ * @return the location of the robot in the grid based on a scale of -1..0..1
+ * 		with -1 being farthest left in the grid, 0 being centered, and 1 being farthest right
  */
 float Camera::estimatePos (squares_t *leftSquares, squares_t *rightSquares){
 	//find the lines for both squares
@@ -448,15 +468,15 @@ float Camera::estimatePos (squares_t *leftSquares, squares_t *rightSquares){
 	
 	//check if slopes could not be calculated
 	if (leftLine.slope == -999.0){
-		LOG.write(LOG_HIGH, "camera image", "Error while calculating slope of left line... cannot estimate position accurately\n");
+		LOG.printfScreen(LOG_HIGH, "camera image", "Error while calculating slope of left line... cannot estimate position accurately\n");
 	}
 	if (rightLine.slope == -999.0){
-		LOG.write(LOG_HIGH, "camera image", "Error while calculating slope of right line... cannot estimate position accurately\n");
+		LOG.printfScreen(LOG_HIGH, "camera image", "Error while calculating slope of right line... cannot estimate position accurately\n");
 	}
 	
-	LOG.write(LOG_HIGH, "camera image", "Left line: y = %f*x + %f\t\tr^2 = %f\n", leftLine.slope, leftLine.yInt, leftLine.r2);
-	LOG.write(LOG_HIGH, "camera image", "Right line: y = %f*x + %f\t\tr^2 = %f\n", rightLine.slope, rightLine.yInt, rightLine.r2);
-	
+	LOG.printfScreen(LOG_HIGH, "camera image", "Left line: y = %f*x + %f\t\tr^2 = %f\n", leftLine.slope, leftLine.yInt, leftLine.r2);
+	LOG.printfScreen(LOG_HIGH, "camera image", "Right line: y = %f*x + %f\t\tr^2 = %f\n", rightLine.slope, rightLine.yInt, rightLine.r2);
+
 	return 0;
 }
 
@@ -649,7 +669,7 @@ squares_t* Camera::findSquares(IplImage *img, int areaThreshold) {
         else 
             sq_last->next = sq;
         sq_last = sq;
-    }   
+    }
     
     // Release the temporary images and data
     cvReleaseImage(&canny);
