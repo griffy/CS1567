@@ -135,7 +135,13 @@ void Robot::move(int direction, int numCells) {
             break;
         }
         moveTo(goalX, goalY);
+
+        cellsTraveled++;
     }
+}
+
+void Robot::turn(int direction, float radians) {
+    turnTo(Util::normalizeTheta(_pose->getTheta()-radians), MAX_THETA_ERROR);
 }
 
 // Moves to a location in the global coordinate system (in cm)
