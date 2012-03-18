@@ -48,6 +48,7 @@ int main(int argc, char *argv[]) {
 		robot->update();
 		IplImage *bgr = robot->_camera->getBGRImage();
 		IplImage *thresholded = robot->_camera->getThresholdedImage(RC_PINK_LOW, RC_PINK_HIGH);
+		
 		//drawX(bgr, robot->_camera->leftBiggestSquare(COLOR_PINK));
 		//drawX(bgr, robot->_camera->rightBiggestSquare(COLOR_PINK));
 		

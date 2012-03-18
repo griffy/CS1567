@@ -14,6 +14,10 @@ FIRFilter::FIRFilter(std::string fileName)
 int FIRFilter::getOrder() {
     return _order;
 }
+/* Returns the current value of the filter */
+float FIRFilter::getValue() {
+    return _value;
+}
 
 /* Seeds the samples array with values from a file */
 void FIRFilter::seedFromFile(std::string fileName) {
@@ -39,6 +43,12 @@ void FIRFilter::seed(std::vector<float> *samples) {
     _nextSample = 0;
 }
 
+void FIRFilter::seed( float value ){
+	for(int i=0; i<_order; i++){
+		_samples[i] = value;
+	}
+}
+
 float FIRFilter::filter(float val) {
     float sum = 0;
     int i, j;
@@ -57,7 +67,7 @@ float FIRFilter::filter(float val) {
     if (++_nextSample == getOrder()+1) {
         _nextSample = 0;
     }
-
+	_value=sum;
     return sum;
 }
 
