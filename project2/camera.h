@@ -25,6 +25,9 @@ public:
 	void update();
 	int centerDistanceError(int color);
 	bool onSamePlane(squares_t *leftSquare, squares_t *rightSquare);
+	void calculateSlope(squares_t*, lineStruct *line);
+	float findPos(squares_t* square);
+	float estimatePos(squares_t* leftSquares, squares_t* rightSquares);
 	squares_t* leftBiggestSquare(int color);
 	squares_t* rightBiggestSquare(int color);
 	squares_t* findSquaresOf(int color, int areaThreshold);
@@ -42,8 +45,6 @@ private:
 	IplImage *_yellowThresholded;
 	squares_t *_pinkSquares;
 	squares_t *_yellowSquares;
-	
-	void calculateSlope(squares_t *squares);
 };
 
 #endif

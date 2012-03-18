@@ -269,17 +269,17 @@ squares_t* Camera::rightBiggestSquare(int color) {
   * @arg line - pass in a pointer to the lineStruct that will receive the value for the line
 **/
 
-void Camera::calculateSlope(squares_t squares, lineStruct *line){
+void Camera::calculateSlope(squares_t *squares, lineStruct *line){
 	squares_t *currSqr=(squares_t*) squares;
 	float xAvg, yAvg;
 	float sumx = 0, sumy=0, sumxy=0;
 	int count=0;
 	// calculate average x and y values
-	while(currSqr != null){
+	while(currSqr != NULL){
 		sumx+=currSqr->center.x;
 		sumy+=currSqr->center.y;
 		count++;
-		currSqr=currSquare->next;
+		currSqr=currSqr->next;
 	}
 	xAvg = sumx/count;
 	yAvg = sumy/count;
@@ -296,15 +296,15 @@ void Camera::calculateSlope(squares_t squares, lineStruct *line){
 	//calculate Sx, Sy, Sxy
 	sumx=0; sumy=0;
 	currSqr=(squares_t*) squares;
-	while(currSqr != null){
+	while(currSqr != NULL){
 		sumx+=(currSqr->center.x - xAvg)*(currSqr->center.x - xAvg);
 		sumy+=(currSqr->center.y - yAvg)*(currSqr->center.y - yAvg);
 		sumxy+=(currSqr->center.x - xAvg)*(currSqr->center.y - yAvg);
-		currSqr=currSquare->next;
+		currSqr=currSqr->next;
 	}
 
 	line->slope = sumxy/sumx;
-	line->yInt = yAvg - slope*xAvg;
+	line->yInt = yAvg - line->slope*xAvg;
 	line->r2 = sumxy/sqrt(sumx*sumy);
 }
 
@@ -312,7 +312,7 @@ void Camera::calculateSlope(squares_t squares, lineStruct *line){
  * @return the location of the robot in the grid based on a scale of 0..1
  * 		with 0 being farthest left in the grid, and 1 being farthest right
  */
-float Camera::estimatePos (squares_t * leftSquares, squares_t *rightSquares){
+float Camera::estimatePos (squares_t *leftSquares, squares_t *rightSquares){
 	//find the lines for both squares
 	lineStruct leftLine;
 	lineStruct rightLine;
@@ -322,49 +322,53 @@ float Camera::estimatePos (squares_t * leftSquares, squares_t *rightSquares){
 	
 	//check if slopes could not be calculated
 	if (leftLine.slope == -999.0){
-		LOG.write(LOG_HIGH, "Error while calculating slope of left line... cannot estimate position accurately\n");
+		LOG.write(LOG_HIGH, "camera image", "Error while calculating slope of left line... cannot estimate position accurately\n");
 	}
 	if (rightLine.slope == -999.0){
-		LOG.write(LOG_HIGH, "Error while calculating slope of right line... cannot estimate position accurately\n");
+		LOG.write(LOG_HIGH, "camera image", "Error while calculating slope of right line... cannot estimate position accurately\n");
 	}
 	
-	LOG.write(LOG_HIGH, "Left line: y = %f*x + %f\t\tr^2 = %f\n", leftLine.slope, leftLine.yInt, leftLine.r2);
-	LOG.write(LOG_HIGH, "Right line: y = %f*x + %f\t\tr^2 = %f\n", rightLine.slope, rightLine.yInt, rightLine.r2);
+	LOG.write(LOG_HIGH, "camera image", "Left line: y = %f*x + %f\t\tr^2 = %f\n", leftLine.slope, leftLine.yInt, leftLine.r2);
+	LOG.write(LOG_HIGH, "camera image", "Right line: y = %f*x + %f\t\tr^2 = %f\n", rightLine.slope, rightLine.yInt, rightLine.r2);
 	
 	return 0;
 }
 
 float Camera::findPos (squares_t *squares){
+	
+    int center = _pinkThresholded->width / 2;
+	
+	
 	squares_t *rightSquares=NULL;
 	squares_t *indexRS=NULL;
 	
 	squares_t *leftSquares = NULL;
-	squares_t *leftRS = NULL;
+	squares_t *indexLS = NULL;
 	
     squares_t *curSquare = squares;
     while (curSquare != NULL) {
         if (curSquare->center.x > center) {
-			if(rightSquares == null){
+			if(rightSquares == NULL){
 				rightSquares = new squares_t;
 				indexRS = rightSquares;
 				rightSquares->next = NULL;
 			}
 			else{
 				indexRS->next = new squares_t;
-				indexRS = indexRS.next;
+				indexRS = indexRS->next;
 				indexRS = curSquare;
 				indexRS->next = NULL;
 			}
         }
         else {
-			if(leftSquares == null){
+			if(leftSquares == NULL){
 				leftSquares = new squares_t;
 				indexLS = leftSquares;
 				leftSquares->next = NULL;
 			}
 			else{
 				indexLS->next = new squares_t;
-				indexLS = indexLS.next;
+				indexLS = indexLS->next;
 				indexLS = curSquare;
 				indexLS->next = NULL;
 			}
