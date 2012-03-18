@@ -73,6 +73,7 @@ int main(int argc, char *argv[]) {
 
 	/* Real codez
 	robot->move(DIR_EAST, 5);
+	robot->turn(DIR_RIGHT, DEGREE_90);
 	robot->move(DIR_SOUTH, 3);
 	*/
 

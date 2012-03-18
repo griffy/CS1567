@@ -118,8 +118,8 @@ void Robot::move(int direction, int numCells) {
         // reset the wheel encoder totals
         _robotInterface->reset_state();
         // based on the direction, move in the global coord system
-        float goalX = _pose->getX();
-        float goalY = _pose->getY();
+        float goalX = getPose()->getX();
+        float goalY = getPose()->getY();
         switch (direction) {
         case DIR_NORTH:
             goalY += CELL_SIZE;
@@ -139,11 +139,20 @@ void Robot::move(int direction, int numCells) {
         cellsTraveled++;
     }
 }
-/*
+
 void Robot::turn(int direction, float radians) {
-    turnTo(Util::normalizeTheta(_pose->getTheta()-radians), MAX_THETA_ERROR);
+    float goalTheta;
+
+    if (direction == DIR_LEFT) {
+        goalTheta = Util::normalizeTheta(_pose->getTheta()+radians);
+        turnTo(goalTheta, MAX_THETA_ERROR);
+    }
+    else {
+        goalTheta = Util::normalizeTheta(_pose->getTheta()-radians);
+        turnTo(goalTheta, MAX_THETA_ERROR);
+    }
 }
-*/
+
 // Moves to a location in the global coordinate system (in cm)
 void Robot::moveTo(float x, float y) {
     prefillData();

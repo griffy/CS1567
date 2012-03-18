@@ -25,6 +25,9 @@
 #define DIR_EAST 2
 #define DIR_WEST 3
 
+#define DIR_LEFT 0
+#define DIR_RIGHT 1
+
 #define CELL_SIZE 65
 
 const float TIME_DISTANCE = 116.0; // cm
@@ -65,6 +68,7 @@ public:
     ~Robot();
     // moves the number of cells in the given direction
     void move(int direction, int numCells);
+    void turn(int direction, float radians);
     //moves to the given x/y coordinates, without stopping
     void moveTo(float x, float y);
     float moveToUntil(float x, float y, float thetaErrorLimit);
