@@ -12,6 +12,11 @@
 
 class Camera {
 public:
+	
+	struct lineStruct {
+		float slope, yInt, r2;
+	};
+	
 	Camera(RobotInterface *robotInterface);
 	~Camera();
 	void setQuality(int quality);
@@ -35,6 +40,8 @@ private:
 	IplImage *_yellowThresholded;
 	squares_t *_pinkSquares;
 	squares_t *_yellowSquares;
+	
+	void calculateSlope(squares_t *squares);
 };
 
 #endif
