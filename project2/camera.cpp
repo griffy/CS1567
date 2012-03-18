@@ -27,7 +27,7 @@ Camera::~Camera() {
 }
 
 void Camera::setQuality(int quality) {
-    if (_robotInterface->CameraCfg(RI_CAMERA_DEFAULT_BRIGHTNESS, 
+    if (_robotInterface->CameraCfg(0x7F, 
                         RI_CAMERA_DEFAULT_CONTRAST, 
                         5, 
                         _resolution, 
@@ -80,14 +80,14 @@ void Camera::update() {
         _yellowSquares = square;
     }
     */
-    _pinkThresholded = getThresholdedImage(PINK_LOW, PINK_HIGH);
-    _yellowThresholded = getThresholdedImage(YELLOW_LOW, YELLOW_HIGH);
+    _pinkThresholded = getThresholdedImage(RC_PINK_LOW, RC_PINK_HIGH);
+    _yellowThresholded = getThresholdedImage(RC_YELLOW_LOW, RC_YELLOW_HIGH);
     _pinkSquares = findSquaresOf(COLOR_PINK, DEFAULT_SQUARE_SIZE);
     _yellowSquares = findSquaresOf(COLOR_YELLOW, DEFAULT_SQUARE_SIZE);
-	float returnYellow = findPos(_yellowSquares);
-	LOG.printfScreen(LOG_HIGH, "camera image", "position returned for yellow: %f\n", returnYellow);
-	float returnPink = findPos(_yellowSquares);
-	LOG.printfScreen(LOG_HIGH, "camera image", "position returned for pink: %f\n", returnPink);
+	//float returnYellow = findPos(_yellowSquares);
+	//LOG.printfScreen(LOG_HIGH, "camera image", "position returned for yellow: %f\n", returnYellow);
+	//float returnPink = findPos(_yellowSquares);
+	//LOG.printfScreen(LOG_HIGH, "camera image", "position returned for pink: %f\n", returnPink);
 }
 
 /** ***************************************
@@ -122,7 +122,7 @@ int Camera::corridorSlopeError(int color) {
 		}
 		float difference = leftSide.slope + rightSide.slope;
 		
-		if (fabs(difference) <= MINIMUM_SLOPE_DIFFERENCE){
+		if (fabs(difference) <= MINIMUM_SLOPE_DIFFERENCE) {
 			LOG.printfScreen(LOG_HIGH, "regression", "It seems to be going straight... continue\n");
 		}
 		else if(difference > 0){
@@ -617,7 +617,7 @@ squares_t* Camera::findSquares(IplImage *img, int areaThreshold) {
                     s = s > t ? s : t;
                 }
             }
-                
+
             // If cosines of all angles are small (all angles are ~90 degree) then write the vertices to the sequence 
             if( s < 0.2 ) {
                 for( i = 0; i < 4; i++ ) {
