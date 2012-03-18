@@ -77,8 +77,8 @@ void Camera::update() {
         _yellowSquares = square;
     }
     */
-    _pinkThresholded = getThresholdedImage(RC_PINK_LOW, RC_PINK_HIGH);
-    _yellowThresholded = getThresholdedImage(RC_YELLOW_LOW, RC_YELLOW_HIGH);
+    _pinkThresholded = getThresholdedImage(PINK_LOW, PINK_HIGH);
+    _yellowThresholded = getThresholdedImage(YELLOW_LOW, YELLOW_HIGH);
     _pinkSquares = findSquaresOf(COLOR_PINK, DEFAULT_SQUARE_SIZE);
     _yellowSquares = findSquaresOf(COLOR_YELLOW, DEFAULT_SQUARE_SIZE);
 	float returnYellow = findPos(_yellowSquares);
