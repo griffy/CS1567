@@ -11,11 +11,11 @@
 #define SIDE_LEFT 0
 #define SIDE_RIGHT 1
 
-#define DEFAULT_SQUARE_SIZE 250
+#define DEFAULT_SQUARE_SIZE 49
 #define MAX_PLANE_SLOPE 5 // in pixels
 
-#define PINK_LOW cvScalar(165, 100, 100)
-#define PINK_HIGH cvScalar(175, 255, 255)
+#define PINK_LOW cvScalar(160, 100, 100)
+#define PINK_HIGH cvScalar(180, 255, 255)
 
 #define YELLOW_LOW cvScalar(20, 100, 100)
 #define YELLOW_HIGH cvScalar(30, 255, 255)
