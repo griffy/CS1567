@@ -105,11 +105,11 @@ int Camera::corridorSlopeError(int color) {
     LOG.printfScreen(LOG_HIGH, "right square regression equation", "Right equation: Y = %f*X + %f\n", rightSide.slope, rightSide.intercept);
 
     //TODO: Make this into a useful error value for robot control
-    if(leftSide.numSquares >= 2 && rightSide.numSqaures >= 2) { //if lines are found on both sides...
+    if(leftSide.numSquares >= 2 && rightSide.numSquares >= 2) { //if lines are found on both sides...
 	//do something to define error relative to the differences of the slopes	
-    } elseif (leftSide.numSquares >= 2) {
+    } else if (leftSide.numSquares >= 2) {
         //do something to define error in order to move to the left, as we are over too far right to see the slope
-    } elseif (rightSide.numSquares >= 2) {
+    } else if (rightSide.numSquares >= 2) {
         //do something to define error in order to move to the right, as we are over too far left to see the slope
     } else {
         //we can't see anything of note, so I'd assume we would just want to ignore the slope finding error at this point
@@ -196,8 +196,8 @@ regressionLine Camera::leastSquaresRegression(int color, int side) {
         result.slope = ((xySum - (result.numSquares * xAvg * yAvg)) / (xSqSum - (result.numSquares * xAvg * xAvg)));
     
     } else { //We don't perform an extrapolation if there aren't enough squares
-        result.intercept = NULL; //Could also be some sort of error flag value, though we can also just check the numSquares value
-	result.slope = NULL;
+        result.intercept = -999; //Some sort of error flag value, though we can also just check the numSquares value
+	result.slope = -999;
     }
 
     return result;
@@ -205,7 +205,7 @@ regressionLine Camera::leastSquaresRegression(int color, int side) {
 
 
 int Camera::centerDistanceError(int color) {
-	//static int rightMissCount = 0, leftMissCount = 0;
+    //static int rightMissCount = 0, leftMissCount = 0;
 
     int width;
     switch (color) {

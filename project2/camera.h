@@ -27,6 +27,8 @@ public:
 	void setQuality(int quality);
 	void setResolution(int resolution);
 	void update();
+	int corridorSlopeError(int color);
+        regressionLine leastSquaresRegression(int color, int side);	
 	int centerDistanceError(int color);
 	bool onSamePlane(squares_t *leftSquare, squares_t *rightSquare);
 	squares_t* leftBiggestSquare(int color);
