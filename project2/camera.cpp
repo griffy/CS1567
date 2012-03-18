@@ -81,6 +81,10 @@ void Camera::update() {
     _yellowThresholded = getThresholdedImage(RC_YELLOW_LOW, RC_YELLOW_HIGH);
     _pinkSquares = findSquaresOf(COLOR_PINK, DEFAULT_SQUARE_SIZE);
     _yellowSquares = findSquaresOf(COLOR_YELLOW, DEFAULT_SQUARE_SIZE);
+	float returnYellow = findPos(_yellowSquares);
+	LOG.write(LOG_HIGH, "camera image", "position returned for yellow: %f\n", returnYellow);
+	float returnPink = findPos(_yellowSquares);
+	LOG.write(LOG_HIGH, "camera image", "position returned for pink: %f\n", returnPink);
 }
 
 int Camera::centerDistanceError(int color) {
@@ -402,6 +406,7 @@ squares_t* Camera::findSquaresOf(int color, int areaThreshold) {
     switch (color) {
     case COLOR_PINK:
         squares = findSquares(_pinkThresholded, areaThreshold);
+		
         break;
     case COLOR_YELLOW:
         squares = findSquares(_yellowThresholded, areaThreshold);
