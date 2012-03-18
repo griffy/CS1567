@@ -114,10 +114,10 @@ int Camera::corridorSlopeError(int color) {
     //TODO: Make this into a useful error value for robot control
     if(leftSide.numSquares >= 2 && rightSide.numSquares >= 2) { //if lines are found on both sides...
 		//do something to define error relative to the differences of the slopes
-		if(rightSide.slope > 0 || (rightSide.slope == -999.0 && rightSide.intercept == -999.0)){
+		if(rightSide.slope < 0 || (rightSide.slope == -999.0 && rightSide.intercept == -999.0)){
 			LOG.printfScreen(LOG_HIGH, "regression","Possible error on right side... slope > 0 or doesn't exist\n");
 		}
-		if(leftSide.slope < 0 || (leftSide.slope == -999.0 && leftSide.intercept == -999.0)){
+		if(leftSide.slope > 0 || (leftSide.slope == -999.0 && leftSide.intercept == -999.0)){
 			LOG.printfScreen(LOG_HIGH, "regression", "Possible error on left side... slope < 0 or doesn't exist\n");
 		}
 		float difference = leftSide.slope + rightSide.slope;
