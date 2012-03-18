@@ -114,7 +114,9 @@ void Robot::move(int direction, int numCells) {
 
     while (cellsTraveled < numCells) {
         // first attempt to center ourselves before moving
-        centerSelf(MAX_CAMERA_PIXEL_ERROR);
+        center(MAX_CAMERA_ERROR);
+        // reset the wheel encoder totals
+        _robotInterface->reset_state();
         // based on the direction, move in the global coord system
         float goalX = _pose->getX();
         float goalY = _pose->getY();
@@ -310,7 +312,7 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
     printf("theta acceptable\n");
 }
 
-void Robot::centerSelf(int maxError) {
+void Robot::center(int maxError) {
 	int centerDistanceErr = _camera->centerDistanceError(COLOR_PINK);
 	while(abs(centerDistanceErr) < maxError) {
 		if (centerDistanceErr > maxError) {

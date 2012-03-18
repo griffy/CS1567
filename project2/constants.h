@@ -44,7 +44,7 @@
 // acceptable proximities from base
 #define MAX_DIST_ERROR 35.0 // in cm
 #define MAX_THETA_ERROR DEGREE_30
-#define MAX_CAMERA_PIXEL_ERROR 10
+#define MAX_CAMERA_ERROR 10
 
 // the largest filter size (used for prefilling data)
 #define MAX_FILTER_TAPS 7
