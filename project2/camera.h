@@ -14,11 +14,11 @@
 #define DEFAULT_SQUARE_SIZE 250
 #define MAX_PLANE_SLOPE 5 // in pixels
 
-#define PINK_LOW cvScalar(160, 100, 80, 0)
-#define PINK_HIGH cvScalar(170, 255, 255, 0)
+#define PINK_LOW cvScalar(165, 100, 100)
+#define PINK_HIGH cvScalar(175, 255, 255)
 
-#define YELLOW_LOW cvScalar(20, 100, 80, 0)
-#define YELLOW_HIGH cvScalar(30, 255, 255, 0)
+#define YELLOW_LOW cvScalar(20, 100, 100)
+#define YELLOW_HIGH cvScalar(30, 255, 255)
 
 typedef struct regLine {
 	float intercept;
