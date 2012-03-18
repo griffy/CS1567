@@ -87,8 +87,129 @@ void Camera::update() {
 	LOG.write(LOG_HIGH, "camera image", "position returned for pink: %f\n", returnPink);
 }
 
+/* ****************************************
+ * Corridor Slope Error Function 
+ * Parameters: color flag corresponding to square color of interest
+ * Returns: integer corresponding to difference in slope of flags on the corridor walls
+ *
+ * This function takes the image data (square locations) and performs a linear regression on the square locations,
+ * in order to define a measure of centered-ness in the corridor based on perceived slope of the corridor walls.
+ * ****************************************/
+int Camera::corridorSlopeError(int color) {
+    int error = 0;
+
+    regressionLine leftSide = leastSquaresRegression(color, SIDE_LEFT);
+    regressionLine rightSide = leastSquaresRegression(color, SIDE_RIGHT);
+
+    //For now, to debug/make meaningful observations about line fits
+    LOG.printfScreen(LOG_HIGH, "left square linear regression stat", "Linear regression performed. Left squares found: %d\n", leftSide.numSquares);
+    LOG.printfScreen(LOG_HIGH, "right square linear regression stat", "Linear regression performed. Right squares found: %d\n", rightSide.numSquares);
+
+    LOG.printfScreen(LOG_HIGH, "left square regression equation", "Left equation: Y = %f*X + %f\n", leftSide.slope, leftSide.intercept);
+    LOG.printfScreen(LOG_HIGH, "right square regression equation", "Right equation: Y = %f*X + %f\n", rightSide.slope, rightSide.intercept);
+
+    //TODO: Make this into a useful error value for robot control
+    if(leftSide.numSquares >= 2 && rightSide.numSquares >= 2) { //if lines are found on both sides...
+	//do something to define error relative to the differences of the slopes	
+    } else if (leftSide.numSquares >= 2) {
+        //do something to define error in order to move to the left, as we are over too far right to see the slope
+    } else if (rightSide.numSquares >= 2) {
+        //do something to define error in order to move to the right, as we are over too far left to see the slope
+    } else {
+        //we can't see anything of note, so I'd assume we would just want to ignore the slope finding error at this point
+    }
+
+    //error is defined as something relating to the differences in slopes of the regression lines calculated for the corridor
+    return error;
+}
+
+regressionLine Camera::leastSquaresRegression(int color, int side) {
+    
+    IplImage *thresholded;
+    squares_t *squares;
+
+    int width;
+    int squareCount = 0;
+    float xAvg, yAvg, xSqSum, xySum;
+    
+    regressionLine result;
+
+    switch (color) {
+    case COLOR_PINK:
+        thresholded = _pinkThresholded;
+        squares = _pinkSquares;
+        break;
+    case COLOR_YELLOW:
+        thresholded = _yellowThresholded;
+        squares = _yellowSquares;
+        break;
+    }
+
+    int center = thresholded->width / 2;
+
+    squares_t *curSquare = squares;
+    while (curSquare != NULL) {
+	switch (side) {
+	    case SIDE_LEFT:	
+        	if (curSquare->center.x < center) {
+			squareCount++;
+		}
+		break;
+	    case SIDE_RIGHT:
+		if (curSquare->center.x > center) {
+			squareCount++;
+		}
+		break;
+	    }
+        curSquare = curSquare->next;
+    }
+
+    result.numSquares = squareCount;
+    
+    if(squareCount >= 2) { 
+
+        //Linear regression algorithm
+        //Ref: http://mathworld.wolfram.com/LeastSquaresFitting.html
+        curSquare = squares;
+        while (curSquare != NULL) {
+	    switch (side) {
+	        case SIDE_LEFT:	
+        	    if (curSquare->center.x < center) {
+	    		xAvg += curSquare->center.x;
+	    		yAvg += curSquare->center.y;
+	    		xSqSum += curSquare->center.x * curSquare->center.x;
+	    		xySum += curSquare->center.x * curSquare->center.y;
+		    } 
+		    break;
+	        case SIDE_RIGHT:
+		    if (curSquare->center.x > center) {
+	    		xAvg += curSquare->center.x;
+	    		yAvg += curSquare->center.y;
+	    		xSqSum += curSquare->center.x * curSquare->center.x;
+	    		xySum += curSquare->center.x * curSquare->center.y;
+		    } 
+		    break;
+	    }
+	    curSquare = curSquare->next;
+        }   
+
+        xAvg /= result.numSquares;
+        yAvg /= result.numSquares;
+
+        result.intercept = (((yAvg * xSqSum) - (xAvg * xySum) ) / (xSqSum - (result.numSquares * xAvg * xAvg)));
+        result.slope = ((xySum - (result.numSquares * xAvg * yAvg)) / (xSqSum - (result.numSquares * xAvg * xAvg)));
+    
+    } else { //We don't perform an extrapolation if there aren't enough squares
+        result.intercept = -999; //Some sort of error flag value, though we can also just check the numSquares value
+	result.slope = -999;
+    }
+
+    return result;
+}
+
+
 int Camera::centerDistanceError(int color) {
-	//static int rightMissCount = 0, leftMissCount = 0;
+    //static int rightMissCount = 0, leftMissCount = 0;
 
     int width;
     switch (color) {
@@ -129,8 +250,9 @@ int Camera::centerDistanceError(int color) {
     }
 
     int leftError = center - leftSquare->center.x;
-    int rightError = rightSquare->center.x - center;
+    int rightError = center - rightSquare->center.x;
 
+    //Return difference in errors (rightError should be negative)
     return leftError + rightError;
 
 /*  

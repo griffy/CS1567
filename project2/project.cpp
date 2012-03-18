@@ -58,6 +58,9 @@ int main(int argc, char *argv[]) {
 		cvShowImage("BGR Image", bgr);
 		cvShowImage("Thresholded Image", thresholded);
 
+		//Line regression test
+		robot->_camera->corridorSlopeError(COLOR_PINK);
+
 		cvWaitKey(0);
 
 		cvReleaseImage(&bgr);

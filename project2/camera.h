@@ -8,8 +8,17 @@
 #define COLOR_PINK 0
 #define COLOR_YELLOW 1
 
+#define SIDE_LEFT 0
+#define SIDE_RIGHT 1
+
 #define DEFAULT_SQUARE_SIZE 250
 #define MAX_PLANE_SLOPE 5 // in pixels
+
+typedef struct regLine {
+	float intercept;
+	float slope;
+	int numSquares;
+} regressionLine;
 
 class Camera {
 public:
@@ -23,6 +32,8 @@ public:
 	void setQuality(int quality);
 	void setResolution(int resolution);
 	void update();
+	int corridorSlopeError(int color);
+        regressionLine leastSquaresRegression(int color, int side);	
 	int centerDistanceError(int color);
 	bool onSamePlane(squares_t *leftSquare, squares_t *rightSquare);
 	void calculateSlope(squares_t*, lineStruct *line);
