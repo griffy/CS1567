@@ -282,42 +282,48 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
     printf("theta acceptable\n");
 }
 
-void Robot::turnToCamera(int max_error) {
+void Robot::centerSelf(int maxError) {
+    // TODO: should use strafing
 	int centerDistanceErr = _camera->centerDistanceError(COLOR_PINK);
-	while(abs(centerDistanceErr) < max_error){
-		if (centerDistanceErr > max_error) {
-			LOG.write(LOG_MED, "turn_adjust", 
-						"direction: right, since theta error < -limit");
+	while(abs(centerDistanceErr) < maxError) {
+		if (centerDistanceErr > maxError) {
+			LOG.write(LOG_MED, "strafe_adjust", 
+						"direction: right, since error < -limit");
 			
-			log.write(LOG_LOW,"turn left\n");
+			LOG.write(LOG_LOW, "strafe adjust", "strafe right");
 			
-			int turnSpeed = (int)fabs((1.0/thetaGain));
+            float strafeGain = centerDistanceErr;
+			int strafeSpeed = (int)fabs((1.0/strafeGain));
 			// cap our speed at 6, since turning too slow causes problems
-			if (turnSpeed > 6) {
-				turnSpeed = 6;
+			if (strafeSpeed > 6) {
+				strafeSpeed = 6;
 			}
 
-			LOG.write(LOG_MED, "pid_speeds", "turn: %d", turnSpeed);
+			LOG.write(LOG_MED, "pid_speeds", "strafe: %d", strafeSpeed);
 
-			turnRight(turnSpeed);
+			turnRight(strafeSpeed);
 		}
-		else if(centerDistanceErr < -max_error){
-			LOG.write(LOG_MED, "turn_adjust", 
-						"direction: left, since theta error > limit");
-			int turnSpeed = (int)fabs((1.0/thetaGain));
-			if (turnSpeed > 6) {
-				turnSpeed = 6;
-			}
+		else if(centerDistanceErr < -maxError) {
+			LOG.write(LOG_MED, "strafe_adjust", 
+						"direction: left, since error > limit");
+            
+            LOG.write(LOG_LOW, "strafe adjust", "strafe left");
+            
+            float strafeGain = centerDistanceErr;
+            int strafeSpeed = (int)fabs((1.0/strafeGain));
+            // cap our speed at 6, since turning too slow causes problems
+            if (strafeSpeed > 6) {
+                strafeSpeed = 6;
+            }
 
-			LOG.write(LOG_MED, "pid_speeds", "turn: %d", turnSpeed);
+            LOG.write(LOG_MED, "pid_speeds", "strafe: %d", strafeSpeed);
 
-			turnLeft(turnSpeed);
-			log.write(LOG_LOW,"turn right\n");
+            turnLeft(strafeSpeed);
 		}
 		else{
-			log.write(LOG_LOW,"close enough, go straight\n");
+			LOG.write(LOG_LOW, "strafe adjust", "close enough, go straight");
 		}
-		}
+	}
 }
 
 void Robot::moveForward(int speed) {
