@@ -20,6 +20,13 @@
 
 #define NUM_SPEEDS 11
 
+#define DIR_NORTH 0
+#define DIR_SOUTH 1
+#define DIR_EAST 2
+#define DIR_WEST 3
+
+#define CELL_SIZE 65
+
 const float TIME_DISTANCE = 116.0; // cm
 
 // average speed to move forward TIME_DISTANCE at integer robot speeds
@@ -56,6 +63,8 @@ class Robot {
 public:
     Robot(std::string address, int id);
     ~Robot();
+    // moves the number of cells in the given direction
+    void move(int direction, int numCells);
     //moves to the given x/y coordinates, without stopping
     void moveTo(float x, float y);
     float moveToUntil(float x, float y, float thetaErrorLimit);

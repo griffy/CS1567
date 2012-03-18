@@ -108,6 +108,34 @@ void Robot::rockOut() {
         sleep(1);
     }
 }
+
+void Robot::move(int direction, int numCells) {
+    int cellsTraveled = 0;
+
+    while (cellsTraveled < numCells) {
+        // first attempt to center ourselves before moving
+        centerSelf(MAX_CAMERA_PIXEL_ERROR);
+        // based on the direction, move in the global coord system
+        float goalX = _pose->getX();
+        float goalY = _pose->getY();
+        switch (direction) {
+        case DIR_NORTH:
+            goalY += CELL_SIZE;
+            break;
+        case DIR_SOUTH:
+            goalY -= CELL_SIZE;
+            break;
+        case DIR_EAST:
+            goalX += CELL_SIZE;
+            break;
+        case DIR_WEST:
+            goalX -= CELL_SIZE;
+            break;
+        }
+        moveTo(goalX, goalY);
+    }
+}
+
 // Moves to a location in the global coordinate system (in cm)
 void Robot::moveTo(float x, float y) {
     prefillData();
@@ -283,7 +311,6 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
 }
 
 void Robot::centerSelf(int maxError) {
-    // TODO: should use strafing
 	int centerDistanceErr = _camera->centerDistanceError(COLOR_PINK);
 	while(abs(centerDistanceErr) < maxError) {
 		if (centerDistanceErr > maxError) {
