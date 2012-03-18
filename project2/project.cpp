@@ -44,13 +44,14 @@ int main(int argc, char *argv[]) {
 	cvNamedWindow("BGR Image", CV_WINDOW_AUTOSIZE);
 	cvNamedWindow("Thresholded Image", CV_WINDOW_AUTOSIZE);
 
-	while(1) {
+	while (true) {
 		robot->update();
+
 		IplImage *bgr = robot->_camera->getBGRImage();
 		IplImage *thresholded = robot->_camera->getThresholdedImage(RC_PINK_LOW, RC_PINK_HIGH);
-		
-		//drawX(bgr, robot->_camera->leftBiggestSquare(COLOR_PINK));
-		//drawX(bgr, robot->_camera->rightBiggestSquare(COLOR_PINK));
+
+		drawX(bgr, robot->_camera->leftBiggestSquare(COLOR_PINK));
+		drawX(bgr, robot->_camera->rightBiggestSquare(COLOR_PINK));
 		
 		LOG.printfScreen(LOG_LOW, "screenError", "Center error: %d\n", robot->_camera->centerDistanceError(COLOR_PINK));
 
