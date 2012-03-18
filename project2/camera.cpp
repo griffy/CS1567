@@ -58,27 +58,25 @@ void Camera::update() {
     if (_yellowThresholded != NULL) {
         cvReleaseImage(&_yellowThresholded);
     }
+    /*
+    // FIXME: free squares memory properly
     while (_pinkSquares != NULL) {
         squares_t *square = _pinkSquares;
-        squares_t *prevSquare = NULL;
-        while (square->next != NULL) {
-            prevSquare = square;
+        if (square->next != NULL) {
             square = square->next;
         }
-        prevSquare->next = NULL;
-        delete square;
+        delete _pinkSquares;
+        _pinkSquares = square;
     }
     while (_yellowSquares != NULL) {
         squares_t *square = _yellowSquares;
-        squares_t *prevSquare = NULL;
-        while (square->next != NULL) {
-            prevSquare = square;
+        if (square->next != NULL) {
             square = square->next;
         }
-        prevSquare->next = NULL;
-        delete square;
+        delete _yellowSquares;
+        _yellowSquares = square;
     }
-
+    */
     _pinkThresholded = getThresholdedImage(RC_PINK_LOW, RC_PINK_HIGH);
     _yellowThresholded = getThresholdedImage(RC_YELLOW_LOW, RC_YELLOW_HIGH);
     _pinkSquares = findSquaresOf(COLOR_PINK, DEFAULT_SQUARE_SIZE);
@@ -207,7 +205,7 @@ regressionLine Camera::leastSquaresRegression(int color, int side) {
 
 
 int Camera::centerDistanceError(int color) {
-    static int rightMissCount = 0, leftMissCount = 0;
+	//static int rightMissCount = 0, leftMissCount = 0;
 
     int width;
     switch (color) {
