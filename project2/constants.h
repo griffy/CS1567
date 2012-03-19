@@ -32,7 +32,8 @@
 #define MAX_DIST_GAIN 0.1
 #define MIN_THETA_GAIN -0.05
 #define MAX_THETA_GAIN 0.05
-
+#define MIN_STRAFE_GAIN -0.05
+#define MAX_STRAFE_GAIN 0.05
 // PID tuning constants
 #define PID_DIST_KP 0.8
 #define PID_DIST_KI 0.05
@@ -40,6 +41,9 @@
 #define PID_THETA_KP 0.65
 #define PID_THETA_KI 0.001
 #define PID_THETA_KD 0.001
+#define PID_STRAFE_KP 0.65
+#define PID_STRAFE_KI 0.001
+#define PID_STRAFE_KD 0.001
 
 // acceptable proximities from base
 #define MAX_DIST_ERROR 35.0 // in cm

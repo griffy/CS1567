@@ -111,7 +111,8 @@ private:
 
     PID* _distancePID;
     PID* _thetaPID;
-
+    PID* _strafePID;
+    
     int _failLimit;
 
     Pose *_pose;

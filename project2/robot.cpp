@@ -48,9 +48,11 @@ Robot::Robot(std::string address, int id) {
 
     PIDConstants distancePIDConstants = {PID_DIST_KP, PID_DIST_KI, PID_DIST_KD};
     PIDConstants thetaPIDConstants = {PID_THETA_KP, PID_THETA_KI, PID_THETA_KD};
+    PIDConstants strafePIDConstants = {PID_STRAFE_KP, PID_STRAFE_KI, PID_STRAFE_KD};
 
     _distancePID = new PID(&distancePIDConstants, MAX_DIST_GAIN, MIN_DIST_GAIN);
     _thetaPID = new PID(&thetaPIDConstants, MAX_THETA_GAIN, MIN_THETA_GAIN);
+    _strafePID = new PID(&strafePIDConstants, MAX_STRAFE_GAIN, MIN_STRAFE_GAIN);
 
     printf("pid controllers initialized\n");
 }
@@ -69,6 +71,7 @@ Robot::~Robot() {
 
     delete _distancePID;
     delete _thetaPID;
+    delete _strafePID;
 }
 
 /* Returns a reference to the Kalman pose */
@@ -333,23 +336,18 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
 }
 
 void Robot::center(int centerErrorThreshold) {
-    // TODO: left off here, pasted turnTo in and was in process of making
-    // it work in terms of strafing
+    /*
+    int centerDistanceError;
     do {    
         update(); 
 
-        int centerDistanceError = _camera->centerDistanceError(COLOR_PINK);
+        centerDistanceError = _camera->centerDistanceError(COLOR_PINK);
 
-        theta = _pose->getTheta();
-        thetaError = thetaGoal - theta;
-        thetaError = Util::normalizeThetaError(thetaError);
+        LOG.write(LOG_LOW, "center",
+                  "dist err: %f\n",
+                  centerDistanceError);
 
-        LOG.write(LOG_MED, "turn_error_estimates",
-                  "theta err: %f \t theta goal: %f",
-                  thetaError,
-                  thetaGoal);
-
-        thetaGain = _thetaPID->updatePID(thetaError);
+        strafeGain = _strafePID->updatePID(thetaError);
 
         LOG.write(LOG_LOW, "turn_gain", "theta: %f", thetaGain);
 
@@ -423,6 +421,7 @@ void Robot::center(int centerErrorThreshold) {
 			LOG.write(LOG_LOW, "strafe adjust", "close enough, go straight");
 		}
 	}
+    */
 }
 
 void Robot::moveForward(int speed) {
@@ -491,7 +490,7 @@ void Robot::update() {
     // update each pose estimate
     _northStar->updatePose(getRoom());
     _wheelEncoders->updatePose(getRoom());
-    _wheelEncoders->setTheta(_northStar->getTheta());
+    _wheelEncoders->getPose()->setTheta(_northStar->getTheta());
 
 /*
  * Legacy tuning function
