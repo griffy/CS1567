@@ -13,7 +13,7 @@
 #define SIDE_LEFT 0
 #define SIDE_RIGHT 1
 
-#define DEFAULT_SQUARE_SIZE 40
+#define DEFAULT_SQUARE_SIZE 100 // was 40
 #define MAX_PLANE_SLOPE 10 // in pixels
 
 //Tweaking notes (cvScalar(hue 169-178, saturation 100-255, brightness 100-255)):
