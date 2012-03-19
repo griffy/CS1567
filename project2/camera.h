@@ -2,6 +2,7 @@
 #define CS1567_CAMERA_H
 
 #include "fir_filter.h"
+#include <stdio.h>
 #include <vector>
 #include <opencv/cv.h>
 #include <robot_if++.h>
@@ -17,8 +18,6 @@
 
 #define PINK_LOW cvScalar(160, 100, 100)
 #define PINK_HIGH cvScalar(180, 255, 255)
-
-#include <stdio.h>
 
 #define YELLOW_LOW cvScalar(20, 100, 100)
 #define YELLOW_HIGH cvScalar(30, 255, 255)
