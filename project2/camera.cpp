@@ -54,6 +54,7 @@ void Camera::setResolution(int resolution) {
 }
 
 void Camera::update() {
+
     if (_pinkThresholded != NULL) {
         cvReleaseImage(&_pinkThresholded);
     }
@@ -79,14 +80,19 @@ void Camera::update() {
         _yellowSquares = square;
     }
     */
-    _pinkThresholded = getThresholdedImage(RC_PINK_LOW, RC_PINK_HIGH);
-    _yellowThresholded = getThresholdedImage(RC_YELLOW_LOW, RC_YELLOW_HIGH);
+    IplImage *tempPink;
+    tempPink = getThresholdedImage(RED_LOW, RED_HIGH);
+
+    _pinkThresholded = getThresholdedImage(PINK_LOW, PINK_HIGH);
+    cvOr(_pinkThresholded, tempPink, _pinkThresholded);
+    _yellowThresholded = getThresholdedImage(YELLOW_LOW, YELLOW_HIGH);
+
     _pinkSquares = findSquaresOf(COLOR_PINK, DEFAULT_SQUARE_SIZE);
     _yellowSquares = findSquaresOf(COLOR_YELLOW, DEFAULT_SQUARE_SIZE);
 	//float returnYellow = findPos(_yellowSquares);
 	//LOG.printfScreen(LOG_HIGH, "camera image", "position returned for yellow: %f\n", returnYellow);
-	float returnPink = findPos(_yellowSquares);
-	LOG.printfScreen(LOG_HIGH, "camera image", "position returned for pink: %f\n", returnPink);
+	//float returnPink = findPos(_yellowSquares);
+	//LOG.printfScreen(LOG_HIGH, "camera image", "position returned for pink: %f\n", returnPink);
 }
 
 /** ***************************************
@@ -113,10 +119,10 @@ int Camera::corridorSlopeError(int color) {
     //TODO: Make this into a useful error value for robot control
     if(leftSide.numSquares >= 2 && rightSide.numSquares >= 2) { //if lines are found on both sides...
 		//do something to define error relative to the differences of the slopes
-		if(rightSide.slope < 0 || (rightSide.slope == -999.0 && rightSide.intercept == -999.0)){
+		if(rightSide.slope > 0 || (rightSide.slope == -999.0 && rightSide.intercept == -999.0)){
 			LOG.printfScreen(LOG_HIGH, "regression","Possible error on right side... slope > 0 or doesn't exist\n");
 		}
-		if(leftSide.slope > 0 || (leftSide.slope == -999.0 && leftSide.intercept == -999.0)){
+		if(leftSide.slope < 0 || (leftSide.slope == -999.0 && leftSide.intercept == -999.0)){
 			LOG.printfScreen(LOG_HIGH, "regression", "Possible error on left side... slope < 0 or doesn't exist\n");
 		}
 		float difference = leftSide.slope + rightSide.slope;
@@ -823,7 +829,7 @@ squares_t* Camera::findSquares(IplImage *img, int areaThreshold) {
     // Test each contour to find squares
     while(contours) {
         // Approximate a contour with accuracy proportional to the contour perimeter
-        result = cvApproxPoly(contours, sizeof(CvContour), storage, CV_POLY_APPROX_DP, cvContourPerimeter(contours)*0.10, 0 );
+        result = cvApproxPoly(contours, sizeof(CvContour), storage, CV_POLY_APPROX_DP, cvContourPerimeter(contours)*0.1, 0 );
                 // Square contours should have
         //  * 4 vertices after approximation
         //  * Relatively large area (to filter out noisy contours)
@@ -892,7 +898,6 @@ squares_t* Camera::findSquares(IplImage *img, int areaThreshold) {
         else 
             sq_last->next = sq;
         sq_last = sq;
-		printf("YO DAWG, WATUP\n");
     }
     
     // Release the temporary images and data

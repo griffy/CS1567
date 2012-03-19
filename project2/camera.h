@@ -13,11 +13,15 @@
 #define SIDE_LEFT 0
 #define SIDE_RIGHT 1
 
-#define DEFAULT_SQUARE_SIZE 1
-#define MAX_PLANE_SLOPE 5 // in pixels
+#define DEFAULT_SQUARE_SIZE 40
+#define MAX_PLANE_SLOPE 10 // in pixels
 
-#define PINK_LOW cvScalar(160, 100, 100)
-#define PINK_HIGH cvScalar(180, 255, 255)
+//Tweaking notes (cvScalar(hue 169-178, saturation 100-255, brightness 100-255)):
+#define PINK_LOW cvScalar(150, 100, 50)
+#define PINK_HIGH cvScalar(179, 255, 255)
+
+#define RED_LOW cvScalar(0, 100, 50)
+#define RED_HIGH cvScalar(5, 255, 255)
 
 #define YELLOW_LOW cvScalar(20, 100, 100)
 #define YELLOW_HIGH cvScalar(30, 255, 255)

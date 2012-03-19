@@ -1,0 +1,20 @@
+Improve color thresholding 
+	-look at findSquares? / red-pink overlap? 
+
+Write a new moveTo relying on Wheel Encoders for distance and NorthStar for theta values
+	-moveTo next grid square, then center within that grid square, then move again
+	-when nothing in front, turn clockwise in 90 degree increments until something is seen
+Movement plan?: Start assuming centered in a square
+		Look at markers to orient oneself in the center of the square (strafe and possibly turn)
+		Once centered, move forward
+		While moving forward, keep taking snapshots, correct if too much error (turn and definitely NOT strafe)
+			Possibly pause and get more data a bit after turn, to avoid overcorrection
+			Also inform turning based on NorthStar theta data
+
+
+Filter center errors / accumulate valid slope and center error values to find meaningful errors
+
+TODO: Tom
+	Fix duplicate squares in linear regression function
+		 (Make/keep track of separate list of squares after first loop through)
+
