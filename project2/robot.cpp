@@ -341,10 +341,12 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
 }
 
 void Robot::center() {
+    _robotInterface->Move(RI_HEAD_MIDDLE, 1);
+
     while (true) {
         // TODO: if this is unreliable, try filtering
         // the errors and taking the filtered average to work with
-        update(); 
+        _camera->update(); 
 
         int centerDistError = _camera->centerDistanceError(COLOR_PINK);
         float slopeError = _camera->corridorSlopeError(COLOR_PINK);
@@ -414,10 +416,13 @@ void Robot::moveForward(int speed) {
     }
     else {
 		printf("something in the way (ooooOooooOohhh)\n");
-		stop();
-        printf("turning 90 degrees to compensate...\n");
-        turnTo(Util::normalizeTheta(_pose->getTheta()-DEGREE_90),
-               MAX_THETA_ERROR);
+		_speed = speed;
+		_robotInterface->Move(RI_MOVE_FORWARD, speed);
+    
+		//stop();
+        printf("NOT turning 90 degrees to compensate...\n");
+    //    turnTo(Util::normalizeTheta(_pose->getTheta()-DEGREE_90),
+      //         MAX_THETA_ERROR);
 	}
 }
 
@@ -474,19 +479,13 @@ bool Robot::isThereABitchInMyWay() {
 // Updates the robot pose in terms of the global coordinate system
 // with the best estimate of its position (using kalman filter)
 void Robot::update() {
-    float x, y;
     // update the robot interface
     _updateInterface();
     // update the camera with a new image
-    _camera->update();
+    //_camera->update();
     // update each pose estimate
     _northStar->updatePose(getRoom());
     _wheelEncoders->updatePose(getRoom());
-    x = _wheelEncoders->getX();
-    y = _wheelEncoders->getY();
-    _wheelEncoders->resetPose(_northStar->getPose());
-    _wheelEncoders->setX(x);
-    _wheelEncoders->setY(y);
 
 /*
  * Legacy tuning function
