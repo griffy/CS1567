@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
     LOG.setImportanceLevel(LOG_LOW);
 
 	Robot *robot = new Robot(argv[1], 0);
-
+/*
 	cvNamedWindow("BGR Image", CV_WINDOW_AUTOSIZE);
 	cvNamedWindow("Thresholded Image", CV_WINDOW_AUTOSIZE);
 
@@ -70,12 +70,11 @@ int main(int argc, char *argv[]) {
 		cvReleaseImage(&bgr);
 		cvReleaseImage(&thresholded);
 	}
+*/
 
-	/* Real codez
 	robot->move(DIR_EAST, 5);
 	robot->turn(DIR_RIGHT, DEGREE_90);
 	robot->move(DIR_SOUTH, 3);
-	*/
 
 	delete robot;
 
