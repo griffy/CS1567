@@ -48,11 +48,13 @@ Robot::Robot(std::string address, int id) {
 
     PIDConstants distancePIDConstants = {PID_DIST_KP, PID_DIST_KI, PID_DIST_KD};
     PIDConstants thetaPIDConstants = {PID_THETA_KP, PID_THETA_KI, PID_THETA_KD};
-    PIDConstants strafePIDConstants = {PID_STRAFE_KP, PID_STRAFE_KI, PID_STRAFE_KD};
+    PIDConstants centerPIDConstants = {PID_CENTER_KP, PID_CENTER_KI, PID_CENTER_KD};
+    PIDConstants slopePIDConstants = {PID_SLOPE_KP, PID_SLOPE_KI, PID_SLOPE_KD};
 
     _distancePID = new PID(&distancePIDConstants, MAX_DIST_GAIN, MIN_DIST_GAIN);
     _thetaPID = new PID(&thetaPIDConstants, MAX_THETA_GAIN, MIN_THETA_GAIN);
-    _strafePID = new PID(&strafePIDConstants, MAX_STRAFE_GAIN, MIN_STRAFE_GAIN);
+    _centerPID = new PID(&centerPIDConstants, MAX_CENTER_GAIN, MIN_CENTER_GAIN);
+    _slopePID = new PID(&slopePIDConstants, MAX_SLOPE_GAIN, MIN_SLOPE_GAIN);
 
     printf("pid controllers initialized\n");
 }
@@ -71,7 +73,8 @@ Robot::~Robot() {
 
     delete _distancePID;
     delete _thetaPID;
-    delete _strafePID;
+    delete _centerPID;
+    delete _slopePID;
 }
 
 /* Returns a reference to the Kalman pose */
@@ -117,7 +120,7 @@ void Robot::move(int direction, int numCells) {
 
     while (cellsTraveled < numCells) {
         // first attempt to center ourselves before moving
-        center(MAX_CAMERA_ERROR);
+        center();
         // reset the wheel encoder totals
         _robotInterface->reset_state();
         // based on the direction, move in the global coord system
@@ -335,93 +338,67 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
     printf("theta acceptable\n");
 }
 
-void Robot::center(int centerErrorThreshold) {
-    /*
-    int centerDistanceError;
-    do {    
+void Robot::center() {
+    while (true) {    
         update(); 
 
-        centerDistanceError = _camera->centerDistanceError(COLOR_PINK);
+        int centerDistError = _camera->centerDistanceError(COLOR_PINK);
+        float slopeError = _camera->corridorSlopeError(COLOR_PINK);
 
-        LOG.write(LOG_LOW, "center",
-                  "dist err: %f\n",
-                  centerDistanceError);
+        LOG.write(LOG_LOW, "center", "dist error: %d", centerDistError);
+        LOG.write(LOG_LOW, "center", "slope error: %f", slopeError);
 
-        strafeGain = _strafePID->updatePID(thetaError);
+        float centerGain = _centerPID->updatePID(centerDistError);
+        float slopeGain = _slopePID->updatePID(slopeError);
 
-        LOG.write(LOG_LOW, "turn_gain", "theta: %f", thetaGain);
+        LOG.write(LOG_LOW, "center", "center gain: %f", centerGain);
+        LOG.write(LOG_LOW, "center", "slope gain: %f", slopeGain);
 
-        if (thetaError < -thetaErrorLimit) {
-            LOG.write(LOG_MED, "turn_adjust", 
-                      "direction: right, since theta error < -limit");
-            int turnSpeed = (int)fabs((1.0/thetaGain));
-            // cap our speed at 6, since turning too slow causes problems
-            if (turnSpeed > 6) {
-                turnSpeed = 6;
+        if (slopeError == -999) {
+            // we had issues finding slope error, so rely on center
+            // dist error to do our adjustments
+            if (abs(centerDistError) < MAX_CENTER_ERROR) {
+                // the two biggest squares say we're good enough, so
+                // cease adjusting
+                break;
             }
+            else {
+                int strafeSpeed = (int)fabs((1.0/centerGain));
+                // cap our speed at 6, since moving too slow is bad
+                if (strafeSpeed > 7) {
+                    strafeSpeed = 7;
+                }
+                LOG.write(LOG_LOW, "pid_speeds", "strafe (center): %d", strafeSpeed);
 
-            LOG.write(LOG_MED, "pid_speeds", "turn: %d", turnSpeed);
-
-            turnRight(turnSpeed);
+                if (centerDistError < 0) {
+                    strafeRight(strafeSpeed);
+                }
+                else {
+                    strafeLeft(strafeSpeed);
+                }
+            }
         }
-        else if(thetaError > thetaErrorLimit){
-            LOG.write(LOG_MED, "turn_adjust", 
-                      "direction: left, since theta error > limit");
-            int turnSpeed = (int)fabs((1.0/thetaGain));
-            if (turnSpeed > 6) {
-                turnSpeed = 6;
-            }
-
-            LOG.write(LOG_MED, "pid_speeds", "turn: %d", turnSpeed);
-
-            turnLeft(turnSpeed);
+        else if (fabs(slopeError) < MAX_SLOPE_ERROR) {
+            // if we're in a good range, cease adjusting
+            break;
         }
-    } while (fabs(centerDistanceError) > thetaErrorLimit);
-
-
-
-
-	int centerDistanceErr = _camera->centerDistanceError(COLOR_PINK);
-	while(abs(centerDistanceErr) < maxError) {
-		if (centerDistanceErr > maxError) {
-			LOG.write(LOG_MED, "strafe_adjust", 
-						"direction: right, since error < -limit");
-			
-			LOG.write(LOG_LOW, "strafe adjust", "strafe right");
-			
-            float strafeGain = centerDistanceErr;
-			int strafeSpeed = (int)fabs((1.0/strafeGain));
-			// cap our speed at 6, since turning too slow causes problems
-			if (strafeSpeed > 6) {
-				strafeSpeed = 6;
-			}
-
-			LOG.write(LOG_MED, "pid_speeds", "strafe: %d", strafeSpeed);
-
-			turnRight(strafeSpeed);
-		}
-		else if(centerDistanceErr < -maxError) {
-			LOG.write(LOG_MED, "strafe_adjust", 
-						"direction: left, since error > limit");
-            
-            LOG.write(LOG_LOW, "strafe adjust", "strafe left");
-            
-            float strafeGain = centerDistanceErr;
-            int strafeSpeed = (int)fabs((1.0/strafeGain));
-            // cap our speed at 6, since turning too slow causes problems
-            if (strafeSpeed > 6) {
-                strafeSpeed = 6;
+        else {
+            // our slope error is significant enough to warrant strafing
+            int strafeSpeed = (int)fabs((1.0/slopeGain));
+            // cap our speed at 6, since moving too slow is bad
+            if (strafeSpeed > 7) {
+                strafeSpeed = 7;
             }
+            LOG.write(LOG_LOW, "pid_speeds", "strafe (slope): %d", strafeSpeed);
 
-            LOG.write(LOG_MED, "pid_speeds", "strafe: %d", strafeSpeed);
-
-            turnLeft(strafeSpeed);
-		}
-		else{
-			LOG.write(LOG_LOW, "strafe adjust", "close enough, go straight");
-		}
-	}
-    */
+            if (slopeError < 0) {
+                strafeRight(strafeSpeed);
+            }
+            else {
+                strafeLeft(strafeSpeed);
+            }
+        }
+    }
 }
 
 void Robot::moveForward(int speed) {
@@ -454,6 +431,16 @@ void Robot::turnRight(int speed) {
 	_movingForward = false;
 	_speed = speed;
     _robotInterface->Move(RI_TURN_RIGHT, speed);
+}
+
+/* Strafes the robot left at the given speed */
+void Robot::strafeLeft(int speed) {
+    _robotInterface->Move(RI_MOVE_LEFT, speed);
+}
+
+/* Strafes the robot right at the given speed */
+void Robot::strafeRight(int speed) {
+    _robotInterface->Move(RI_MOVE_RIGHT, speed);
 }
 
 /* Stops the robot, updating movement variables */

@@ -73,7 +73,7 @@ public:
     void moveTo(float x, float y);
     float moveToUntil(float x, float y, float thetaErrorLimit);
     void turnTo(float theta, float thetaErrorLimit);
-    void center(int maxError);
+    void center();
 
     void setFailLimit(int limit);
     int getFailLimit();
@@ -84,6 +84,8 @@ public:
     void moveForward(int speed);
     void turnLeft(int speed);
     void turnRight(int speed);
+    void strafeLeft(int speed);
+    void strafeRight(int speed);
     void stop();
 
     Pose* getPose();
@@ -111,8 +113,9 @@ private:
 
     PID* _distancePID;
     PID* _thetaPID;
-    PID* _strafePID;
-    
+    PID* _centerPID;
+    PID* _slopePID;
+
     int _failLimit;
 
     Pose *_pose;
