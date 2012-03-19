@@ -142,15 +142,14 @@ int Camera::corridorSlopeError(int color) {
     //error is defined as something relating to the differences in slopes of the regression lines calculated for the corridor
     return error;
 }
-
-regressionLine Camera::leastSquaresRegression(int color, int side) {
+/*
+regressionLine Camera::twoPointRegression(int color, int side) {
     
     IplImage *thresholded;
     squares_t *squares;
 
     int width;
     int squareCount = 0;
-    float xAvg, yAvg, xSqSum, xySum;
     
     regressionLine result;
 
@@ -170,6 +169,8 @@ regressionLine Camera::leastSquaresRegression(int color, int side) {
     LOG.printfScreen(LOG_HIGH, "regression","center: %d\n",center);
     
     squares_t *curSquare = squares;
+    squares_t *largest;
+    squares_t *secondLargest;
     while (curSquare != NULL) {
 	switch (side) {
 	    case SIDE_LEFT:	
@@ -247,6 +248,132 @@ regressionLine Camera::leastSquaresRegression(int color, int side) {
 	
     	LOG.printfScreen(LOG_HIGH, "regression", "%d Equation: Y = %f*X + %f\n", side, ssxy/ssxx, (yAvg-((ssxy/ssxx)*xAvg)));
 	
+        result.intercept = (((yAvg * xSqSum) - (xAvg * xySum) ) / (xSqSum - (result.numSquares * xAvg * xAvg)));
+        result.slope = ((xySum - (result.numSquares * xAvg * yAvg)) / (xSqSum - (result.numSquares * xAvg * xAvg)));
+    
+    } else { //We don't perform an extrapolation if there aren't enough squares
+        result.intercept = -999; //Some sort of error flag value, though we can also just check the numSquares value
+	result.slope = -999;
+    }
+
+    return result;
+}
+*/
+
+/***********************
+*Least Squares Regression, generic function
+*Full of debugging code, not mathematically correct
+*Left side always works, right side appears to have transient problems, math according to Shawn is inconsistent as well
+*Let's take a look at this once we have things running better
+*
+************************/
+regressionLine Camera::leastSquaresRegression(int color, int side) {
+    
+    IplImage *thresholded;
+    squares_t *squares;
+
+    int width;
+    int squareCount = 0;
+    float xAvg = 0;
+    float yAvg = 0;
+    float xSqSum = 0;
+    float xySum = 0;
+    
+    regressionLine result;
+
+    switch (color) {
+    case COLOR_PINK:
+        thresholded = _pinkThresholded;
+        squares = _pinkSquares;
+        break;
+    case COLOR_YELLOW:
+        thresholded = _yellowThresholded;
+        squares = _yellowSquares;
+        break;
+    }
+
+    int center = thresholded->width / 2;
+
+    LOG.printfScreen(LOG_HIGH, "regression","center: %d\n",center);
+    
+    squares_t *curSquare = squares;
+    while (curSquare != NULL) {
+	switch (side) {
+	    case SIDE_LEFT:	
+        	if (curSquare->center.x < center) {	
+			LOG.printfScreen(LOG_HIGH, "regression","Left square: x: %d y:%d area: %d\n",curSquare->center.x, curSquare->center.y, curSquare->area);
+			squareCount++;
+		}
+		break;
+	    case SIDE_RIGHT:
+		if (curSquare->center.x > center) {
+			squareCount++;
+			LOG.printfScreen(LOG_HIGH, "regression","Right square: x: %d y:%d area: %d\n",curSquare->center.x, curSquare->center.y, curSquare->area);
+		}
+		break;
+	    }
+        curSquare = curSquare->next;
+    }
+
+    result.numSquares = squareCount;
+    
+    if(squareCount >= 2) { 
+
+        //Linear regression algorithm
+        //Ref: http://mathworld.wolfram.com/LeastSquaresFitting.html
+        curSquare = squares;
+        while (curSquare != NULL) {
+	    switch (side) {
+	        case SIDE_LEFT:	
+        	    if (curSquare->center.x < center) {
+	    		xAvg += curSquare->center.x;
+	    		yAvg += curSquare->center.y;
+	    		xSqSum += curSquare->center.x * curSquare->center.x;
+	    		xySum += curSquare->center.x * curSquare->center.y;
+		    } 
+		    break;
+	        case SIDE_RIGHT:
+		    if (curSquare->center.x > center) {
+	    		xAvg += curSquare->center.x;
+	    		yAvg += curSquare->center.y;
+	    		xSqSum += curSquare->center.x * curSquare->center.x;
+	    		xySum += curSquare->center.x * curSquare->center.y;
+		    } 
+		    break;
+	    }
+	    curSquare = curSquare->next;
+        }   
+
+        xAvg /= result.numSquares;
+        yAvg /= result.numSquares;
+
+	/*float ssxx = 0;
+	float ssyy = 0;
+	float ssxy = 0;
+        curSquare = squares;
+        while (curSquare != NULL) {
+	    switch (side) {
+	        case SIDE_LEFT:	
+        	    if (curSquare->center.x < center) {
+	    		ssxx += (curSquare->center.x - xAvg) * (curSquare->center.x - xAvg);
+			ssyy += (curSquare->center.y - yAvg) * (curSquare->center.y - yAvg);
+			ssxy += (curSquare->center.x - xAvg) * (curSquare->center.y - yAvg);
+		    } 
+		    break;
+	        case SIDE_RIGHT:
+		    if (curSquare->center.x > center) {
+	    		ssxx += (curSquare->center.x - xAvg) * (curSquare->center.x - xAvg);
+			ssyy += (curSquare->center.y - yAvg) * (curSquare->center.y - yAvg);
+			ssxy += (curSquare->center.x - xAvg) * (curSquare->center.y - yAvg);
+		    } 
+		    break;
+	    }
+	    curSquare = curSquare->next;
+	}
+
+	
+    	LOG.printfScreen(LOG_HIGH, "regression", "%d Equation: Y = %f*X + %f\n", side, ssxy/ssxx, (yAvg-((ssxy/ssxx)*xAvg)));
+	*/
         result.intercept = (((yAvg * xSqSum) - (xAvg * xySum) ) / (xSqSum - (result.numSquares * xAvg * xAvg)));
         result.slope = ((xySum - (result.numSquares * xAvg * yAvg)) / (xSqSum - (result.numSquares * xAvg * xAvg)));
     
