@@ -441,7 +441,7 @@ void Camera::calculateSlope(squares_t *squares, lineStruct *line){
 
 	//calculate Sx, Sy, Sxy
 	sumx=0; sumy=0;
-	currSqr=(squares_t*) squares;
+	currSqr=squares;
 	while(currSqr != NULL){
 		sumx+=(currSqr->center.x - xAvg)*(currSqr->center.x - xAvg);
 		sumy+=(currSqr->center.y - yAvg)*(currSqr->center.y - yAvg);
@@ -548,10 +548,10 @@ squares_t* Camera::findSquaresOf(int color, int areaThreshold) {
     switch (color) {
     case COLOR_PINK:
         squares = findSquares(_pinkThresholded, areaThreshold);
-		
         break;
     case COLOR_YELLOW:
         squares = findSquares(_yellowThresholded, areaThreshold);
+        break;
     }
     return squares;
 }
