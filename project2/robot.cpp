@@ -244,11 +244,12 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
 
         LOG.write(LOG_LOW, "move_gain", "dist: %f", distGain);
 
+        /*
         if (fabs(thetaError) > thetaErrorLimit) {
 			printf("theta error of %f too great\n", thetaError);
             return thetaError;
         }
-
+        */
         int moveSpeed = (int)(1.0/distGain);
         // cap our speed at 6, since going too slow causes problems
         if (moveSpeed > 6) {
