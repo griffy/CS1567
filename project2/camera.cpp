@@ -167,17 +167,21 @@ regressionLine Camera::leastSquaresRegression(int color, int side) {
 
     int center = thresholded->width / 2;
 
+    LOG.printfScreen(LOG_HIGH, "regression","center: %d\n",center);
+    
     squares_t *curSquare = squares;
     while (curSquare != NULL) {
 	switch (side) {
 	    case SIDE_LEFT:	
-        	if (curSquare->center.x < center) {
+        	if (curSquare->center.x < center) {	
+			LOG.printfScreen(LOG_HIGH, "regression","Left square: x: %d y:%d area: %d\n",curSquare->center.x, curSquare->center.y, curSquare->area);
 			squareCount++;
 		}
 		break;
 	    case SIDE_RIGHT:
 		if (curSquare->center.x > center) {
 			squareCount++;
+			LOG.printfScreen(LOG_HIGH, "regression","Right square: x: %d y:%d area: %d\n",curSquare->center.x, curSquare->center.y, curSquare->area);
 		}
 		break;
 	    }
@@ -216,6 +220,33 @@ regressionLine Camera::leastSquaresRegression(int color, int side) {
         xAvg /= result.numSquares;
         yAvg /= result.numSquares;
 
+	float ssxx = 0;
+	float ssyy = 0;
+	float ssxy = 0;
+        curSquare = squares;
+        while (curSquare != NULL) {
+	    switch (side) {
+	        case SIDE_LEFT:	
+        	    if (curSquare->center.x < center) {
+	    		ssxx += (curSquare->center.x - xAvg) * (curSquare->center.x - xAvg);
+			ssyy += (curSquare->center.y - yAvg) * (curSquare->center.y - yAvg);
+			ssxy += (curSquare->center.x - xAvg) * (curSquare->center.y - yAvg);
+		    } 
+		    break;
+	        case SIDE_RIGHT:
+		    if (curSquare->center.x > center) {
+	    		ssxx += (curSquare->center.x - xAvg) * (curSquare->center.x - xAvg);
+			ssyy += (curSquare->center.y - yAvg) * (curSquare->center.y - yAvg);
+			ssxy += (curSquare->center.x - xAvg) * (curSquare->center.y - yAvg);
+		    } 
+		    break;
+	    }
+	    curSquare = curSquare->next;
+	}
+
+	
+    	LOG.printfScreen(LOG_HIGH, "regression", "%d Equation: Y = %f*X + %f\n", side, ssxy/ssxx, (yAvg-((ssxy/ssxx)*xAvg)));
+	
         result.intercept = (((yAvg * xSqSum) - (xAvg * xySum) ) / (xSqSum - (result.numSquares * xAvg * xAvg)));
         result.slope = ((xySum - (result.numSquares * xAvg * yAvg)) / (xSqSum - (result.numSquares * xAvg * xAvg)));
     
