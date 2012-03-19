@@ -409,6 +409,7 @@ int Camera::centerDistanceError(int color) {
     squares_t *leftSquare = leftBiggestSquare(color);
     squares_t *rightSquare = rightBiggestSquare(color);
 
+    // do we have two largest squares?
     if (leftSquare != NULL && rightSquare != NULL) {
         if (!onSamePlane(leftSquare, rightSquare)) {
             // if they're not on the same plane,
@@ -424,7 +425,7 @@ int Camera::centerDistanceError(int color) {
     }
 
     if (leftSquare == NULL) {
-        // it's out of view, so we set the error to 
+        // it seems to be out of view, so we set the error to 
         // the max it could be
         return center;
     }
@@ -432,6 +433,7 @@ int Camera::centerDistanceError(int color) {
         return -center;
     }
 
+    // otherwise, we have two squares, so find the difference
     int leftError = center - leftSquare->center.x;
     int rightError = center - rightSquare->center.x;
 

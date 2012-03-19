@@ -44,9 +44,9 @@
 #define PID_THETA_KP 0.65
 #define PID_THETA_KI 0.001
 #define PID_THETA_KD 0.001
-#define PID_CENTER_KP 0.65
-#define PID_CENTER_KI 0.001
-#define PID_CENTER_KD 0.001
+#define PID_CENTER_KP 0.03
+#define PID_CENTER_KI 0.0001
+#define PID_CENTER_KD 0.0001
 #define PID_SLOPE_KP 0.65
 #define PID_SLOPE_KI 0.001
 #define PID_SLOPE_KD 0.001
