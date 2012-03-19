@@ -105,6 +105,7 @@ void Camera::update() {
  * ****************************************/
 int Camera::corridorSlopeError(int color) {
     int error = 0;
+	float scalar=.3;
 
     regressionLine leftSide = leastSquaresRegression(color, SIDE_LEFT);
     regressionLine rightSide = leastSquaresRegression(color, SIDE_RIGHT);
@@ -116,33 +117,48 @@ int Camera::corridorSlopeError(int color) {
     LOG.printfScreen(LOG_HIGH, "regression", "Left equation: Y = %f*X + %f\n", leftSide.slope, leftSide.intercept);
     LOG.printfScreen(LOG_HIGH, "regression", "Right equation: Y = %f*X + %f\n", rightSide.slope, rightSide.intercept);
 
+	bool hasSlopeRight = false, hasSlopeLeft = false;
     //TODO: Make this into a useful error value for robot control
     if(leftSide.numSquares >= 2 && rightSide.numSquares >= 2) { //if lines are found on both sides...
 		//do something to define error relative to the differences of the slopes
-		if(rightSide.slope > 0 || (rightSide.slope == -999.0 && rightSide.intercept == -999.0)){
-			LOG.printfScreen(LOG_HIGH, "regression","Possible error on right side... slope > 0 or doesn't exist\n");
+		if(rightSide.slope > -2.5 && rightSide.slope < -.01 && rightSide.slope != 1.0 && rightSide.slope != -1.0){
+			//seems like a good slope
+			hasSlopeRight = true;
 		}
-		if(leftSide.slope < 0 || (leftSide.slope == -999.0 && leftSide.intercept == -999.0)){
-			LOG.printfScreen(LOG_HIGH, "regression", "Possible error on left side... slope < 0 or doesn't exist\n");
+		if(leftSide.slope < 2.5 && leftSide.slope < .01 && leftSide.slope != 1.0 && leftSide.slope != -1.0){
+			//seems like a good slope
+			hasSlopeLeft = true;
 		}
-		float difference = leftSide.slope + rightSide.slope;
 		
-		if (fabs(difference) <= MINIMUM_SLOPE_DIFFERENCE) {
-			LOG.printfScreen(LOG_HIGH, "regression", "It seems to be going straight... continue\n");
+		float difference = leftSide.slope + rightSide.slope;
+		if( hasSlopeLeft&&hasSlopeRight ){
+			//determine location based on difference in slope
+			if (fabs(difference) <= MINIMUM_SLOPE_DIFFERENCE) {
+				LOG.printfScreen(LOG_HIGH, "regression", "It seems to be going straight... continue\n");
+			}
+			else if(difference > 0){
+				LOG.printfScreen(LOG_HIGH, "regression", "Probably too far to the left... try strafing right\n");
+			}
+			else if(difference < 0){
+				LOG.printfScreen(LOG_HIGH, "regression", "Probably too far to the right... try strafing left\n");
+			}
+			return (((1.35-leftSide.slope)*1.176)+((-.9-rightSide.slope)*2))/2.0;
 		}
-		else if(difference > 0){
-			LOG.printfScreen(LOG_HIGH, "regression", "Probably too far to the left... try strafing right\n");
+		
+		if( hasSlopeLeft && !hasSlopeRight ){
+			//no right slope, so interpolate based on left
+			return (1.35-leftSide.slope)*1.176;
 		}
-		else if(difference < 0){
-			LOG.printfScreen(LOG_HIGH, "regression", "Probably too far to the right... try strafing left\n");
+		
+		if( !hasSlopeLeft && hasSlopeRight ){
+			//no right slope, so interpolate based on left
+			return (-.9-rightSide.slope)*2;
 		}
-    } else if (leftSide.numSquares >= 2) {
-        //do something to define error in order to move to the left, as we are over too far right to see the slope
-    } else if (rightSide.numSquares >= 2) {
-        //do something to define error in order to move to the right, as we are over too far left to see the slope
-    } else {
-        //we can't see anything of note, so I'd assume we would just want to ignore the slope finding error at this point
-    }
+		
+		if (!hasSlopeLeft && !hasSlopeRight){
+			return -999.0;
+		}
+	}
 
     //error is defined as something relating to the differences in slopes of the regression lines calculated for the corridor
     return error;
