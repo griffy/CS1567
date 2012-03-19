@@ -2,6 +2,7 @@
 #define CS1567_CAMERA_H
 
 #include "fir_filter.h"
+#include <vector>
 #include <opencv/cv.h>
 #include <robot_if++.h>
 
@@ -11,11 +12,13 @@
 #define SIDE_LEFT 0
 #define SIDE_RIGHT 1
 
-#define DEFAULT_SQUARE_SIZE 49
+#define DEFAULT_SQUARE_SIZE 1
 #define MAX_PLANE_SLOPE 5 // in pixels
 
 #define PINK_LOW cvScalar(160, 100, 100)
 #define PINK_HIGH cvScalar(180, 255, 255)
+
+#include <stdio.h>
 
 #define YELLOW_LOW cvScalar(20, 100, 100)
 #define YELLOW_HIGH cvScalar(30, 255, 255)
@@ -52,6 +55,11 @@ public:
 	IplImage* getHSVImage();
 	IplImage* getBGRImage();
 	IplImage* getThresholdedImage(CvScalar low, CvScalar high);
+	
+	void vectorToSquares_t(std::vector<squares_t> * vec, squares_t * sqr);	//returns a list of squares starting at the pointer you give...
+	void sortSquaresX(squares_t * sqr, std::vector<squares_t> * vec);		//returns a vector of squares...
+	void sortSquaresY(squares_t * sqr, std::vector<squares_t> * vec);		//returns a vector of squares...
+	void sortSquaresSize(squares_t * sqr, std::vector<squares_t> * vec);		//returns a vector of squares...
 private:
 	RobotInterface *_robotInterface;
 	FIRFilter *_leftDistanceErrorFilter;
@@ -62,6 +70,7 @@ private:
 	IplImage *_yellowThresholded;
 	squares_t *_pinkSquares;
 	squares_t *_yellowSquares;
+	std::vector<squares_t> sqrVec;
 };
 
 #endif

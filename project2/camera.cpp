@@ -4,7 +4,6 @@
 
 #define MINIMUM_SLOPE_DIFFERENCE 0.12
 
-
 Camera::Camera(RobotInterface *robotInterface) {
     _robotInterface = robotInterface;
     _leftDistanceErrorFilter = new FIRFilter("filters/camera_distance_error.ffc");
@@ -86,8 +85,8 @@ void Camera::update() {
     _yellowSquares = findSquaresOf(COLOR_YELLOW, DEFAULT_SQUARE_SIZE);
 	//float returnYellow = findPos(_yellowSquares);
 	//LOG.printfScreen(LOG_HIGH, "camera image", "position returned for yellow: %f\n", returnYellow);
-	//float returnPink = findPos(_yellowSquares);
-	//LOG.printfScreen(LOG_HIGH, "camera image", "position returned for pink: %f\n", returnPink);
+	float returnPink = findPos(_yellowSquares);
+	LOG.printfScreen(LOG_HIGH, "camera image", "position returned for pink: %f\n", returnPink);
 }
 
 /** ***************************************
@@ -422,6 +421,7 @@ void Camera::calculateSlope(squares_t *squares, lineStruct *line){
 	int count=0;
 	// calculate average x and y values
 	while(currSqr != NULL){
+		printf("IM HERE\n");
 		sumx+=(float) currSqr->center.x;
 		sumy+=(float) currSqr->center.y;
 		count++;
@@ -443,6 +443,7 @@ void Camera::calculateSlope(squares_t *squares, lineStruct *line){
 	sumx=0; sumy=0;
 	currSqr=(squares_t*) squares;
 	while(currSqr != NULL){
+		LOG.printfScreen(LOG_HIGH, "camera image", "i'm here\n");
 		sumx+=(currSqr->center.x - xAvg)*(currSqr->center.x - xAvg);
 		sumy+=(currSqr->center.y - yAvg)*(currSqr->center.y - yAvg);
 		sumxy+=(currSqr->center.x - xAvg)*(currSqr->center.y - yAvg);
@@ -492,6 +493,8 @@ float Camera::findPos (squares_t *squares){
 	squares_t *indexLS = NULL;
 	
     squares_t *curSquare = squares;
+	int cnt = 0;
+	int count = 0;
     while (curSquare != NULL) {
         if (curSquare->center.x > center) {
 			if(rightSquares == NULL){
@@ -505,6 +508,7 @@ float Camera::findPos (squares_t *squares){
 				indexRS = curSquare;
 				indexRS->next = NULL;
 			}
+			count++;
         }
         else {
 			if(leftSquares == NULL){
@@ -518,11 +522,12 @@ float Camera::findPos (squares_t *squares){
 				indexLS = curSquare;
 				indexLS->next = NULL;
 			}
+			cnt++;
 		}
         curSquare = curSquare->next;
+		printf("i'm here again\n");
     }
-    
-    
+    LOG.printfScreen(LOG_HIGH, "camera image", "counts: right = %d, left = %d\n", count, cnt);
     float result = estimatePos(leftSquares, rightSquares);
 	
 	//clean up old arrays
@@ -554,6 +559,66 @@ squares_t* Camera::findSquaresOf(int color, int areaThreshold) {
         squares = findSquares(_yellowThresholded, areaThreshold);
     }
     return squares;
+}
+
+//sort squares based on size
+void sortSquaresSize(squares_t * sqr, std::vector<squares_t> * vec){
+	squares_t * currSqr = sqr;
+	while(currSqr != NULL) {
+		vec->push_back(*currSqr);
+	}
+	for(int i=0; i<vec->size(); i++){
+		for(int j=i; j<vec->size();j++){
+			if((*vec)[j].area > (*vec)[i].area){
+				squares_t temp = (*vec)[i];
+				vec[i] = vec[j];
+				vec[j] = vec[i];
+			}
+		}
+	}
+}
+//sort squares based on x
+void sortSquaresX(squares_t * sqr, std::vector<squares_t> * vec){
+	squares_t * currSqr = sqr;
+	while(currSqr != NULL) {
+		vec->push_back(*currSqr);
+	}
+	for(int i=0; i<vec->size(); i++){
+		for(int j=i; j<vec->size();j++){
+			if((*vec)[j].center.x > (*vec)[i].center.x){
+				squares_t temp = (*vec)[i];
+				(*vec)[i] = (*vec)[j];
+				(*vec)[j] = (*vec)[i];
+			}
+		}
+	}
+}
+//sort squares based on y
+void sortSquaresY(squares_t * sqr, std::vector<squares_t> * vec){
+	squares_t * currSqr = sqr;
+	while(currSqr != NULL) {
+		vec->push_back(*currSqr);
+	}
+	for(int i=0; i<vec->size(); i++){
+		for(int j=i; j<vec->size();j++){
+			if((*vec)[j].center.y > (*vec)[i].center.y){
+				squares_t temp = (*vec)[i];
+				(*vec)[i] = (*vec)[j];
+				(*vec)[j] = (*vec)[i];
+			}
+		}
+	}
+}
+
+//take a vector and make it a squares_t pointer
+void vectorToSquares_t(std::vector<squares_t> * vec, squares_t * sqr){
+	squares_t * temp = sqr;
+	*temp = (*vec)[0];
+	for(int i=1; i<vec->size(); i++) {
+		temp->next = new squares_t;
+		temp = temp->next;
+		*temp = (*vec)[i];
+	}
 }
 
 squares_t* Camera::findSquares(IplImage *img, int areaThreshold) {
@@ -669,6 +734,7 @@ squares_t* Camera::findSquares(IplImage *img, int areaThreshold) {
         else 
             sq_last->next = sq;
         sq_last = sq;
+		printf("YO DAWG, WATUP\n");
     }
     
     // Release the temporary images and data
