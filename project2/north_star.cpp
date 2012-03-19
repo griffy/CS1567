@@ -43,6 +43,8 @@ void NorthStar::updatePose(int room) {
 	_pose->setX(estimate->getX());
 	_pose->setY(estimate->getY());
 	_pose->setTheta(estimate->getTheta());
+
+	delete estimate;
 }
 
 float NorthStar::_getFilteredX() {
