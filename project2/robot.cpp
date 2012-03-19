@@ -327,7 +327,57 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
     printf("theta acceptable\n");
 }
 
-void Robot::center(int maxError) {
+void Robot::center(int centerErrorThreshold) {
+    // TODO: left off here, pasted turnTo in and was in process of making
+    // it work in terms of strafing
+    do {    
+        update(); 
+
+        int centerDistanceError = _camera->centerDistanceError(COLOR_PINK);
+
+        theta = _pose->getTheta();
+        thetaError = thetaGoal - theta;
+        thetaError = Util::normalizeThetaError(thetaError);
+
+        LOG.write(LOG_MED, "turn_error_estimates",
+                  "theta err: %f \t theta goal: %f",
+                  thetaError,
+                  thetaGoal);
+
+        thetaGain = _thetaPID->updatePID(thetaError);
+
+        LOG.write(LOG_LOW, "turn_gain", "theta: %f", thetaGain);
+
+        if (thetaError < -thetaErrorLimit) {
+            LOG.write(LOG_MED, "turn_adjust", 
+                      "direction: right, since theta error < -limit");
+            int turnSpeed = (int)fabs((1.0/thetaGain));
+            // cap our speed at 6, since turning too slow causes problems
+            if (turnSpeed > 6) {
+                turnSpeed = 6;
+            }
+
+            LOG.write(LOG_MED, "pid_speeds", "turn: %d", turnSpeed);
+
+            turnRight(turnSpeed);
+        }
+        else if(thetaError > thetaErrorLimit){
+            LOG.write(LOG_MED, "turn_adjust", 
+                      "direction: left, since theta error > limit");
+            int turnSpeed = (int)fabs((1.0/thetaGain));
+            if (turnSpeed > 6) {
+                turnSpeed = 6;
+            }
+
+            LOG.write(LOG_MED, "pid_speeds", "turn: %d", turnSpeed);
+
+            turnLeft(turnSpeed);
+        }
+    } while (fabs(centerDistanceError) > thetaErrorLimit);
+
+
+
+
 	int centerDistanceErr = _camera->centerDistanceError(COLOR_PINK);
 	while(abs(centerDistanceErr) < maxError) {
 		if (centerDistanceErr > maxError) {

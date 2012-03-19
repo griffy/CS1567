@@ -17,6 +17,7 @@
 #define MAX_PLANE_SLOPE 10 // in pixels
 
 //Tweaking notes (cvScalar(hue 169-178, saturation 100-255, brightness 100-255)):
+/*
 #define PINK_LOW cvScalar(150, 100, 50)
 #define PINK_HIGH cvScalar(179, 255, 255)
 
@@ -25,6 +26,16 @@
 
 #define YELLOW_LOW cvScalar(20, 100, 100)
 #define YELLOW_HIGH cvScalar(30, 255, 255)
+*/
+
+#define PINK_LOW cvScalar(160, 85, 85)
+#define PINK_HIGH cvScalar(179, 255, 255)
+
+#define RED_LOW cvScalar(0, 85, 85)
+#define RED_HIGH cvScalar(7, 255, 255)
+
+#define YELLOW_LOW cvScalar(25, 100, 100)
+#define YELLOW_HIGH cvScalar(35, 255, 255)
 
 typedef struct regLine {
 	float intercept;
