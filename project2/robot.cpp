@@ -244,7 +244,8 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
 
         LOG.write(LOG_LOW, "move_gain", "dist: %f", distGain);
 
-        /*
+        //UNCOMMENT THIS WHEN THINGS ARE WORKING
+	/*
         if (fabs(thetaError) > thetaErrorLimit) {
 			printf("theta error of %f too great\n", thetaError);
             return thetaError;
@@ -473,6 +474,7 @@ bool Robot::isThereABitchInMyWay() {
 // Updates the robot pose in terms of the global coordinate system
 // with the best estimate of its position (using kalman filter)
 void Robot::update() {
+    float x, y;
     // update the robot interface
     _updateInterface();
     // update the camera with a new image
@@ -480,7 +482,11 @@ void Robot::update() {
     // update each pose estimate
     _northStar->updatePose(getRoom());
     _wheelEncoders->updatePose(getRoom());
-    _wheelEncoders->getPose()->setTheta(_northStar->getTheta());
+    x = _wheelEncoders->getX();
+    y = _wheelEncoders->getY();
+    _wheelEncoders->resetPose(_northStar->getPose());
+    _wheelEncoders->setX(x);
+    _wheelEncoders->setY(y);
 
 /*
  * Legacy tuning function
