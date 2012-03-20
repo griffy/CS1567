@@ -1,6 +1,12 @@
 #ifndef CS1567_CAMERA_H
 #define CS1567_CAMERA_H
 
+
+#include <opencv/cv.h>
+#include <opencv/highgui.h>
+#include <robot_color.h>
+
+
 #include "fir_filter.h"
 #include <stdio.h>
 #include <vector>
@@ -36,6 +42,11 @@
 
 #define YELLOW_LOW cvScalar(25, 100, 100)
 #define YELLOW_HIGH cvScalar(35, 255, 255)
+
+
+#define RED CV_RGB(255, 0, 0)
+#define GREEN CV_RGB(0, 255, 0)
+#define BLUE CV_RGB(0, 0, 255)
 
 typedef struct regLine {
 	float intercept;

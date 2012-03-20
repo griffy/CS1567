@@ -6,9 +6,6 @@
 #include <opencv/highgui.h>
 #include <robot_color.h>
 
-#define RED CV_RGB(255, 0, 0)
-#define GREEN CV_RGB(0, 255, 0)
-#define BLUE CV_RGB(0, 0, 255)
 
 #define NUM_BASES 7
 
@@ -46,10 +43,11 @@ int main(int argc, char *argv[]) {
     LOG.setImportanceLevel(LOG_LOW);
 
 	Robot *robot = new Robot(argv[1], 0);
-/*
+
 	cvNamedWindow("BGR Image", CV_WINDOW_AUTOSIZE);
 	cvNamedWindow("Thresholded Image", CV_WINDOW_AUTOSIZE);
 
+	/*
 	while (true) {
 		robot->update();
 
@@ -73,18 +71,18 @@ int main(int argc, char *argv[]) {
 		cvReleaseImage(&thresholded);
 	}
 */
-/*
+
 	robot->move(DIR_EAST, 5);
 	robot->turn(DIR_RIGHT, DEGREE_90);
 	robot->move(DIR_SOUTH, 3);
 
 	delete robot;
-*/
 
 
+/*
     // Base locations in cm within the global coordinate system
 	Pose * bases[NUM_BASES];
-	bases[0] = new Pose(340, 0, 0); // base 1
+	bases[0] = new Pose(300, 0, 0); // base 1
 	bases[1] = new Pose(229, 183, 0); // base 2
     bases[2] = new Pose(326, 183, 0); // fake base
 	bases[3] = new Pose(392, 300, 0); // base 3
@@ -104,6 +102,6 @@ int main(int argc, char *argv[]) {
 	for (int i = 0; i < NUM_BASES; i++) {
 		delete bases[i];
 	}
-
+*/
 	return 0;
 }

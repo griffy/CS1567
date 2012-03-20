@@ -112,17 +112,63 @@ void Robot::rockOut() {
     }
 }
 
+void drawX1(IplImage *image, squares_t *square, CvScalar color) {
+	if (square == NULL) {
+		return;
+	}
+	
+	CvPoint pt1, pt2;
+
+	// Draw an X marker on the image
+	int sqAmt = (int) (sqrt(square->area) / 2);	
+
+	// Upper Left to Lower Right
+	pt1.x = square->center.x - sqAmt;
+	pt1.y = square->center.y - sqAmt;
+	pt2.x = square->center.x + sqAmt;
+	pt2.y = square->center.y + sqAmt;
+	cvLine(image, pt1, pt2, color, 3, CV_AA, 0);
+
+	// Lower Left to Upper Right
+	pt1.x = square->center.x - sqAmt;
+	pt1.y = square->center.y + sqAmt;
+	pt2.x = square->center.x + sqAmt;
+	pt2.y = square->center.y - sqAmt;
+	cvLine(image, pt1, pt2, color, 3, CV_AA, 0);
+}
+
+
 void Robot::move(int direction, int numCells) {
     int cellsTraveled = 0;
 
     while (cellsTraveled < numCells) {
+        updateCamera();
+		IplImage *bgr = _camera->getBGRImage();
+		IplImage *thresholded = _camera->getThresholdedImage(RC_PINK_LOW, RC_PINK_HIGH);
+
+		//drawX1(bgr, _camera->leftBiggestSquare(COLOR_PINK), RED);
+		//drawX1(bgr, _camera->rightBiggestSquare(COLOR_PINK), GREEN);
+		
+		LOG.printfScreen(LOG_LOW, "screenError", "Center error: %d\n", _camera->centerDistanceError(COLOR_PINK));
+
+		cvShowImage("BGR Image", bgr);
+		cvShowImage("Thresholded Image", thresholded);
+
+		//Line regression test
+		_camera->corridorSlopeError(COLOR_PINK);
+
+		//cvWaitKey(0);
+
+		cvReleaseImage(&bgr);
+		cvReleaseImage(&thresholded);
+		
         // first attempt to center ourselves before moving
         center();
         // reset the wheel encoder totals
         _robotInterface->reset_state();
         // based on the direction, move in the global coord system
-        float goalX = _wheelEncoders->getX();
-        float goalY = _wheelEncoders->getY();
+        float goalX = _pose->getX();
+        float goalY = _pose->getY();
         switch (direction) {
         case DIR_NORTH:
             goalY += CELL_SIZE;
@@ -214,8 +260,8 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
                   _pose->getTheta(),
                   _pose->getTotalTheta()); 
 
-        yError = y - _wheelEncoders->getY();
-        xError = x - _wheelEncoders->getX();
+        yError = y - _pose->getY();
+        xError = x - _pose->getX();
 
         thetaDesired = atan2(yError, xError);
         thetaDesired = Util::normalizeTheta(thetaDesired);
@@ -286,7 +332,7 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
                   _pose->getTheta(),
                   _pose->getTotalTheta()); 
 
-        theta = _northStar->getTheta();
+        theta = _pose->getTheta();
         thetaError = thetaGoal - theta;
         thetaError = Util::normalizeThetaError(thetaError);
 
