@@ -86,6 +86,9 @@ void Camera::update() {
     
     _yellowThresholded = getThresholdedImage(YELLOW_LOW, YELLOW_HIGH);
 
+    //cvSmooth(_pinkThresholded, _pinkThresholded, CV_BLUR_NO_SCALE);
+    //cvSmooth(_yellowThresholded, _yellowThresholded, CV_BLUR_NO_SCALE);
+
     _pinkSquares = findSquaresOf(COLOR_PINK, DEFAULT_SQUARE_SIZE);
     _yellowSquares = findSquaresOf(COLOR_YELLOW, DEFAULT_SQUARE_SIZE);
 	//float returnYellow = findPos(_yellowSquares);
@@ -95,16 +98,17 @@ void Camera::update() {
 }
 
 float Camera::centerError(int color) {
-    int centerDistError = centerDistanceError(color);
     float slopeError = corridorSlopeError(color);
 
-    LOG.write(LOG_LOW, "center", "dist error: %d", centerDistError);
-    LOG.write(LOG_LOW, "center", "slope error: %f", slopeError);
+    LOG.write(LOG_LOW, "centerError", "slope error: %f", slopeError);
 
     if (slopeError == -999) {
         // we had issues finding slope error, so rely on center
         // dist error
-        return centerDistanceError(color);
+        float centerDistError = centerDistanceError(color);
+        LOG.write(LOG_LOW, "centerError", "center dist error: %f", centerDistError);
+
+        return centerDistError;
     }
 
     return slopeError;
@@ -964,6 +968,9 @@ IplImage* Camera::getThresholdedImage(CvScalar low, CvScalar high) {
     if (hsv == NULL) {
         return NULL;
     }
+
+    // smooth the image to make colors more uniform
+    cvSmooth(hsv, hsv, CV_BLUR_NO_SCALE);
 
     IplImage *thresholded = cvCreateImage(cvGetSize(hsv), IPL_DEPTH_8U, 1);
     // pick out only the color specified by its ranges
