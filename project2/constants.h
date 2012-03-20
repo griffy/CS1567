@@ -17,15 +17,15 @@
 // Kalman uncertainties
 #define PROC_X_UNCERTAIN 0.05
 #define PROC_Y_UNCERTAIN 0.05
-#define PROC_THETA_UNCERTAIN 0.1
+#define PROC_THETA_UNCERTAIN 0.05
 
-#define NS_X_UNCERTAIN 0.025
-#define NS_Y_UNCERTAIN 0.025
-#define NS_THETA_UNCERTAIN 0.1
+#define NS_X_UNCERTAIN 0.05
+#define NS_Y_UNCERTAIN 0.05
+#define NS_THETA_UNCERTAIN 0.05
 
 #define WE_X_UNCERTAIN 0.05
-#define WE_Y_UNCERTAIN 0.01
-#define WE_THETA_UNCERTAIN 0.025 // was 0.05
+#define WE_Y_UNCERTAIN 0.05
+#define WE_THETA_UNCERTAIN 0.05 // was 0.05
 
 // PID gains min and max
 #define MIN_DIST_GAIN -0.1
@@ -95,7 +95,7 @@ const float NS_ROOM_SCALE[4][2] =  {{49.2, 37.1},
 //     origin                            |
 //_______________________________________|
 
-const float NS_ROOM_ROTATION[4] = {0, 1.5708, 0.0, 1.6005}; //Rosie data, radians, correct!
+const float NS_ROOM_ROTATION[4] = {1.127, 1.5708, 0.0, 1.6005}; //Rosie data, radians, correct!
 
 // the distance of column top-right corner from base 0
 const float COL_OFFSET[2] = {193.0, 234.0};

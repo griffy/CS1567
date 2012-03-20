@@ -130,8 +130,8 @@ void Pose::rotate(float angle) {
 }
 
 void Pose::scale(float sx, float sy) {
-	float newX = getX() * sx;
-	float newY = getY() * sy;
+	float newX = getX() / sx;
+	float newY = getY() / sy;
     setX(newX);
     setY(newY);
 }

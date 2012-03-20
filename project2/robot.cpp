@@ -551,7 +551,7 @@ void Robot::updatePose() {
 
     // pass updated poses to kalman filter and update main pose
     _kalmanFilter->filter(_northStar->getPose(), 
-                         _wheelEncoders->getPose());
+                         _northStar->getPose());
 }
 
 // Attempts to update the robot
