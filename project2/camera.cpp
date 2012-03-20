@@ -2,7 +2,7 @@
 #include "logger.h"
 #include <robot_color.h>
 
-#define MINIMUM_SLOPE_DIFFERENCE 0.12
+#define MIN_SLOPE_DIFFERENCE 0.12
 
 Camera::Camera(RobotInterface *robotInterface) {
     _robotInterface = robotInterface;
@@ -104,10 +104,9 @@ float Camera::centerError(int color) {
     if (slopeError == -999) {
         // we had issues finding slope error, so rely on center
         // dist error
-        // TODO: convert centerDistError to range -1..1
+        return centerDistanceError(color);
     }
 
-    // TODO: convert slopeError to range -1..1 (if it's not)
     return slopeError;
 }
 
@@ -119,7 +118,7 @@ float Camera::centerError(int color) {
  * This function takes the image data (square locations) and performs a linear regression on the square locations,
  * in order to define a measure of centered-ness in the corridor based on perceived slope of the corridor walls.
  * ****************************************/
-int Camera::corridorSlopeError(int color) {
+float Camera::corridorSlopeError(int color) {
     int error = 0;
 	float scalar=.3;
 
@@ -133,23 +132,26 @@ int Camera::corridorSlopeError(int color) {
     LOG.printfScreen(LOG_HIGH, "regression", "Left equation: Y = %f*X + %f\n", leftSide.slope, leftSide.intercept);
     LOG.printfScreen(LOG_HIGH, "regression", "Right equation: Y = %f*X + %f\n", rightSide.slope, rightSide.intercept);
 
-	bool hasSlopeRight = false, hasSlopeLeft = false;
+	bool hasSlopeRight = false;
+    bool hasSlopeLeft = false;
     //TODO: Make this into a useful error value for robot control
     if(leftSide.numSquares >= 2 && rightSide.numSquares >= 2) { //if lines are found on both sides...
 		//do something to define error relative to the differences of the slopes
-		if(rightSide.slope > -2.5 && rightSide.slope < -.01 && rightSide.slope != 1.0 && rightSide.slope != -1.0){
+
+        // sanity-check the slopes to make sure we have good ones to go off of
+		if(rightSide.slope > -2.5 && rightSide.slope < -.01) {
 			//seems like a good slope
 			hasSlopeRight = true;
 		}
-		if(leftSide.slope < 2.5 && leftSide.slope < .01 && leftSide.slope != 1.0 && leftSide.slope != -1.0){
+		if(leftSide.slope < 2.5 && leftSide.slope > .01) {
 			//seems like a good slope
 			hasSlopeLeft = true;
 		}
 		
 		float difference = leftSide.slope + rightSide.slope;
-		if( hasSlopeLeft&&hasSlopeRight ){
+		if (hasSlopeLeft && hasSlopeRight) {
 			//determine location based on difference in slope
-			if (fabs(difference) <= MINIMUM_SLOPE_DIFFERENCE) {
+			if (fabs(difference) <= MIN_SLOPE_DIFFERENCE) {
 				LOG.printfScreen(LOG_HIGH, "regression", "It seems to be going straight... continue\n");
 			}
 			else if(difference > 0){
@@ -158,6 +160,7 @@ int Camera::corridorSlopeError(int color) {
 			else if(difference < 0){
 				LOG.printfScreen(LOG_HIGH, "regression", "Probably too far to the right... try strafing left\n");
 			}
+            // TODO: check that this puts the number in the proper range (-1 to 1)
 			return (((1.35-leftSide.slope)*1.176)+((-.9-rightSide.slope)*2))/2.0;
 		}
 		
@@ -175,9 +178,8 @@ int Camera::corridorSlopeError(int color) {
 			return -999.0;
 		}
 	}
-
-    //error is defined as something relating to the differences in slopes of the regression lines calculated for the corridor
-    return error;
+    // we didn't have enough squares to be useful
+    return -999.0;
 }
 /*
 regressionLine Camera::twoPointRegression(int color, int side) {
@@ -423,9 +425,8 @@ regressionLine Camera::leastSquaresRegression(int color, int side) {
 }
 
 
-int Camera::centerDistanceError(int color) {
-    //static int rightMissCount = 0, leftMissCount = 0;
-
+/* Returns an error in range [-1, 1] where 0 is no error */
+float Camera::centerDistanceError(int color) {
     int width;
     switch (color) {
     case COLOR_PINK:
@@ -459,18 +460,18 @@ int Camera::centerDistanceError(int color) {
     if (leftSquare == NULL) {
         // it seems to be out of view, so we set the error to 
         // the max it could be
-        return center;
+        return (float)center / (float)width;
     }
     else if (rightSquare == NULL) {
-        return -center;
+        return (float)-center / (float)width;;
     }
 
     // otherwise, we have two squares, so find the difference
     int leftError = center - leftSquare->center.x;
     int rightError = center - rightSquare->center.x;
 
-    //Return difference in errors (rightError should be negative)
-    return leftError + rightError;
+    //Return difference in errors
+    return (float)(leftError + rightError) / (float)width;
 
 /*  
     int filteredLeftError;
