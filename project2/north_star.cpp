@@ -21,6 +21,10 @@ void NorthStar::updatePose(int room) {
 	float y = _getFilteredY();
 	float theta = _getFilteredTheta();
 
+	LOG.printfFile(LOG_LOW, "ns_positions_raw", 
+			  "%d, %f, %f, %f\n",
+			  room+2, x, y, theta);
+	
 	LOG.write(LOG_LOW, "ns estimates", 
 			  "filtered x: %f, filtered y: %f, filtered theta: %f",
 			  x, y, theta);
@@ -40,16 +44,19 @@ void NorthStar::updatePose(int room) {
 	else {
 		estimate->rotate(NS_ROOM_ROTATION[room]);
 	}
+
+	estimate->rotateEach(0, 0, THETA_SHIFT[room]);
+
 	LOG.write(LOG_LOW, "ns estimates", 
 		  	  "room %d, pose rotate x: %f, pose rotate y: %f, pose rotate theta: %f",
-		      room, estimate->getX(), estimate->getY(), estimate->getTheta());
+		      room+2, estimate->getX(), estimate->getY(), estimate->getTheta());
 
 	float sx = NS_ROOM_SCALE[room][0];
 	float sy = NS_ROOM_SCALE[room][1];
 	estimate->scale(sx, sy);
 	LOG.write(LOG_LOW, "ns estimates", 
 		  	  "room %d, pose scale x: %f, pose scale y: %f, pose scale theta: %f",
-		      room, estimate->getX(), estimate->getY(), estimate->getTheta());
+		      room+2, estimate->getX(), estimate->getY(), estimate->getTheta());
 
 	float tx = COL_OFFSET[0] + NS_ROOM_ORIGINS_FROM_COL[room][0];
 	float ty = COL_OFFSET[1] + NS_ROOM_ORIGINS_FROM_COL[room][1];
@@ -57,7 +64,7 @@ void NorthStar::updatePose(int room) {
 
 	LOG.write(LOG_LOW, "ns estimates", 
 		  	  "room %d, pose translate x: %f, pose translate y: %f, pose translate theta: %f",
-		      room, estimate->getX(), estimate->getY(), estimate->getTheta());
+		      room+2, estimate->getX(), estimate->getY(), estimate->getTheta());
 
 	_adjustTotalTheta(theta);
 
@@ -65,10 +72,13 @@ void NorthStar::updatePose(int room) {
 	_pose->setY(estimate->getY());
 	_pose->setTheta(estimate->getTheta());
 
-	LOG.write(LOG_LOW, "ns estimates", 
+	LOG.printfFile(LOG_LOW, "ns_positions_clean", 
+		  	  "%d, %f, %f, %f\n",
+		      room+2, _pose->getX(), _pose->getY(), _pose->getTheta());
+
+	LOG.write(LOG_LOW, "ns_estimates", 
 		  	  "new pose x: %f, new pose y: %f, new pose theta: %f",
 		      _pose->getX(), _pose->getY(), _pose->getTheta());
-
 	delete estimate;
 }
 
