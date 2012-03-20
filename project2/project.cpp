@@ -6,7 +6,6 @@
 #include <opencv/highgui.h>
 #include <robot_color.h>
 
-
 #define NUM_BASES 7
 
 int main(int argc, char *argv[]) {
@@ -19,12 +18,23 @@ int main(int argc, char *argv[]) {
 
 	Robot *robot = new Robot(argv[1], 0);
 
+/* Camera Testing Code
+	while (true) {
+		robot->updateCamera();
+		robot->_camera->centerError(COLOR_PINK);
+		cvWaitKey(0);
+	}
+*/
+	
+/* Project 2 Code
 	robot->move(DIR_EAST, 5);
 	robot->turn(DIR_RIGHT, DEGREE_90);
 	robot->move(DIR_SOUTH, 3);
 
 	delete robot;
-	
+*/
+
+/* Sensor Testing Code 1
   	/*Pose * bases[NUM_BASES];
 	bases[0] = new Pose(65, 0, 0); 
 	bases[1] = new Pose(130, 0, 0); 
@@ -38,9 +48,10 @@ int main(int argc, char *argv[]) {
     		printf("moving to base %d...\n", i+1);
     		robot->moveTo(bases[i]->getX(), bases[i]->getY());
     		printf("reached base %d!\n", i+1);
-   	}*/
+   	}
+*/
 
-/*
+/* Sensor Testing Code 2
 	while(1) {
 		robot->updatePose();
 	}
@@ -48,7 +59,7 @@ int main(int argc, char *argv[]) {
 	delete robot;
 */
 
-/*
+/* Project 1 Code
     // Base locations in cm within the global coordinate system
 	Pose * bases[NUM_BASES];
 	bases[0] = new Pose(300, 0, 0); // base 1
