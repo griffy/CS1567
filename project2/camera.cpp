@@ -19,6 +19,8 @@ Camera::Camera(RobotInterface *robotInterface) {
     cvNamedWindow("Thresholded", CV_WINDOW_AUTOSIZE);
     cvNamedWindow("Biggest Squares Distances", CV_WINDOW_AUTOSIZE);
     cvNamedWindow("Slopes", CV_WINDOW_AUTOSIZE);
+
+    _robotInterface->Move(RI_HEAD_MIDDLE, 1);
 }
 
 Camera::~Camera() {
@@ -29,6 +31,7 @@ Camera::~Camera() {
     delete _pinkSquares;
     delete _yellowSquares;
     // TODO: close windows
+    _robotInterface->Move(RI_HEAD_DOWN, 1);
 }
 
 void Camera::setQuality(int quality) {
@@ -126,8 +129,8 @@ void Camera::update() {
     while (_yellowThresholded == NULL) {
         _yellowThresholded = getThresholdedImage(YELLOW_LOW, YELLOW_HIGH);
     }
-    //cvSmooth(_pinkThresholded, _pinkThresholded, CV_BLUR_NO_SCALE);
-    //cvSmooth(_yellowThresholded, _yellowThresholded, CV_BLUR_NO_SCALE);
+    cvSmooth(_pinkThresholded, _pinkThresholded, CV_BLUR_NO_SCALE);
+    cvSmooth(_yellowThresholded, _yellowThresholded, CV_BLUR_NO_SCALE);
 
     cvShowImage("Thresholded", _pinkThresholded);
 
@@ -1055,7 +1058,7 @@ IplImage* Camera::getThresholdedImage(CvScalar low, CvScalar high) {
     }
 
     // smooth the image to make colors more uniform
-    cvSmooth(hsv, hsv, CV_BLUR_NO_SCALE);
+    //cvSmooth(hsv, hsv, CV_BLUR_NO_SCALE);
 
     IplImage *thresholded = cvCreateImage(cvGetSize(hsv), IPL_DEPTH_8U, 1);
     // pick out only the color specified by its ranges

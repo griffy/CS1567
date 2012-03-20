@@ -356,8 +356,6 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
 }
 
 void Robot::center() {
-    _robotInterface->Move(RI_HEAD_MIDDLE, 1);
-
     while (true) {
         // TODO: if this is unreliable, try filtering
         // the errors and taking the filtered average to work with
