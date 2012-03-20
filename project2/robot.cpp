@@ -244,13 +244,10 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
 
         LOG.write(LOG_LOW, "move_gain", "dist: %f", distGain);
 
-        //UNCOMMENT THIS WHEN THINGS ARE WORKING
-	/*
         if (fabs(thetaError) > thetaErrorLimit) {
 			printf("theta error of %f too great\n", thetaError);
             return thetaError;
         }
-        */
         int moveSpeed = (int)(1.0/distGain);
         // cap our speed at 6, since going too slow causes problems
         if (moveSpeed > 6) {
@@ -273,7 +270,7 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
 
     printf("adjusting theta\n");
     do {	
-	    update();
+	    updatePose();
 
 /*
         LOG.write(LOG_LOW, "turn_we_pose",
@@ -410,21 +407,8 @@ void Robot::center() {
 
 void Robot::moveForward(int speed) {
 	_movingForward=true;
-	
-    if (!isThereABitchInMyWay()) {
-		_speed = speed;
-		_robotInterface->Move(RI_MOVE_FORWARD, speed);
-    }
-    else {
-		printf("something in the way (ooooOooooOohhh)\n");
-		_speed = speed;
-		_robotInterface->Move(RI_MOVE_FORWARD, speed);
-    
-		//stop();
-        printf("NOT turning 90 degrees to compensate...\n");
-    //    turnTo(Util::normalizeTheta(_pose->getTheta()-DEGREE_90),
-      //         MAX_THETA_ERROR);
-	}
+    _speed = speed;
+    _robotInterface->Move(RI_MOVE_FORWARD, speed);
 }
 
 /* Turns the robot left at the given speed, updating movement variables */
@@ -503,7 +487,7 @@ void Robot::updatePose() {
  *      _numTurns = 0;
  *  }
  */
-/*
+
     if (_speed == 0) {
         _kalmanFilter->setVelocity(0.0, 0.0, 0.0);
     }
@@ -530,6 +514,7 @@ void Robot::updatePose() {
     	}
     }
 
+    /*
     //update the kalman constants
     float newX = 1000.0/getStrength(); 
     float newY = 1500.0/getStrength();
@@ -543,7 +528,7 @@ void Robot::updatePose() {
     if (newTheta > 0.3) {
         newTheta = .3;
     }
-
+    */
 
     // if we're in room 2, don't trust north star so much
     if (getRoom() == ROOM_2) {
@@ -567,11 +552,10 @@ void Robot::updatePose() {
     _kalmanFilter->setWEUncertainty(WE_X_UNCERTAIN+weTurnUncertainty,
                                     WE_Y_UNCERTAIN+weTurnUncertainty,
                                     WE_THETA_UNCERTAIN+(weTurnUncertainty*2.0));
-    
+    */
     // pass updated poses to kalman filter and update main pose
     _kalmanFilter->filter(_northStar->getPose(), 
                          _wheelEncoders->getPose());
-    */
 }
 
 // Attempts to update the robot
