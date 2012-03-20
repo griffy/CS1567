@@ -3,6 +3,7 @@
 #include <robot_color.h>
 
 #define MIN_SLOPE_DIFFERENCE 0.12
+#define MAX_SLOPE_DIFFERENCE 0.5
 
 Camera::Camera(RobotInterface *robotInterface) {
     _robotInterface = robotInterface;
@@ -164,18 +165,30 @@ float Camera::corridorSlopeError(int color) {
 			else if(difference < 0){
 				LOG.printfScreen(LOG_HIGH, "regression", "Probably too far to the right... try strafing left\n");
 			}
-            // TODO: check that this puts the number in the proper range (-1 to 1)
-			return (((1.35-leftSide.slope)*1.176)+((-.9-rightSide.slope)*2))/2.0;
+            // OLD CODE TODO: check that this puts the number in the proper range (-1 to 1)
+            //
+	    //		return (1.35-leftSide.slope)*1.176;
+	    //		return (-.9-rightSide.slope)*2;
+	    //
+	    //
+	    //	NEW CODE TODO: Make sure these push us in the correct directions!	
+			if(difference > MAX_SLOPE_DIFFERENCE) {
+				return 1;
+			} else if (difference < -MAX_SLOPE_DIFFERENCE) {
+				return -1;
+			} else {
+				return difference/MAX_SLOPE_DIFFERENCE;
+			}
 		}
 		
 		if( hasSlopeLeft && !hasSlopeRight ){
 			//no right slope, so interpolate based on left
-			return (1.35-leftSide.slope)*1.176;
+			return 1;
 		}
 		
 		if( !hasSlopeLeft && hasSlopeRight ){
 			//no right slope, so interpolate based on left
-			return (-.9-rightSide.slope)*2;
+			return -1;
 		}
 		
 		if (!hasSlopeLeft && !hasSlopeRight){

@@ -44,12 +44,31 @@ int main(int argc, char *argv[]) {
 
 	Robot *robot = new Robot(argv[1], 0);
 	
-	cvNamedWindow("BGR Image", CV_WINDOW_AUTOSIZE);
-	cvNamedWindow("Thresholded Image", CV_WINDOW_AUTOSIZE);
+	//cvNamedWindow("BGR Image", CV_WINDOW_AUTOSIZE);
+	//cvNamedWindow("Thresholded Image", CV_WINDOW_AUTOSIZE);
 
-	robot->move(DIR_EAST, 5);
-	robot->turn(DIR_RIGHT, DEGREE_90);
-	robot->move(DIR_SOUTH, 3);
+	//robot->move(DIR_EAST, 5);
+	//robot->turn(DIR_RIGHT, DEGREE_90);
+	//robot->move(DIR_SOUTH, 3);
+
+  	/*Pose * bases[NUM_BASES];
+	bases[0] = new Pose(65, 0, 0); 
+	bases[1] = new Pose(130, 0, 0); 
+    	bases[2] = new Pose(195, 0, 0); 
+	bases[3] = new Pose(260, 0, 0); 
+    	bases[4] = new Pose(325, 0, 0);
+    	bases[5] = new Pose(325, -65, 0); 
+    	bases[6] = new Pose(325, -130, 0);
+
+    	for (int i = 0; i < NUM_BASES; i++) {
+    		printf("moving to base %d...\n", i+1);
+    		robot->moveTo(bases[i]->getX(), bases[i]->getY());
+    		printf("reached base %d!\n", i+1);
+   	}*/
+
+	while(1) {
+		robot->updatePose();
+	}
 
 	delete robot;
 

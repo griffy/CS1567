@@ -25,6 +25,9 @@ void WheelEncoders::updatePose(int room) {
 
 	_adjustTotalTheta(theta);
 
+	LOG.printfFile(LOG_LOW, "WE_positions_clean", "%f, %f, %f, %f, %f, %f\n", getX(), _getDeltaX(), getY(), _getDeltaY(), getTheta(), _getDeltaTheta());
+	
+	LOG.printfFile(LOG_LOW, "WE_positions_raw", "%f, %f, %f\n", _getFilteredDeltaLeft(), _getFilteredDeltaRight(), _getFilteredDeltaRear());
 	_pose->setX(x);
 	_pose->setY(y);
 	_pose->setTheta(theta);

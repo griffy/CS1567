@@ -95,8 +95,8 @@ const float NS_ROOM_SCALE[4][2] =  {{49.2, 37.1},
 //     origin                            |
 //_______________________________________|
 
-const float NS_ROOM_ROTATION[4] = {1.127, 1.5708, 0.0, 1.6005}; //Rosie data, radians, correct!
-
+const float NS_ROOM_ROTATION[4] = {0.0, 1.5708, 0.0, 1.6005}; //Rosie data, radians, correct!
+				//1.127
 // the distance of column top-right corner from base 0
 const float COL_OFFSET[2] = {193.0, 234.0};
 // the distances of ns origins from column corner (labeled with a * in above map)
@@ -106,7 +106,7 @@ const float NS_ROOM_ORIGINS_FROM_COL[4][2] = {{18.0, -124.0},
 										      {196.0, 30.0}};
 
 
-const float THETA_SHIFT[4] = {-1.5708, 1.5708, -1.5708, 1.5708}; //Value necessary to push the theta = 0 onto the x-axis rather than the y
+const float THETA_SHIFT[4] = {1.5708, -1.5708, 1.5708, -1.5708}; //Value necessary to push the theta = 0 onto the x-axis rather than the y
 
 
 #endif
