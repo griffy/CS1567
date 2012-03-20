@@ -10,7 +10,7 @@ Camera::Camera(RobotInterface *robotInterface) {
     _leftDistanceErrorFilter = new FIRFilter("filters/camera_distance_error.ffc");
     _rightDistanceErrorFilter = new FIRFilter("filters/camera_distance_error.ffc");
     setQuality(RI_CAMERA_QUALITY_HIGH);
-    setResolution(RI_CAMERA_RES_640);
+    setResolution(RI_CAMERA_RES_320);
     _pinkThresholded = NULL;
     _yellowThresholded = NULL;
     _pinkSquares = NULL;
@@ -951,7 +951,8 @@ squares_t* Camera::findSquares(IplImage *img, int areaThreshold) {
     cvDilate(canny, canny, 0, 2);
         
     // Find the contours and store them all as a list
-    cvFindContours(canny, storage, &contours, sizeof(CvContour), CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE, cvPoint(0,0));
+    // was CV_RETR_LIST
+    cvFindContours(canny, storage, &contours, sizeof(CvContour), CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE, cvPoint(0,0));
             
     // Test each contour to find squares
     while(contours) {
