@@ -18,14 +18,13 @@ int main(int argc, char *argv[]) {
     LOG.setImportanceLevel(LOG_LOW);
 
 	Robot *robot = new Robot(argv[1], 0);
+
+	robot->move(DIR_EAST, 5);
+	robot->turn(DIR_RIGHT, DEGREE_90);
+	robot->move(DIR_SOUTH, 3);
+
+	delete robot;
 	
-	//cvNamedWindow("BGR Image", CV_WINDOW_AUTOSIZE);
-	//cvNamedWindow("Thresholded Image", CV_WINDOW_AUTOSIZE);
-
-	//robot->move(DIR_EAST, 5);
-	//robot->turn(DIR_RIGHT, DEGREE_90);
-	//robot->move(DIR_SOUTH, 3);
-
   	/*Pose * bases[NUM_BASES];
 	bases[0] = new Pose(65, 0, 0); 
 	bases[1] = new Pose(130, 0, 0); 
@@ -41,12 +40,13 @@ int main(int argc, char *argv[]) {
     		printf("reached base %d!\n", i+1);
    	}*/
 
+/*
 	while(1) {
 		robot->updatePose();
 	}
 
 	delete robot;
-
+*/
 
 /*
     // Base locations in cm within the global coordinate system
