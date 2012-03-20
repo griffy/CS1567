@@ -117,14 +117,14 @@ void Camera::update() {
         redThresholded = getThresholdedImage(RED_LOW, RED_HIGH);
     }
     _pinkThresholded = getThresholdedImage(PINK_LOW, PINK_HIGH);
-    while (pinkThresholded == NULL) {
-        pinkThresholded = getThresholdedImage(PINK_LOW, PINK_HIGH);
+    while (_pinkThresholded == NULL) {
+        _pinkThresholded = getThresholdedImage(PINK_LOW, PINK_HIGH);
     }
     cvOr(_pinkThresholded, redThresholded, _pinkThresholded);
     
     _yellowThresholded = getThresholdedImage(YELLOW_LOW, YELLOW_HIGH);
-    while (yellowThresholded == NULL) {
-        yellowThresholded = getThresholdedImage(YELLOW_LOW, YELLOW_HIGH);
+    while (_yellowThresholded == NULL) {
+        _yellowThresholded = getThresholdedImage(YELLOW_LOW, YELLOW_HIGH);
     }
     //cvSmooth(_pinkThresholded, _pinkThresholded, CV_BLUR_NO_SCALE);
     //cvSmooth(_yellowThresholded, _yellowThresholded, CV_BLUR_NO_SCALE);
@@ -710,7 +710,6 @@ void Camera::calculateSlope(squares_t *squares, lineStruct *line){
 	int count=0;
 	// calculate average x and y values
 	while(currSqr != NULL){
-		printf("IM HERE\n");
 		sumx+=(float) currSqr->center.x;
 		sumy+=(float) currSqr->center.y;
 		count++;
