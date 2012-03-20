@@ -67,9 +67,9 @@ public:
 	void setResolution(int resolution);
 	void update();
 	float centerError(int color);
-	int corridorSlopeError(int color);
-        regressionLine leastSquaresRegression(int color, int side);	
-	int centerDistanceError(int color);
+	float corridorSlopeError(int color);
+    regressionLine leastSquaresRegression(int color, int side);	
+	float centerDistanceError(int color);
 	bool onSamePlane(squares_t *leftSquare, squares_t *rightSquare);
 	void calculateSlope(squares_t*, lineStruct *line);
 	float findPos(squares_t* square);
