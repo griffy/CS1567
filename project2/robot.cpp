@@ -142,26 +142,6 @@ void Robot::move(int direction, int numCells) {
     int cellsTraveled = 0;
 
     while (cellsTraveled < numCells) {
-        updateCamera();
-		IplImage *bgr = _camera->getBGRImage();
-		IplImage *thresholded = _camera->getThresholdedImage(RC_PINK_LOW, RC_PINK_HIGH);
-
-		//drawX1(bgr, _camera->leftBiggestSquare(COLOR_PINK), RED);
-		//drawX1(bgr, _camera->rightBiggestSquare(COLOR_PINK), GREEN);
-		
-		LOG.printfScreen(LOG_LOW, "screenError", "Center error: %d\n", _camera->centerDistanceError(COLOR_PINK));
-
-		cvShowImage("BGR Image", bgr);
-		cvShowImage("Thresholded Image", thresholded);
-
-		//Line regression test
-		_camera->corridorSlopeError(COLOR_PINK);
-
-		//cvWaitKey(0);
-
-		cvReleaseImage(&bgr);
-		cvReleaseImage(&thresholded);
-		
         // first attempt to center ourselves before moving
         center();
         // reset the wheel encoder totals
@@ -382,6 +362,22 @@ void Robot::center() {
         // TODO: if this is unreliable, try filtering
         // the errors and taking the filtered average to work with
         updateCamera();
+        
+        /////
+        IplImage *bgr = _camera->getBGRImage();
+        IplImage *thresholded = _camera->getThresholdedImage(PINK_LOW, PINK_HIGH);
+
+        drawX1(bgr, _camera->leftBiggestSquare(COLOR_PINK), RED);
+        drawX1(bgr, _camera->rightBiggestSquare(COLOR_PINK), GREEN);
+        
+        cvShowImage("BGR Image", bgr);
+        cvShowImage("Thresholded Image", thresholded);
+
+        //cvWaitKey(0);
+
+        cvReleaseImage(&bgr);
+        cvReleaseImage(&thresholded);
+        /////
 
         float centerError = _camera->centerError(COLOR_PINK);
         float centerGain = _centerPID->updatePID(centerError);

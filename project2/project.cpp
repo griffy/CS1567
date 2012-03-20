@@ -43,34 +43,9 @@ int main(int argc, char *argv[]) {
     LOG.setImportanceLevel(LOG_LOW);
 
 	Robot *robot = new Robot(argv[1], 0);
-
+	
 	cvNamedWindow("BGR Image", CV_WINDOW_AUTOSIZE);
 	cvNamedWindow("Thresholded Image", CV_WINDOW_AUTOSIZE);
-
-	/*
-	while (true) {
-		robot->update();
-
-		IplImage *bgr = robot->_camera->getBGRImage();
-		IplImage *thresholded = robot->_camera->getThresholdedImage(RC_PINK_LOW, RC_PINK_HIGH);
-
-		drawX(bgr, robot->_camera->leftBiggestSquare(COLOR_PINK), RED);
-		drawX(bgr, robot->_camera->rightBiggestSquare(COLOR_PINK), GREEN);
-		
-		LOG.printfScreen(LOG_LOW, "screenError", "Center error: %d\n", robot->_camera->centerDistanceError(COLOR_PINK));
-
-		cvShowImage("BGR Image", bgr);
-		cvShowImage("Thresholded Image", thresholded);
-
-		//Line regression test
-		robot->_camera->corridorSlopeError(COLOR_PINK);
-
-		cvWaitKey(0);
-
-		cvReleaseImage(&bgr);
-		cvReleaseImage(&thresholded);
-	}
-*/
 
 	robot->move(DIR_EAST, 5);
 	robot->turn(DIR_RIGHT, DEGREE_90);
