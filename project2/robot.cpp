@@ -179,7 +179,7 @@ void Robot::moveTo(float x, float y) {
     _thetaPID->flushPID();
 
     // reset wheel encoder pose to be north star since we hit our base
-    //_wheelEncoders->resetPose(_northStar->getPose());
+    _wheelEncoders->resetPose(_northStar->getPose());
 }
 
 // Moves to a location in the global coordinate system (in cm) 
@@ -204,7 +204,6 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
                   _wheelEncoders->getPose()->getY(),
                   _wheelEncoders->getPose()->getTheta(),
                   _wheelEncoders->getPose()->getTotalTheta());
-        /* 
         LOG.write(LOG_LOW, "move_ns_pose",
                   "x: %f \t y: %f \t theta: %f \t totalTheta: %f", 
                   _northStar->getPose()->getX(),
@@ -217,7 +216,6 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
                   _pose->getY(),
                   _pose->getTheta(),
                   _pose->getTotalTheta()); 
-        */
 
         yError = y - _wheelEncoders->getY();
         xError = x - _wheelEncoders->getX();
@@ -272,28 +270,25 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
     do {	
 	    updatePose();
 
-/*
         LOG.write(LOG_LOW, "turn_we_pose",
                   "x: %f \t y: %f \t theta: %f \t totalTheta: %f", 
                   _wheelEncoders->getPose()->getX(),
                   _wheelEncoders->getPose()->getY(),
                   _wheelEncoders->getPose()->getTheta(),
                   _wheelEncoders->getPose()->getTotalTheta()); 
-*/
         LOG.write(LOG_LOW, "turn_ns_pose",
                   "x: %f \t y: %f \t theta: %f \t totalTheta: %f", 
                   _northStar->getPose()->getX(),
                   _northStar->getPose()->getY(),
                   _northStar->getPose()->getTheta(),
                   _northStar->getPose()->getTotalTheta()); 
-/*
         LOG.write(LOG_LOW, "turn_kalman_pose",
                   "x: %f \t y: %f \t theta: %f \t totalTheta: %f", 
                   _pose->getX(),
                   _pose->getY(),
                   _pose->getTheta(),
                   _pose->getTotalTheta()); 
-*/
+
         theta = _northStar->getTheta();
         thetaError = thetaGoal - theta;
         thetaError = Util::normalizeThetaError(thetaError);
@@ -553,6 +548,7 @@ void Robot::updatePose() {
                                     WE_Y_UNCERTAIN+weTurnUncertainty,
                                     WE_THETA_UNCERTAIN+(weTurnUncertainty*2.0));
     */
+
     // pass updated poses to kalman filter and update main pose
     _kalmanFilter->filter(_northStar->getPose(), 
                          _wheelEncoders->getPose());

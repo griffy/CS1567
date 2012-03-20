@@ -10,6 +10,8 @@
 #define GREEN CV_RGB(0, 255, 0)
 #define BLUE CV_RGB(0, 0, 255)
 
+#define NUM_BASES 7
+
 void drawX(IplImage *image, squares_t *square, CvScalar color) {
 	if (square == NULL) {
 		return;
@@ -71,12 +73,37 @@ int main(int argc, char *argv[]) {
 		cvReleaseImage(&thresholded);
 	}
 */
-
+/*
 	robot->move(DIR_EAST, 5);
 	robot->turn(DIR_RIGHT, DEGREE_90);
 	robot->move(DIR_SOUTH, 3);
 
 	delete robot;
+*/
+
+
+    // Base locations in cm within the global coordinate system
+	Pose * bases[NUM_BASES];
+	bases[0] = new Pose(340, 0, 0); // base 1
+	bases[1] = new Pose(229, 183, 0); // base 2
+    bases[2] = new Pose(326, 183, 0); // fake base
+	bases[3] = new Pose(392, 300, 0); // base 3
+    bases[4] = new Pose(318, 386, 0); // fake base
+    bases[5] = new Pose(49, 386, 0); // base 4
+    bases[6] = new Pose(0, 0, 0); // base 5/0
+
+    for (int i = 0; i < NUM_BASES; i++) {
+    	printf("moving to base %d...\n", i+1);
+    	robot->moveTo(bases[i]->getX(), bases[i]->getY());
+    	printf("reached base %d!\n", i+1);
+    }
+
+    printf("done!\n");
+
+	delete robot;
+	for (int i = 0; i < NUM_BASES; i++) {
+		delete bases[i];
+	}
 
 	return 0;
 }
