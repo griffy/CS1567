@@ -1,6 +1,7 @@
 #include "wheel_encoders.h"
 #include "constants.h"
 #include "utilities.h"
+#include "logger.h"
 
 WheelEncoders::WheelEncoders(RobotInterface *robotInterface)
 : PositionSensor(robotInterface) {
@@ -17,6 +18,7 @@ WheelEncoders::~WheelEncoders() {
 
 /* Requires the interface be updated prior to calling */
 void WheelEncoders::updatePose(int room) {
+	LOG.printfScreen(LOG_LOW, "WE pose update", "x: %f deltaX: %f y: %f deltaY: %f\n", getX(), _getDeltaX(), getY(), _getDeltaY());
 	float x = getX() + _getDeltaX();
 	float y = getY() + _getDeltaY();
 	float theta = Util::normalizeTheta(getTheta() + _getDeltaTheta());
@@ -32,26 +34,26 @@ void WheelEncoders::updatePose(int room) {
 float WheelEncoders::_getDeltaX() {
 	float scaledDeltaX = _getRobotDeltaY() / WE_SCALE;
 	float rotatedDeltaX = scaledDeltaX * cos(getTheta());
-    return scaledDeltaX;
+    return rotatedDeltaX;
 }
 
 /* Returns delta y in terms of global coord system */
 float WheelEncoders::_getDeltaY() {
 	float scaledDeltaY = _getRobotDeltaY() / WE_SCALE;
 	float rotatedDeltaY = scaledDeltaY * sin(getTheta());
-    return scaledDeltaY;
+    return rotatedDeltaY;
 }
 
 /* Returns delta theta in terms of global coord system */
 float WheelEncoders::_getDeltaTheta() {
 	float rearRobotDeltaX = _getFilteredDeltaRear();
 	float scaledRobotDeltaX = rearRobotDeltaX / WE_SCALE;
-	return -scaledRobotDeltaX / (ROBOT_DIAMETER * 2.0);
+	return -scaledRobotDeltaX / (ROBOT_DIAMETER / 2.0);
 }
 
 /* Returns a delta y value in terms of robot axis */
 float WheelEncoders::_getRobotDeltaY() {
-    float leftRobotDeltaY = _getFilteredDeltaLeft() * cos(DEGREE_150);
+    float leftRobotDeltaY = -_getFilteredDeltaLeft() * cos(DEGREE_150);
     float rightRobotDeltaY = _getFilteredDeltaRight() * cos(DEGREE_30);
     float avgRobotDeltaY = (leftRobotDeltaY + rightRobotDeltaY) / 2.0;
     return avgRobotDeltaY;

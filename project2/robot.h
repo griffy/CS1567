@@ -79,7 +79,8 @@ public:
     int getFailLimit();
     void setCameraResolution(int resolution, int quality);
 	void prefillData();
-    void update();
+    void updatePose();
+    void updateCamera();
 
     void moveForward(int speed);
     void turnLeft(int speed);

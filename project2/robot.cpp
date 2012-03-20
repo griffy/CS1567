@@ -85,7 +85,7 @@ Pose* Robot::getPose() {
 void Robot::prefillData() {
     printf("prefilling data...\n");
     for (int i = 0; i < MAX_FILTER_TAPS; i++){
-        update();
+        updatePose();
     }
     printf("sufficient data collected\n");
 }
@@ -196,7 +196,7 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
 
     printf("heading toward (%f, %f)\n", x, y);
     do {
-        update();
+        updatePose();
 
         LOG.write(LOG_LOW, "move_we_pose",
                   "x: %f \t y: %f \t theta: %f \t totalTheta: %f", 
@@ -341,10 +341,12 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
 }
 
 void Robot::center() {
+    _robotInterface->Move(RI_HEAD_MIDDLE, 1);
+
     while (true) {
         // TODO: if this is unreliable, try filtering
         // the errors and taking the filtered average to work with
-        update(); 
+        updateCamera();
 
         int centerDistError = _camera->centerDistanceError(COLOR_PINK);
         float slopeError = _camera->corridorSlopeError(COLOR_PINK);
@@ -368,7 +370,7 @@ void Robot::center() {
             }
             else {
                 int strafeSpeed = (int)fabs((1.0/centerGain));
-                // cap our speed at 6, since moving too slow is bad
+                // cap our speed at 7, since moving too slow is bad
                 if (strafeSpeed > 7) {
                     strafeSpeed = 7;
                 }
@@ -389,12 +391,13 @@ void Robot::center() {
         else {
             // our slope error is significant enough to warrant strafing
             int strafeSpeed = (int)fabs((1.0/slopeGain));
-            // cap our speed at 6, since moving too slow is bad
+            // cap our speed at 7, since moving too slow is bad
             if (strafeSpeed > 7) {
                 strafeSpeed = 7;
             }
             LOG.write(LOG_LOW, "pid_speeds", "strafe (slope): %d", strafeSpeed);
 
+            // TODO: check logic of this? might be the opposite
             if (slopeError < 0) {
                 strafeRight(strafeSpeed);
             }
@@ -414,10 +417,13 @@ void Robot::moveForward(int speed) {
     }
     else {
 		printf("something in the way (ooooOooooOohhh)\n");
-		stop();
-        printf("turning 90 degrees to compensate...\n");
-        turnTo(Util::normalizeTheta(_pose->getTheta()-DEGREE_90),
-               MAX_THETA_ERROR);
+		_speed = speed;
+		_robotInterface->Move(RI_MOVE_FORWARD, speed);
+    
+		//stop();
+        printf("NOT turning 90 degrees to compensate...\n");
+    //    turnTo(Util::normalizeTheta(_pose->getTheta()-DEGREE_90),
+      //         MAX_THETA_ERROR);
 	}
 }
 
@@ -455,7 +461,7 @@ void Robot::stop() {
 }
 
 int Robot::getRoom() {
-    return _robotInterface->RoomID();
+    return _robotInterface->RoomID() - 2;
 }
 
 int Robot::getBattery() {
@@ -471,22 +477,18 @@ bool Robot::isThereABitchInMyWay() {
     return _robotInterface->IR_Detected();
 }
 
+void Robot::updateCamera() {
+    _camera->update();
+}
+
 // Updates the robot pose in terms of the global coordinate system
 // with the best estimate of its position (using kalman filter)
-void Robot::update() {
-    float x, y;
+void Robot::updatePose() {
     // update the robot interface
     _updateInterface();
-    // update the camera with a new image
-    _camera->update();
     // update each pose estimate
     _northStar->updatePose(getRoom());
     _wheelEncoders->updatePose(getRoom());
-    x = _wheelEncoders->getX();
-    y = _wheelEncoders->getY();
-    _wheelEncoders->resetPose(_northStar->getPose());
-    _wheelEncoders->setX(x);
-    _wheelEncoders->setY(y);
 
 /*
  * Legacy tuning function
