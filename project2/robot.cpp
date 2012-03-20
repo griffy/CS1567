@@ -244,13 +244,10 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
 
         LOG.write(LOG_LOW, "move_gain", "dist: %f", distGain);
 
-        //UNCOMMENT THIS WHEN THINGS ARE WORKING
-	/*
         if (fabs(thetaError) > thetaErrorLimit) {
 			printf("theta error of %f too great\n", thetaError);
             return thetaError;
         }
-        */
         int moveSpeed = (int)(1.0/distGain);
         // cap our speed at 6, since going too slow causes problems
         if (moveSpeed > 6) {
@@ -410,21 +407,8 @@ void Robot::center() {
 
 void Robot::moveForward(int speed) {
 	_movingForward=true;
-	
-    if (!isThereABitchInMyWay()) {
-		_speed = speed;
-		_robotInterface->Move(RI_MOVE_FORWARD, speed);
-    }
-    else {
-		printf("something in the way (ooooOooooOohhh)\n");
-		_speed = speed;
-		_robotInterface->Move(RI_MOVE_FORWARD, speed);
-    
-		//stop();
-        printf("NOT turning 90 degrees to compensate...\n");
-    //    turnTo(Util::normalizeTheta(_pose->getTheta()-DEGREE_90),
-      //         MAX_THETA_ERROR);
-	}
+    _speed = speed;
+    _robotInterface->Move(RI_MOVE_FORWARD, speed);
 }
 
 /* Turns the robot left at the given speed, updating movement variables */
