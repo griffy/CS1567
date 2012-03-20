@@ -65,6 +65,7 @@ public:
 	~Camera();
 	void setQuality(int quality);
 	void setResolution(int resolution);
+	void drawX(IplImage *image, squares_t *square, CvScalar color);
 	void update();
 	float centerError(int color);
 	float corridorSlopeError(int color);

@@ -15,6 +15,10 @@ Camera::Camera(RobotInterface *robotInterface) {
     _yellowThresholded = NULL;
     _pinkSquares = NULL;
     _yellowSquares = NULL;
+
+    cvNamedWindow("Thresholded", CV_WINDOW_AUTOSIZE);
+    cvNamedWindow("Biggest Squares Distances", CV_WINDOW_AUTOSIZE);
+    cvNamedWindow("Slopes", CV_WINDOW_AUTOSIZE);
 }
 
 Camera::~Camera() {
@@ -24,6 +28,7 @@ Camera::~Camera() {
     delete _yellowThresholded;
     delete _pinkSquares;
     delete _yellowSquares;
+    // TODO: close windows
 }
 
 void Camera::setQuality(int quality) {
@@ -54,6 +59,31 @@ void Camera::setResolution(int resolution) {
     }
 }
 
+void Camera::drawX(IplImage *image, squares_t *square, CvScalar color) {
+    if (square == NULL) {
+        return;
+    }
+    
+    CvPoint pt1, pt2;
+
+    // Draw an X marker on the image
+    int sqAmt = (int) (sqrt(square->area) / 2); 
+
+    // Upper Left to Lower Right
+    pt1.x = square->center.x - sqAmt;
+    pt1.y = square->center.y - sqAmt;
+    pt2.x = square->center.x + sqAmt;
+    pt2.y = square->center.y + sqAmt;
+    cvLine(image, pt1, pt2, color, 3, CV_AA, 0);
+
+    // Lower Left to Upper Right
+    pt1.x = square->center.x - sqAmt;
+    pt1.y = square->center.y + sqAmt;
+    pt2.x = square->center.x + sqAmt;
+    pt2.y = square->center.y - sqAmt;
+    cvLine(image, pt1, pt2, color, 3, CV_AA, 0);
+}
+
 void Camera::update() {
     if (_pinkThresholded != NULL) {
         cvReleaseImage(&_pinkThresholded);
@@ -80,6 +110,7 @@ void Camera::update() {
         _yellowSquares = square;
     }
     */
+
     // get a red and pink thresholded and or them together
     IplImage *redThresholded = getThresholdedImage(RED_LOW, RED_HIGH);
     _pinkThresholded = getThresholdedImage(PINK_LOW, PINK_HIGH);
@@ -90,12 +121,11 @@ void Camera::update() {
     //cvSmooth(_pinkThresholded, _pinkThresholded, CV_BLUR_NO_SCALE);
     //cvSmooth(_yellowThresholded, _yellowThresholded, CV_BLUR_NO_SCALE);
 
+    cvShowImage("Thresholded", _pinkThresholded);
+
     _pinkSquares = findSquaresOf(COLOR_PINK, DEFAULT_SQUARE_SIZE);
     _yellowSquares = findSquaresOf(COLOR_YELLOW, DEFAULT_SQUARE_SIZE);
-	//float returnYellow = findPos(_yellowSquares);
-	//LOG.printfScreen(LOG_HIGH, "camera image", "position returned for yellow: %f\n", returnYellow);
-	//float returnPink = findPos(_yellowSquares);
-	//LOG.printfScreen(LOG_HIGH, "camera image", "position returned for pink: %f\n", returnPink);
+
 }
 
 float Camera::centerError(int color) {
@@ -129,6 +159,24 @@ float Camera::corridorSlopeError(int color) {
 
     regressionLine leftSide = leastSquaresRegression(color, SIDE_LEFT);
     regressionLine rightSide = leastSquaresRegression(color, SIDE_RIGHT);
+
+    IplImage *bgr = getBGRImage();
+    CvPoint leftStart;
+    CvPoint leftEnd;
+    CvPoint rightStart;
+    CvPoint rightEnd;
+    leftStart.x = 0;
+    leftStart.y = ((float)leftSide.slope) * 0 + leftSide.intercept;
+    leftEnd.x = ((float)bgr->width / 2.0);
+    leftEnd.y = ((float)leftSide.slope) * ((float)bgr->width / 2.0) + leftSide.intercept;
+    rightStart.x = (float)bgr->width;
+    rightStart.y = ((float)rightSide.slope) * ((float)bgr->width) + rightSide.intercept;
+    rightEnd.x = ((float)bgr->width / 2.0);
+    rightEnd.y = ((float)rightSide.slope) * ((float)bgr->width / 2.0) + rightSide.intercept;
+    cvLine(bgr, leftStart, leftEnd, RED, 3, CV_AA, 0);
+    cvLine(bgr, rightStart, rightEnd, GREEN, 3, CV_AA, 0);
+    cvShowImage("Slopes", bgr);
+    cvReleaseImage(&bgr);
 
     //For now, to debug/make meaningful observations about line fits
     LOG.printfScreen(LOG_HIGH, "regression", "Linear regression performed. Left squares found: %d\n", leftSide.numSquares);
@@ -458,6 +506,19 @@ float Camera::centerDistanceError(int color) {
 
     squares_t *leftSquare = leftBiggestSquare(color);
     squares_t *rightSquare = rightBiggestSquare(color);
+    
+    IplImage *bgr = getBGRImage();
+    drawX(bgr, leftSquare, RED);
+    drawX(bgr, rightSquare, GREEN);
+    CvPoint lineStart;
+    CvPoint lineEnd;
+    lineStart.x = center;
+    lineStart.y = 0;
+    lineEnd.x = center;
+    lineEnd.y = bgr->height;
+    cvLine(bgr, lineStart, lineEnd, BLUE, 3, CV_AA, 0);
+    cvShowImage("Biggest Squares Distances", bgr);
+    cvReleaseImage(&bgr);
 
     // do we have two largest squares?
     if (leftSquare != NULL && rightSquare != NULL) {

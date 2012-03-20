@@ -362,22 +362,6 @@ void Robot::center() {
         // TODO: if this is unreliable, try filtering
         // the errors and taking the filtered average to work with
         updateCamera();
-        
-        /////
-        IplImage *bgr = _camera->getBGRImage();
-        IplImage *thresholded = _camera->getThresholdedImage(PINK_LOW, PINK_HIGH);
-
-        drawX1(bgr, _camera->leftBiggestSquare(COLOR_PINK), RED);
-        drawX1(bgr, _camera->rightBiggestSquare(COLOR_PINK), GREEN);
-        
-        cvShowImage("BGR Image", bgr);
-        cvShowImage("Thresholded Image", thresholded);
-
-        //cvWaitKey(0);
-
-        cvReleaseImage(&bgr);
-        cvReleaseImage(&thresholded);
-        /////
 
         float centerError = _camera->centerError(COLOR_PINK);
         float centerGain = _centerPID->updatePID(centerError);
