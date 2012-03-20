@@ -49,12 +49,10 @@ Robot::Robot(std::string address, int id) {
     PIDConstants distancePIDConstants = {PID_DIST_KP, PID_DIST_KI, PID_DIST_KD};
     PIDConstants thetaPIDConstants = {PID_THETA_KP, PID_THETA_KI, PID_THETA_KD};
     PIDConstants centerPIDConstants = {PID_CENTER_KP, PID_CENTER_KI, PID_CENTER_KD};
-    PIDConstants slopePIDConstants = {PID_SLOPE_KP, PID_SLOPE_KI, PID_SLOPE_KD};
 
     _distancePID = new PID(&distancePIDConstants, MAX_DIST_GAIN, MIN_DIST_GAIN);
     _thetaPID = new PID(&thetaPIDConstants, MAX_THETA_GAIN, MIN_THETA_GAIN);
     _centerPID = new PID(&centerPIDConstants, MAX_CENTER_GAIN, MIN_CENTER_GAIN);
-    _slopePID = new PID(&slopePIDConstants, MAX_SLOPE_GAIN, MIN_SLOPE_GAIN);
 
     printf("pid controllers initialized\n");
 }
@@ -74,7 +72,6 @@ Robot::~Robot() {
     delete _distancePID;
     delete _thetaPID;
     delete _centerPID;
-    delete _slopePID;
 }
 
 /* Returns a reference to the Kalman pose */
@@ -340,62 +337,29 @@ void Robot::center() {
         // the errors and taking the filtered average to work with
         updateCamera();
 
-        int centerDistError = _camera->centerDistanceError(COLOR_PINK);
-        float slopeError = _camera->corridorSlopeError(COLOR_PINK);
+        float centerError = _camera->centerError(COLOR_PINK);
+        float centerGain = _centerPID->updatePID(centerError);
 
-        LOG.write(LOG_LOW, "center", "dist error: %d", centerDistError);
-        LOG.write(LOG_LOW, "center", "slope error: %f", slopeError);
-
-        float centerGain = _centerPID->updatePID(centerDistError);
-        float slopeGain = _slopePID->updatePID(slopeError);
-
+        LOG.write(LOG_LOW, "center", "center error: %f", centerError);
         LOG.write(LOG_LOW, "center", "center gain: %f", centerGain);
-        LOG.write(LOG_LOW, "center", "slope gain: %f", slopeGain);
 
-        if (slopeError == -999) {
-            // we had issues finding slope error, so rely on center
-            // dist error to do our adjustments
-            if (abs(centerDistError) < MAX_CENTER_ERROR) {
-                // the two biggest squares say we're good enough, so
-                // cease adjusting
-                break;
-            }
-            else {
-                int strafeSpeed = (int)fabs((1.0/centerGain));
-                // cap our speed at 7, since moving too slow is bad
-                if (strafeSpeed > 7) {
-                    strafeSpeed = 7;
-                }
-                LOG.write(LOG_LOW, "pid_speeds", "strafe (center): %d", strafeSpeed);
-
-                if (centerDistError < 0) {
-                    strafeRight(strafeSpeed);
-                }
-                else {
-                    strafeLeft(strafeSpeed);
-                }
-            }
-        }
-        else if (fabs(slopeError) < MAX_SLOPE_ERROR) {
-            // if we're in a good range, cease adjusting
+        if (fabs(centerError) < MAX_CENTER_ERROR) {
+            // we're close enough to centered, so stop adjusting
             break;
         }
-        else {
-            // our slope error is significant enough to warrant strafing
-            int strafeSpeed = (int)fabs((1.0/slopeGain));
-            // cap our speed at 7, since moving too slow is bad
-            if (strafeSpeed > 7) {
-                strafeSpeed = 7;
-            }
-            LOG.write(LOG_LOW, "pid_speeds", "strafe (slope): %d", strafeSpeed);
 
-            // TODO: check logic of this? might be the opposite
-            if (slopeError < 0) {
-                strafeRight(strafeSpeed);
-            }
-            else {
-                strafeLeft(strafeSpeed);
-            }
+        int strafeSpeed = (int)fabs((1.0/centerGain));
+        // cap our speed at 4, since moving too slow is bad
+        if (strafeSpeed > 4) {
+            strafeSpeed = 4;
+        }
+        LOG.write(LOG_LOW, "pid_speeds", "strafe: %d", strafeSpeed);
+
+        if (centerError < 0) {
+            strafeRight(strafeSpeed);
+        }
+        else {
+            strafeLeft(strafeSpeed);
         }
     }
 }

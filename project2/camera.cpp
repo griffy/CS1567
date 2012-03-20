@@ -54,7 +54,6 @@ void Camera::setResolution(int resolution) {
 }
 
 void Camera::update() {
-
     if (_pinkThresholded != NULL) {
         cvReleaseImage(&_pinkThresholded);
     }
@@ -80,11 +79,11 @@ void Camera::update() {
         _yellowSquares = square;
     }
     */
-    IplImage *tempPink;
-    tempPink = getThresholdedImage(RED_LOW, RED_HIGH);
-
+    // get a red and pink thresholded and or them together
+    IplImage *redThresholded = getThresholdedImage(RED_LOW, RED_HIGH);
     _pinkThresholded = getThresholdedImage(PINK_LOW, PINK_HIGH);
-    cvOr(_pinkThresholded, tempPink, _pinkThresholded);
+    cvOr(_pinkThresholded, redThresholded, _pinkThresholded);
+    
     _yellowThresholded = getThresholdedImage(YELLOW_LOW, YELLOW_HIGH);
 
     _pinkSquares = findSquaresOf(COLOR_PINK, DEFAULT_SQUARE_SIZE);
@@ -93,6 +92,23 @@ void Camera::update() {
 	//LOG.printfScreen(LOG_HIGH, "camera image", "position returned for yellow: %f\n", returnYellow);
 	//float returnPink = findPos(_yellowSquares);
 	//LOG.printfScreen(LOG_HIGH, "camera image", "position returned for pink: %f\n", returnPink);
+}
+
+float Camera::centerError(int color) {
+    int centerDistError = centerDistanceError(color);
+    float slopeError = corridorSlopeError(color);
+
+    LOG.write(LOG_LOW, "center", "dist error: %d", centerDistError);
+    LOG.write(LOG_LOW, "center", "slope error: %f", slopeError);
+
+    if (slopeError == -999) {
+        // we had issues finding slope error, so rely on center
+        // dist error
+        // TODO: convert centerDistError to range -1..1
+    }
+
+    // TODO: convert slopeError to range -1..1 (if it's not)
+    return slopeError;
 }
 
 /** ***************************************

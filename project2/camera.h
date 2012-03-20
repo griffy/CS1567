@@ -55,6 +55,7 @@ public:
 	void setQuality(int quality);
 	void setResolution(int resolution);
 	void update();
+	float centerError(int color);
 	int corridorSlopeError(int color);
         regressionLine leastSquaresRegression(int color, int side);	
 	int centerDistanceError(int color);
