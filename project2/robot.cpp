@@ -273,7 +273,7 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
 
     printf("adjusting theta\n");
     do {	
-	    update();
+	    updatePose();
 
 /*
         LOG.write(LOG_LOW, "turn_we_pose",
@@ -503,7 +503,7 @@ void Robot::updatePose() {
  *      _numTurns = 0;
  *  }
  */
-/*
+
     if (_speed == 0) {
         _kalmanFilter->setVelocity(0.0, 0.0, 0.0);
     }
@@ -530,6 +530,7 @@ void Robot::updatePose() {
     	}
     }
 
+    /*
     //update the kalman constants
     float newX = 1000.0/getStrength(); 
     float newY = 1500.0/getStrength();
@@ -543,7 +544,7 @@ void Robot::updatePose() {
     if (newTheta > 0.3) {
         newTheta = .3;
     }
-
+    */
 
     // if we're in room 2, don't trust north star so much
     if (getRoom() == ROOM_2) {
@@ -567,11 +568,10 @@ void Robot::updatePose() {
     _kalmanFilter->setWEUncertainty(WE_X_UNCERTAIN+weTurnUncertainty,
                                     WE_Y_UNCERTAIN+weTurnUncertainty,
                                     WE_THETA_UNCERTAIN+(weTurnUncertainty*2.0));
-    
+    */
     // pass updated poses to kalman filter and update main pose
     _kalmanFilter->filter(_northStar->getPose(), 
                          _wheelEncoders->getPose());
-    */
 }
 
 // Attempts to update the robot
