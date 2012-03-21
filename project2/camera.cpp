@@ -24,8 +24,8 @@ Camera::Camera(RobotInterface *robotInterface) {
 }
 
 Camera::~Camera() {
-    delete _leftDistanceErrorFilter;
-    delete _rightDistanceErrorFilter;
+    delete _centerDistErrorFilter;
+    delete _slopeErrorFilter;
     delete _pinkThresholded;
     delete _yellowThresholded;
     delete _pinkSquares;

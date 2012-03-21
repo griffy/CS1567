@@ -89,8 +89,8 @@ public:
 	void sortSquaresSize(squares_t * sqr, std::vector<squares_t> * vec);		//returns a vector of squares...
 private:
 	RobotInterface *_robotInterface;
-	FIRFilter *_leftDistanceErrorFilter;
-	FIRFilter *_rightDistanceErrorFilter;
+	FIRFilter *_centerDistErrorFilter;
+	FIRFilter *_slopeErrorFilter;
 	int _quality;
 	int _resolution;
 	IplImage *_pinkThresholded;
