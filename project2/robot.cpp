@@ -57,10 +57,10 @@ Robot::Robot(std::string address, int id) {
     printf("pid controllers initialized\n");
     
     prefillData();
-    // base the wheel encoder pose off north star to start (since we
+    // base the wheel encoder position off north star to start (since we
     // might start anywhere in the global system)
-    _wheelEncoders->resetPose(_northStar->getPose());
-
+    _wheelEncoders->getPose()->setX(_northStar->getX());
+    _wheelEncoders->getPose()->setY(_northStar->getY());
 }
 
 Robot::~Robot() {
