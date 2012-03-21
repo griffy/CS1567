@@ -62,6 +62,9 @@ Robot::Robot(std::string address, int id) {
     //_wheelEncoders->getPose()->setX(_northStar->getX());
     //_wheelEncoders->getPose()->setY(_northStar->getY());
     _wheelEncoders->resetPose(_northStar->getPose());
+    // now update our pose again so our global pose isn't
+    // some funky value
+    updatePose();
 }
 
 Robot::~Robot() {
@@ -472,8 +475,8 @@ void Robot::updatePose() {
             LOG.write(LOG_MED, "update_predictions", 
                       "speed theta (cm/s): %f", speedTheta);
 
-            _kalmanFilter->setVelocity(0.0, 0.0, 0.0);
-    		//_kalmanFilter->setVelocity(0.0, 0.0, speedTheta);
+            //_kalmanFilter->setVelocity(0.0, 0.0, 0.0);
+    		_kalmanFilter->setVelocity(0.0, 0.0, speedTheta);
     	}
     }
 
@@ -519,7 +522,7 @@ void Robot::updatePose() {
 
     // pass updated poses to kalman filter and update main pose
     _kalmanFilter->filter(_northStar->getPose(), 
-                         _wheelEncoders->getPose());
+                          _wheelEncoders->getPose());
 }
 
 // Attempts to update the robot

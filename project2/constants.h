@@ -34,8 +34,6 @@
 #define MAX_THETA_GAIN 0.05
 #define MIN_CENTER_GAIN -0.05
 #define MAX_CENTER_GAIN 0.05
-#define MIN_SLOPE_GAIN -0.05
-#define MAX_SLOPE_GAIN 0.05
 
 // PID tuning constants
 #define PID_DIST_KP 0.8
@@ -47,18 +45,13 @@
 #define PID_CENTER_KP 0.03
 #define PID_CENTER_KI 0.0001
 #define PID_CENTER_KD 0.0001
-#define PID_SLOPE_KP 0.65
-#define PID_SLOPE_KI 0.001
-#define PID_SLOPE_KD 0.001
 
 // acceptable proximities from base
 #define MAX_DIST_ERROR 35.0 // in cm
 #define MAX_THETA_ERROR DEGREE_30
 
 // acceptable threshold for being in the center of squares, in pixels
-#define MAX_CENTER_ERROR 10
-// how close within 0 we can be before adjusting
-#define MAX_SLOPE_ERROR 0.05 
+#define MAX_CENTER_ERROR 0.1
 
 // the largest filter size (used for prefilling data)
 #define MAX_FILTER_TAPS 7
