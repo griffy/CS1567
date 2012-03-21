@@ -57,10 +57,11 @@ Robot::Robot(std::string address, int id) {
     printf("pid controllers initialized\n");
     
     prefillData();
-    // base the wheel encoder position off north star to start (since we
+    // base the wheel encoder pose off north star to start (since we
     // might start anywhere in the global system)
-    _wheelEncoders->getPose()->setX(_northStar->getX());
-    _wheelEncoders->getPose()->setY(_northStar->getY());
+    //_wheelEncoders->getPose()->setX(_northStar->getX());
+    //_wheelEncoders->getPose()->setY(_northStar->getY());
+    _wheelEncoders->resetPose(_northStar->getPose());
 }
 
 Robot::~Robot() {
@@ -191,6 +192,7 @@ void Robot::turn(int direction, float radians) {
 // Moves to a location in the global coordinate system (in cm)
 void Robot::moveTo(float x, float y) {
     printf("beginning move\n");
+
     float thetaError;
     do {
         // move to the location until theta is off by too much
@@ -250,7 +252,7 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
         thetaDesired = atan2(yError, xError);
         thetaDesired = Util::normalizeTheta(thetaDesired);
 
-        thetaError = thetaDesired - _northStar->getTheta();
+        thetaError = thetaDesired - _pose->getTheta();
         thetaError = Util::normalizeThetaError(thetaError);
 
         distError = sqrt(yError*yError + xError*xError);
@@ -543,7 +545,7 @@ void Robot::updatePose() {
 
     // pass updated poses to kalman filter and update main pose
     _kalmanFilter->filter(_northStar->getPose(), 
-                         _northStar->getPose());
+                         _wheelEncoders->getPose());
 }
 
 // Attempts to update the robot
