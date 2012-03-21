@@ -55,6 +55,12 @@ Robot::Robot(std::string address, int id) {
     _centerPID = new PID(&centerPIDConstants, MAX_CENTER_GAIN, MIN_CENTER_GAIN);
 
     printf("pid controllers initialized\n");
+    
+    prefillData();
+    // base the wheel encoder pose off north star to start (since we
+    // might start anywhere in the global system)
+    _wheelEncoders->resetPose(_northStar->getPose());
+
 }
 
 Robot::~Robot() {
@@ -184,8 +190,6 @@ void Robot::turn(int direction, float radians) {
 
 // Moves to a location in the global coordinate system (in cm)
 void Robot::moveTo(float x, float y) {
-    prefillData();
-
     printf("beginning move\n");
     float thetaError;
     do {
@@ -202,7 +206,7 @@ void Robot::moveTo(float x, float y) {
     _thetaPID->flushPID();
 
     // reset wheel encoder pose to be north star since we hit our base
-    _wheelEncoders->resetPose(_northStar->getPose());
+    //_wheelEncoders->resetPose(_northStar->getPose());
 }
 
 // Moves to a location in the global coordinate system (in cm) 

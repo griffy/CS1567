@@ -7,8 +7,8 @@
 
 Camera::Camera(RobotInterface *robotInterface) {
     _robotInterface = robotInterface;
-    _leftDistanceErrorFilter = new FIRFilter("filters/camera_distance_error.ffc");
-    _rightDistanceErrorFilter = new FIRFilter("filters/camera_distance_error.ffc");
+    _centerDistErrorFilter = new FIRFilter("filters/cam_center_dist_error.ffc");
+    _slopeErrorFilter = new FIRFilter("filters/cam_slope_error.ffc");
     setQuality(RI_CAMERA_QUALITY_HIGH);
     setResolution(RI_CAMERA_RES_320);
     _pinkThresholded = NULL;
@@ -141,15 +141,14 @@ void Camera::update() {
 
 float Camera::centerError(int color) {
     float slopeError = corridorSlopeError(color);
+    float centerDistError = centerDistanceError(color);
 
     LOG.write(LOG_LOW, "centerError", "slope error: %f", slopeError);
+    LOG.write(LOG_LOW, "centerError", "center dist error: %f", centerDistError);
 
     if (slopeError == -999) {
         // we had issues finding slope error, so rely on center
         // dist error
-        float centerDistError = centerDistanceError(color);
-        LOG.write(LOG_LOW, "centerError", "center dist error: %f", centerDistError);
-
         return centerDistError;
     }
 
