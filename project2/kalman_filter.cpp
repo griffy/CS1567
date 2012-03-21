@@ -38,16 +38,15 @@ void KalmanFilter::filter(Pose *nsPose, Pose *wePose) {
 	wePose->toArrayForKalman(wePoseArr);
 
 	//Normalize thetas w.r.t each other
-	/*
 	if(nsPoseArr[2] - wePoseArr[2] > PI) {
 		wePoseArr[2] += 2*PI;
 	} else if(nsPoseArr[2] - wePoseArr[2] < -PI) {
 		wePoseArr[2] -= 2*PI;
 	}
-	*/
+	
 	// just use wheel encoder theta (not total for now)
-	wePoseArr[2] = wePose->getTheta();
-	nsPoseArr[2] = wePoseArr[2];
+	//wePoseArr[2] = wePose->getTheta();
+	//nsPoseArr[2] = wePoseArr[2];
     // update the kalman filter with the new data
 	rovioKalmanFilter(&_kf, nsPoseArr, wePoseArr, _track);
 	LOG.write(LOG_MED, "kalman track", 
