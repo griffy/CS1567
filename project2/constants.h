@@ -88,19 +88,24 @@ const float NS_ROOM_SCALE[4][2] =  {{49.2, 37.1},
 //     origin                            |
 //_______________________________________|
 
-const float NS_ROOM_ROTATION[4] = {0.0, 1.5708, 0.0, 1.6005}; //Rosie data, radians, correct!
+const float NS_ROOM_ROTATION[4] = {0.1, 1.5708, 0.0, 1.6005}; //Bender, project 2
+				//{0.0, 1.5708, 0.0, 1.6005}; //Rosie data, radians, correct!
 				//1.127
 // the distance of column top-right corner from base 0
 const float COL_OFFSET[2] = {193.0, 234.0};
-// the distances of ns origins from column corner (labeled with a * in above map)
-const float NS_ROOM_ORIGINS_FROM_COL[4][2] = {{18.0, -124.0},
-										      {-147.0, 8.0},
-										      {41.0, 168.0},
-										      {196.0, 30.0}};
-//Extra map data for project 2
-//Gort 
-//NS_ROOM_ORIGINS_FROM_COL[4][2] = {{x,y}, {x,y}, {x,y}, {x,y}}
 
+// the distances of ns origins from column corner (labeled with a * in above map)
+//Rosie, project 1
+//const float NS_ROOM_ORIGINS_FROM_COL[4][2] = {{18.0, -124.0},
+//										      {-147.0, 8.0},
+//										      {41.0, 168.0},
+//										      {196.0, 30.0}};
+
+//Extra map data for project 2
+//Gort, project 2
+//NS_ROOM_ORIGINS_FROM_COL[4][2] = {{48.0,-97.0}, {-95.0,32.0}, {84.0, 191.0}, {237.0, 61.0}}
+//Bender, project 2
+const float NS_ROOM_ORIGINS_FROM_COL[4][2] = {{36.0,-125.0}, {-116.0,18.0}, {62.0, 174.0}, {231.0, 57.0}};
 
 
 const float THETA_SHIFT[4] = {1.5708, -1.5708, 1.5708, -1.5708}; //Value necessary to push the theta = 0 onto the x-axis rather than the y

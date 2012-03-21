@@ -27,13 +27,13 @@ int main(int argc, char *argv[]) {
 */
 
 /* Project 2 Code
-*/
+
 	robot->move(DIR_EAST, 5);
 	robot->turn(DIR_RIGHT, DEGREE_90);
 	robot->move(DIR_SOUTH, 3);
 
 	delete robot;
-
+*/
 
 /* Sensor Testing Code 1
   	/*Pose * bases[NUM_BASES];
@@ -52,13 +52,13 @@ int main(int argc, char *argv[]) {
    	}
 */
 
-/* Sensor Testing Code 2
+// Sensor Testing Code 2
 	while(1) {
 		robot->updatePose();
 	}
 
 	delete robot;
-*/
+
 
 /* Project 1 Code
     // Base locations in cm within the global coordinate system

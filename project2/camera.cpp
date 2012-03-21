@@ -16,9 +16,9 @@ Camera::Camera(RobotInterface *robotInterface) {
     _pinkSquares = NULL;
     _yellowSquares = NULL;
 
-    cvNamedWindow("Thresholded", CV_WINDOW_AUTOSIZE);
-    cvNamedWindow("Biggest Squares Distances", CV_WINDOW_AUTOSIZE);
-    cvNamedWindow("Slopes", CV_WINDOW_AUTOSIZE);
+    //cvNamedWindow("Thresholded", CV_WINDOW_AUTOSIZE);
+    //cvNamedWindow("Biggest Squares Distances", CV_WINDOW_AUTOSIZE);
+    //cvNamedWindow("Slopes", CV_WINDOW_AUTOSIZE);
 
     _robotInterface->Move(RI_HEAD_MIDDLE, 1);
 }
@@ -149,6 +149,9 @@ float Camera::centerError(int color) {
     if (slopeError == -999) {
         // we had issues finding slope error, so rely on center
         // dist error
+        if(centerDistError == -999) {
+		return 0;
+	}
         return centerDistError;
     }
 
@@ -549,11 +552,14 @@ float Camera::centerDistanceError(int color) {
         }
     }
 
-    if (leftSquare == NULL) {
+    if (leftSquare == NULL && rightSquare == NULL) {
+    	return -999;
+    } 
+    else if (leftSquare == NULL) {
         // it seems to be out of view, so we set the error to 
         // the max it could be
         return (float)center / (float)width;
-    }
+    } 
     else if (rightSquare == NULL) {
         return (float)-center / (float)width;;
     }

@@ -44,6 +44,7 @@ void KalmanFilter::filter(Pose *nsPose, Pose *wePose) {
 		wePoseArr[2] -= 2*PI;
 	}
 	
+	LOG.write(LOG_LOW, "kalman_input_totalTheta", "WE:%f NS:%f", wePoseArr[2], nsPoseArr[2]);	
 	// just use wheel encoder theta (not total for now)
 	//wePoseArr[2] = wePose->getTheta();
 	//nsPoseArr[2] = wePoseArr[2];
