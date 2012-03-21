@@ -16,9 +16,9 @@ Camera::Camera(RobotInterface *robotInterface) {
     _pinkSquares = NULL;
     _yellowSquares = NULL;
 
-    //cvNamedWindow("Thresholded", CV_WINDOW_AUTOSIZE);
-    //cvNamedWindow("Biggest Squares Distances", CV_WINDOW_AUTOSIZE);
-    //cvNamedWindow("Slopes", CV_WINDOW_AUTOSIZE);
+    cvNamedWindow("Thresholded", CV_WINDOW_AUTOSIZE);
+    cvNamedWindow("Biggest Squares Distances", CV_WINDOW_AUTOSIZE);
+    cvNamedWindow("Slopes", CV_WINDOW_AUTOSIZE);
 
     _robotInterface->Move(RI_HEAD_MIDDLE, 1);
 }
@@ -219,7 +219,8 @@ float Camera::corridorSlopeError(int color) {
 		float difference = leftSide.slope + rightSide.slope;
 		if (hasSlopeLeft && hasSlopeRight) {
 			//determine location based on difference in slope
-			if (fabs(difference) <= MIN_SLOPE_DIFFERENCE) {
+//TODO: Delete below?
+/*			if (fabs(difference) <= MIN_SLOPE_DIFFERENCE) {
 				LOG.printfScreen(LOG_HIGH, "regression", "It seems to be going straight... continue\n");
 			}
 			else if(difference > 0){
@@ -228,6 +229,7 @@ float Camera::corridorSlopeError(int color) {
 			else if(difference < 0){
 				LOG.printfScreen(LOG_HIGH, "regression", "Probably too far to the right... try strafing left\n");
 			}
+*/
             // OLD CODE TODO: check that this puts the number in the proper range (-1 to 1)
             //
 	    //		return (1.35-leftSide.slope)*1.176;

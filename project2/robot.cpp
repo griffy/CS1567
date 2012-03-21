@@ -126,10 +126,10 @@ void Robot::move(int direction, int numCells) {
     int cellsTraveled = 0;
 
     while (cellsTraveled < numCells) {
-        // first attempt to center ourselves before moving
-        center();
+        // first attempt to center ourselves before moving (except not first)
+        //center();
         // reset the wheel encoder totals
-        _robotInterface->reset_state();
+        //_robotInterface->reset_state();
         // based on the direction, move in the global coord system
         float goalX = _pose->getX();
         float goalY = _pose->getY();
@@ -150,6 +150,11 @@ void Robot::move(int direction, int numCells) {
         moveTo(goalX, goalY);
 
         cellsTraveled++;
+
+        // first attempt to center ourselves before moving
+        center();
+        // reset the wheel encoder totals
+        _robotInterface->reset_state();
     }
 }
 
@@ -352,6 +357,7 @@ void Robot::center() {
 
         if (fabs(centerError) < MAX_CENTER_ERROR) {
             // we're close enough to centered, so stop adjusting
+            LOG.write(LOG_LOW, "center", "Center error: %f < %f, stop correcting.", centerError, MAX_CENTER_ERROR);
             break;
         }
 
@@ -363,9 +369,11 @@ void Robot::center() {
         LOG.write(LOG_LOW, "pid_speeds", "strafe: %d", strafeSpeed);
 
         if (centerError < 0) {
+            LOG.write(LOG_LOW, "center", "Center error: %f, move right", centerError);
             strafeRight(strafeSpeed);
         }
         else {
+            LOG.write(LOG_LOW, "center", "Center error: %f, move left", centerError);
             strafeLeft(strafeSpeed);
         }
     }

@@ -47,11 +47,11 @@
 #define PID_CENTER_KD 0.0001
 
 // acceptable proximities from base
-#define MAX_DIST_ERROR 35.0 // in cm
+#define MAX_DIST_ERROR 25.0 // in cm
 #define MAX_THETA_ERROR DEGREE_30
 
 // acceptable threshold for being in the center of squares, in pixels
-#define MAX_CENTER_ERROR 0.1
+#define MAX_CENTER_ERROR 0.25
 
 // the largest filter size (used for prefilling data)
 #define MAX_FILTER_TAPS 7
