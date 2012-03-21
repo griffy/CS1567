@@ -104,6 +104,10 @@ const float NS_ROOM_ORIGINS_FROM_COL[4][2] = {{18.0, -124.0},
 										      {-147.0, 8.0},
 										      {41.0, 168.0},
 										      {196.0, 30.0}};
+//Extra map data for project 2
+//Gort 
+//NS_ROOM_ORIGINS_FROM_COL[4][2] = {{x,y}, {x,y}, {x,y}, {x,y}}
+
 
 
 const float THETA_SHIFT[4] = {1.5708, -1.5708, 1.5708, -1.5708}; //Value necessary to push the theta = 0 onto the x-axis rather than the y
