@@ -119,32 +119,6 @@ void Robot::rockOut() {
     }
 }
 
-void drawX1(IplImage *image, squares_t *square, CvScalar color) {
-	if (square == NULL) {
-		return;
-	}
-	
-	CvPoint pt1, pt2;
-
-	// Draw an X marker on the image
-	int sqAmt = (int) (sqrt(square->area) / 2);	
-
-	// Upper Left to Lower Right
-	pt1.x = square->center.x - sqAmt;
-	pt1.y = square->center.y - sqAmt;
-	pt2.x = square->center.x + sqAmt;
-	pt2.y = square->center.y + sqAmt;
-	cvLine(image, pt1, pt2, color, 3, CV_AA, 0);
-
-	// Lower Left to Upper Right
-	pt1.x = square->center.x - sqAmt;
-	pt1.y = square->center.y + sqAmt;
-	pt2.x = square->center.x + sqAmt;
-	pt2.y = square->center.y - sqAmt;
-	cvLine(image, pt1, pt2, color, 3, CV_AA, 0);
-}
-
-
 void Robot::move(int direction, int numCells) {
     int cellsTraveled = 0;
 
