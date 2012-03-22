@@ -151,7 +151,6 @@ void Robot::move(int direction, int numCells) {
 
         cellsTraveled++;
 
-	_wheelEncoders->resetPose(_pose);
     }
 }
 
@@ -186,8 +185,8 @@ void Robot::moveTo(float x, float y) {
     _distancePID->flushPID();
     _thetaPID->flushPID();
 
-    // reset wheel encoder pose to be north star since we hit our base
-    //_wheelEncoders->resetPose(_northStar->getPose());
+    // reset wheel encoder pose to be Kalman pose since we hit our base
+    _wheelEncoders->resetPose(_pose);
 }
 
 // Moves to a location in the global coordinate system (in cm) 
@@ -374,6 +373,8 @@ void Robot::center() {
             strafeLeft(strafeSpeed);
         }
     }
+
+    _centerPID->flushPID();
 }
 
 void Robot::moveForward(int speed) {
