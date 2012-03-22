@@ -5,6 +5,8 @@
 #define MIN_SLOPE_DIFFERENCE 0.12
 #define MAX_SLOPE_DIFFERENCE 0.5
 
+#define MAX_CAMERA_ERRORS 5
+
 Camera::Camera(RobotInterface *robotInterface) {
     _robotInterface = robotInterface;
     _centerDistErrorFilter = new FIRFilter("filters/cam_center_dist_error.ffc");
@@ -96,22 +98,6 @@ void Camera::update() {
     }
     /*
     // FIXME: free squares memory properly
-    while (_pinkSquares != NULL) {
-        squares_t *square = _pinkSquares;
-        if (square->next != NULL) {
-            square = square->next;
-        }
-        delete _pinkSquares;
-        _pinkSquares = square;
-    }
-    while (_yellowSquares != NULL) {
-        squares_t *square = _yellowSquares;
-        if (square->next != NULL) {
-            square = square->next;
-        }
-        delete _yellowSquares;
-        _yellowSquares = square;
-    }
     */
 
     // get a red and pink thresholded and or them together
@@ -137,25 +123,46 @@ void Camera::update() {
     _pinkSquares = findSquaresOf(COLOR_PINK, DEFAULT_SQUARE_SIZE);
     _yellowSquares = findSquaresOf(COLOR_YELLOW, DEFAULT_SQUARE_SIZE);
 
+    // update the open windows instantly
+    cvWaitKey(1);
 }
 
 float Camera::centerError(int color) {
-    float slopeError = corridorSlopeError(color);
-    float centerDistError = centerDistanceError(color);
+    int numGoodSlopeErrors = 0;
+    int numGoodCenterDistErrors = 0;
+    float totalGoodSlopeError = 0.0;
+    float totalGoodCenterDistError = 0.0;
 
-    LOG.write(LOG_LOW, "centerError", "slope error: %f", slopeError);
-    LOG.write(LOG_LOW, "centerError", "center dist error: %f", centerDistError);
+    for (int i = 0; i < MAX_CAMERA_ERRORS; i++) {
+        update();
 
-    if (slopeError == -999) {
-        // we had issues finding slope error, so rely on center
-        // dist error
-        if(centerDistError == -999) {
-		return 0;
-	}
-        return centerDistError;
+        float slopeError = corridorSlopeError(color);
+        float centerDistError = centerDistanceError(color);
+
+        LOG.write(LOG_LOW, "centerError", "slope error %d: %f", i+1, slopeError);
+        LOG.write(LOG_LOW, "centerError", "center dist error %d: %f", i+1, centerDistError);
+
+        if (slopeError != -999) {
+            numGoodSlopeErrors++;
+            totalGoodSlopeError += slopeError;
+        }
+
+        if (centerDistError != -999) {
+            numGoodCenterDistErrors++;
+            totalGoodCenterDistError += centerDistError;
+        }
     }
 
-    return slopeError;
+    if (numGoodSlopeErrors == 0) {
+        // we couldn't find any slopes, so default
+        // to using the center distance instead
+        if (numGoodCenterDistErrors == 0) {
+            // we also couldn't find any squares.. oh snap
+            return 0;
+        }
+        return totalGoodCenterDistError / (float)numGoodCenterDistErrors;
+    }
+    return totalGoodSlopeError / (float)numGoodSlopeErrors;
 }
 
 /** ***************************************
@@ -263,123 +270,7 @@ float Camera::corridorSlopeError(int color) {
     // we didn't have enough squares to be useful
     return -999.0;
 }
-/*
-regressionLine Camera::twoPointRegression(int color, int side) {
-    
-    IplImage *thresholded;
-    squares_t *squares;
 
-    int width;
-    int squareCount = 0;
-    
-    regressionLine result;
-
-    switch (color) {
-    case COLOR_PINK:
-        thresholded = _pinkThresholded;
-        squares = _pinkSquares;
-        break;
-    case COLOR_YELLOW:
-        thresholded = _yellowThresholded;
-        squares = _yellowSquares;
-        break;
-    }
-
-    int center = thresholded->width / 2;
-
-    LOG.printfScreen(LOG_HIGH, "regression","center: %d\n",center);
-    
-    squares_t *curSquare = squares;
-    squares_t *largest;
-    squares_t *secondLargest;
-    while (curSquare != NULL) {
-	switch (side) {
-	    case SIDE_LEFT:	
-        	if (curSquare->center.x < center) {	
-			LOG.printfScreen(LOG_HIGH, "regression","Left square: x: %d y:%d area: %d\n",curSquare->center.x, curSquare->center.y, curSquare->area);
-			squareCount++;
-		}
-		break;
-	    case SIDE_RIGHT:
-		if (curSquare->center.x > center) {
-			squareCount++;
-			LOG.printfScreen(LOG_HIGH, "regression","Right square: x: %d y:%d area: %d\n",curSquare->center.x, curSquare->center.y, curSquare->area);
-		}
-		break;
-	    }
-        curSquare = curSquare->next;
-    }
-
-    result.numSquares = squareCount;
-    
-    if(squareCount >= 2) { 
-
-        //Linear regression algorithm
-        //Ref: http://mathworld.wolfram.com/LeastSquaresFitting.html
-        curSquare = squares;
-        while (curSquare != NULL) {
-	    switch (side) {
-	        case SIDE_LEFT:	
-        	    if (curSquare->center.x < center) {
-	    		xAvg += curSquare->center.x;
-	    		yAvg += curSquare->center.y;
-	    		xSqSum += curSquare->center.x * curSquare->center.x;
-	    		xySum += curSquare->center.x * curSquare->center.y;
-		    } 
-		    break;
-	        case SIDE_RIGHT:
-		    if (curSquare->center.x > center) {
-	    		xAvg += curSquare->center.x;
-	    		yAvg += curSquare->center.y;
-	    		xSqSum += curSquare->center.x * curSquare->center.x;
-	    		xySum += curSquare->center.x * curSquare->center.y;
-		    } 
-		    break;
-	    }
-	    curSquare = curSquare->next;
-        }   
-
-        xAvg /= result.numSquares;
-        yAvg /= result.numSquares;
-
-	float ssxx = 0;
-	float ssyy = 0;
-	float ssxy = 0;
-        curSquare = squares;
-        while (curSquare != NULL) {
-	    switch (side) {
-	        case SIDE_LEFT:	
-        	    if (curSquare->center.x < center) {
-	    		ssxx += (curSquare->center.x - xAvg) * (curSquare->center.x - xAvg);
-			ssyy += (curSquare->center.y - yAvg) * (curSquare->center.y - yAvg);
-			ssxy += (curSquare->center.x - xAvg) * (curSquare->center.y - yAvg);
-		    } 
-		    break;
-	        case SIDE_RIGHT:
-		    if (curSquare->center.x > center) {
-	    		ssxx += (curSquare->center.x - xAvg) * (curSquare->center.x - xAvg);
-			ssyy += (curSquare->center.y - yAvg) * (curSquare->center.y - yAvg);
-			ssxy += (curSquare->center.x - xAvg) * (curSquare->center.y - yAvg);
-		    } 
-		    break;
-	    }
-	    curSquare = curSquare->next;
-	}
-
-	
-    	LOG.printfScreen(LOG_HIGH, "regression", "%d Equation: Y = %f*X + %f\n", side, ssxy/ssxx, (yAvg-((ssxy/ssxx)*xAvg)));
-	
-        result.intercept = (((yAvg * xSqSum) - (xAvg * xySum) ) / (xSqSum - (result.numSquares * xAvg * xAvg)));
-        result.slope = ((xySum - (result.numSquares * xAvg * yAvg)) / (xSqSum - (result.numSquares * xAvg * xAvg)));
-    
-    } else { //We don't perform an extrapolation if there aren't enough squares
-        result.intercept = -999; //Some sort of error flag value, though we can also just check the numSquares value
-	result.slope = -999;
-    }
-
-    return result;
-}
-*/
 
 /***********************
 *Least Squares Regression, generic function
@@ -572,53 +463,6 @@ float Camera::centerDistanceError(int color) {
 
     //Return difference in errors
     return (float)(leftError + rightError) / (float)width;
-
-/*  
-    int filteredLeftError;
-    int filteredRightError;
-    for (int i = 0; i < _leftDistanceErrorFilter->getOrder()+1; i++) {
-        update();
-
-        int leftError = leftSquareDistanceError(color);
-        int rightError = rightSquareDistanceError(color);
-
-        if (leftError == -1) {
-            // the left square is out of view, so we
-            // set the error to the max it could be
-            leftMissCount++;
-			leftError=_leftDistanceErrorFilter->getValue();
-            //return width / 2;
-        }
-        else{
-			leftMissCount=0;
-		}
-        if (rightError == -1) {
-			rightMissCount++;
-			rightError=_rightDistanceErrorFilter->getValue();
-            //return -width / 2;
-        }
-        else {
-			rightMissCount=0;
-		}
-
-		//arbitrary constant, could change based on testing
-		filteredLeftError = (int)_leftDistanceErrorFilter->filter((float)leftError);
-		if(leftMissCount>=2){
-			filteredLeftError=width/2;
-			if(leftMissCount==2){
-				_leftDistanceErrorFilter->seed(width/2);
-			}
-		}
-		filteredRightError = (int)_rightDistanceErrorFilter->filter((float)rightError);
-		if(rightMissCount>=2){
-			filteredRightError=-width/2;
-			if(rightMissCount==2){
-				_rightDistanceErrorFilter->seed(-width/2);
-			}
-		}
-    }
-    return filteredLeftError - filteredRightError;
-*/
 }
 
 /* Error is defined to be the distance of the square
@@ -702,149 +546,6 @@ squares_t* Camera::rightBiggestSquare(int color) {
     return largestSquare;
 }
 
-/**
-  * Calculates the slope and y intercept of
-  * the given squares, based on their X and Y pixel centers of mass
-  *
-  * Also gives an r2 calculation, which shows how accuratly the line
-  * represents the points, with a value of 0 meaning none, to 1 meaning
-  * the line hits all the points
-  * 
-  * @arg line - pass in a pointer to the lineStruct that will receive the value for the line
-**/
-
-void Camera::calculateSlope(squares_t *squares, lineStruct *line){
-	squares_t *currSqr = squares;
-	float xAvg, yAvg;
-	float sumx = 0, sumy=0, sumxy=0;
-	int count=0;
-	// calculate average x and y values
-	while(currSqr != NULL){
-		sumx+=(float) currSqr->center.x;
-		sumy+=(float) currSqr->center.y;
-		count++;
-		currSqr=currSqr->next;
-	}
-	xAvg = sumx/count;
-	yAvg = sumy/count;
-
-	if(count <= 1){
-		// either 1 or 0 squares, cannot find a line with one point
-
-		line->slope = -999.0;
-		line->yInt = -999.0;
-		line->r2 = -999.0;
-		return ;
-	}
-
-	//calculate Sx, Sy, Sxy
-	sumx=0; sumy=0;
-	currSqr=squares;
-	while(currSqr != NULL){
-		LOG.printfScreen(LOG_HIGH, "camera image", "i'm here\n");
-		sumx+=(currSqr->center.x - xAvg)*(currSqr->center.x - xAvg);
-		sumy+=(currSqr->center.y - yAvg)*(currSqr->center.y - yAvg);
-		sumxy+=(currSqr->center.x - xAvg)*(currSqr->center.y - yAvg);
-		currSqr=currSqr->next;
-	}
-
-	line->slope = sumxy/sumx;
-	line->yInt = yAvg - line->slope*xAvg;
-	line->r2 = sumxy/sqrt(sumx*sumy);
-}
-
-/**
- * @return the location of the robot in the grid based on a scale of -1..0..1
- * 		with -1 being farthest left in the grid, 0 being centered, and 1 being farthest right
- */
-float Camera::estimatePos (squares_t *leftSquares, squares_t *rightSquares){
-	//find the lines for both squares
-	lineStruct leftLine;
-	lineStruct rightLine;
-	
-	calculateSlope(leftSquares, &leftLine);
-	calculateSlope(rightSquares, &rightLine);
-	
-	//check if slopes could not be calculated
-	if (leftLine.slope == -999.0){
-		LOG.printfScreen(LOG_HIGH, "camera image", "Error while calculating slope of left line... cannot estimate position accurately\n");
-	}
-	if (rightLine.slope == -999.0){
-		LOG.printfScreen(LOG_HIGH, "camera image", "Error while calculating slope of right line... cannot estimate position accurately\n");
-	}
-	
-	LOG.printfScreen(LOG_HIGH, "camera image", "Left line: y = %f*x + %f\t\tr^2 = %f\n", leftLine.slope, leftLine.yInt, leftLine.r2);
-	LOG.printfScreen(LOG_HIGH, "camera image", "Right line: y = %f*x + %f\t\tr^2 = %f\n", rightLine.slope, rightLine.yInt, rightLine.r2);
-
-	return 0;
-}
-
-float Camera::findPos (squares_t *squares){
-	
-    int center = _pinkThresholded->width / 2;
-	
-	
-	squares_t *rightSquares=NULL;
-	squares_t *indexRS=NULL;
-	
-	squares_t *leftSquares = NULL;
-	squares_t *indexLS = NULL;
-	
-    squares_t *curSquare = squares;
-	int cnt = 0;
-	int count = 0;
-    while (curSquare != NULL) {
-        if (curSquare->center.x > center) {
-			if(rightSquares == NULL){
-				rightSquares = new squares_t;
-				indexRS = rightSquares;
-				rightSquares->next = NULL;
-			}
-			else{
-				indexRS->next = new squares_t;
-				indexRS = indexRS->next;
-				indexRS = curSquare;
-				indexRS->next = NULL;
-			}
-			count++;
-        }
-        else {
-			if(leftSquares == NULL){
-				leftSquares = new squares_t;
-				indexLS = leftSquares;
-				leftSquares->next = NULL;
-			}
-			else{
-				indexLS->next = new squares_t;
-				indexLS = indexLS->next;
-				indexLS = curSquare;
-				indexLS->next = NULL;
-			}
-			cnt++;
-		}
-        curSquare = curSquare->next;
-		printf("i'm here again\n");
-    }
-    LOG.printfScreen(LOG_HIGH, "camera image", "counts: right = %d, left = %d\n", count, cnt);
-    float result = estimatePos(leftSquares, rightSquares);
-	
-	//clean up old arrays
-	indexRS = rightSquares;
-	while (indexRS != NULL){
-		squares_t *nextPointer = indexRS->next;
-		delete indexRS;
-		indexRS = nextPointer;
-	}
-	indexLS = leftSquares;
-	while (indexLS != NULL){
-		squares_t *nextPointer = indexLS->next;
-		delete indexRS;
-		indexLS = nextPointer;
-	}
-
-	return result;
-}
-
 // Finds squares of a given color in the passed image
 squares_t* Camera::findSquaresOf(int color, int areaThreshold) {
     squares_t *squares;
@@ -859,65 +560,7 @@ squares_t* Camera::findSquaresOf(int color, int areaThreshold) {
     return squares;
 }
 
-//sort squares based on size
-void sortSquaresSize(squares_t * sqr, std::vector<squares_t> * vec){
-	squares_t * currSqr = sqr;
-	while(currSqr != NULL) {
-		vec->push_back(*currSqr);
-	}
-	for(int i=0; i<vec->size(); i++){
-		for(int j=i; j<vec->size();j++){
-			if((*vec)[j].area > (*vec)[i].area){
-				squares_t temp = (*vec)[i];
-				vec[i] = vec[j];
-				vec[j] = vec[i];
-			}
-		}
-	}
-}
-//sort squares based on x
-void sortSquaresX(squares_t * sqr, std::vector<squares_t> * vec){
-	squares_t * currSqr = sqr;
-	while(currSqr != NULL) {
-		vec->push_back(*currSqr);
-	}
-	for(int i=0; i<vec->size(); i++){
-		for(int j=i; j<vec->size();j++){
-			if((*vec)[j].center.x > (*vec)[i].center.x){
-				squares_t temp = (*vec)[i];
-				(*vec)[i] = (*vec)[j];
-				(*vec)[j] = (*vec)[i];
-			}
-		}
-	}
-}
-//sort squares based on y
-void sortSquaresY(squares_t * sqr, std::vector<squares_t> * vec){
-	squares_t * currSqr = sqr;
-	while(currSqr != NULL) {
-		vec->push_back(*currSqr);
-	}
-	for(int i=0; i<vec->size(); i++){
-		for(int j=i; j<vec->size();j++){
-			if((*vec)[j].center.y > (*vec)[i].center.y){
-				squares_t temp = (*vec)[i];
-				(*vec)[i] = (*vec)[j];
-				(*vec)[j] = (*vec)[i];
-			}
-		}
-	}
-}
 
-//take a vector and make it a squares_t pointer
-void vectorToSquares_t(std::vector<squares_t> * vec, squares_t * sqr){
-	squares_t * temp = sqr;
-	*temp = (*vec)[0];
-	for(int i=1; i<vec->size(); i++) {
-		temp->next = new squares_t;
-		temp = temp->next;
-		*temp = (*vec)[i];
-	}
-}
 
 squares_t* Camera::findSquares(IplImage *img, int areaThreshold) {
     CvSeq* contours;
@@ -958,8 +601,8 @@ squares_t* Camera::findSquares(IplImage *img, int areaThreshold) {
     cvDilate(canny, canny, 0, 2);
         
     // Find the contours and store them all as a list
-    // was CV_RETR_LIST
-    cvFindContours(canny, storage, &contours, sizeof(CvContour), CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE, cvPoint(0,0));
+    // was CV_RETR_EXTERNAL
+    cvFindContours(canny, storage, &contours, sizeof(CvContour), CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE, cvPoint(0,0));
             
     // Test each contour to find squares
     while(contours) {
