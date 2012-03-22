@@ -30,6 +30,10 @@ int main(int argc, char *argv[]) {
 
 /*	robot->move(DIR_EAST, 5);
 	robot->turn(DIR_RIGHT, DEGREE_90);
+	robot->turn(DIR_LEFT, DEGREE_90);
+	
+	robot->move(DIR_EAST, 5);
+	robot->turn(DIR_RIGHT, DEGREE_90);
 	robot->move(DIR_SOUTH, 3);
 
 	delete robot;
