@@ -19,13 +19,15 @@
 #define PROC_Y_UNCERTAIN 0.05
 #define PROC_THETA_UNCERTAIN 0.05
 
-#define NS_X_UNCERTAIN 0.05
-#define NS_Y_UNCERTAIN 0.05
+#define NS_X_UNCERTAIN 0.15
+#define NS_Y_UNCERTAIN 0.15
 #define NS_THETA_UNCERTAIN 0.05
 
 #define WE_X_UNCERTAIN 0.05
 #define WE_Y_UNCERTAIN 0.05
-#define WE_THETA_UNCERTAIN 0.05 // was 0.05
+// wheel encoder theta is about as uncertain
+// as north star x and y
+#define WE_THETA_UNCERTAIN 0.15
 
 // PID gains min and max
 #define MIN_DIST_GAIN -0.1
@@ -50,7 +52,7 @@
 #define MAX_DIST_ERROR 25.0 // in cm
 #define MAX_THETA_ERROR DEGREE_30
 
-// acceptable threshold for being in the center of squares, in pixels
+// acceptable threshold for being in the center of squares
 #define MAX_CENTER_ERROR 0.25
 
 // the largest filter size (used for prefilling data)
