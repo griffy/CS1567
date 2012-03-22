@@ -102,6 +102,9 @@ const float COL_OFFSET[2] = {193.0, 234.0};
 //										      {196.0, 30.0}};
 
 //Extra map data for project 2
+//
+//DON'T TRUST ROOM 4 for Gort or Bender
+//
 //Gort, project 2
 //NS_ROOM_ORIGINS_FROM_COL[4][2] = {{48.0,-97.0}, {-95.0,32.0}, {84.0, 191.0}, {237.0, 61.0}}
 //Bender, project 2
