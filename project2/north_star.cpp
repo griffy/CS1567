@@ -31,6 +31,10 @@ void NorthStar::updatePose(int room) {
 //			  x, y, theta);
 
 	Pose *estimate = new Pose(x, y, theta);
+
+//Temporary
+	Pose *estimate2 = new Pose(x, y, theta);
+	
 //	LOG.write(LOG_LOW, "ns estimates", 
 //			  "pose start x: %f, pose start y: %f, pose start theta: %f, pose total theta: %f",
 //			  estimate->getX(), estimate->getY(), estimate->getTheta(), estimate->getTotalTheta());
@@ -41,12 +45,15 @@ void NorthStar::updatePose(int room) {
 		float xFitAngle = 0.0000204488 * x - 0.0804;
 		float yFitAngle = 0.0000204488 * y - 0.0804;
 		estimate->rotateEach(xFitAngle, yFitAngle, NS_ROOM_ROTATION[room]);
+		estimate2->rotate(NS_ROOM_ROTATION[room]);
 	}
 	else {
 		estimate->rotate(NS_ROOM_ROTATION[room]);
+		estimate2->rotate(NS_ROOM_ROTATION[room]);
 	}
 
 	estimate->rotateEach(0, 0, THETA_SHIFT[room]);
+	estimate2->rotateEach(0, 0, THETA_SHIFT[room]);
 
 //	LOG.write(LOG_LOW, "ns estimates", 
 //		  	  "room %d, pose rotate x: %f, pose rotate y: %f, pose rotate theta: %f, pose total theta: %f",
@@ -55,6 +62,7 @@ void NorthStar::updatePose(int room) {
 	float sx = NS_ROOM_SCALE[room][0];
 	float sy = NS_ROOM_SCALE[room][1];
 	estimate->scale(sx, sy);
+	estimate2->scale(sx, sy);
 //	LOG.write(LOG_LOW, "ns estimates", 
 //		  	  "room %d, pose scale x: %f, pose scale y: %f, pose scale theta: %f, pose total theta: %f",
 //		      room+2, estimate->getX(), estimate->getY(), estimate->getTheta(), estimate->getTotalTheta());
@@ -62,6 +70,7 @@ void NorthStar::updatePose(int room) {
 	float tx = COL_OFFSET[0] + NS_ROOM_ORIGINS_FROM_COL[room][0];
 	float ty = COL_OFFSET[1] + NS_ROOM_ORIGINS_FROM_COL[room][1];
 	estimate->translate(tx, ty);
+	estimate2->translate(tx, ty);
 
 //	LOG.write(LOG_LOW, "ns estimates", 
 //		  	  "room %d, pose translate x: %f, pose translate y: %f, pose translate theta: %f, pose total theta: %f",
@@ -79,9 +88,15 @@ void NorthStar::updatePose(int room) {
 		      room+2, _pose->getX(), _pose->getY(), _pose->getTheta());
 
 	LOG.write(LOG_LOW, "ns_estimates", 
-		  	  "%d new pose x: %f, new pose y: %f, new pose theta: %f",
+		  	  "room %d, new pose: x: %f, y: %f, theta: %f",
 		      room+2, _pose->getX(), _pose->getY(), _pose->getTheta());
+
+	LOG.write(LOG_LOW, "ns_correction_check",
+			 "%d %f %f %f %f %f %f",
+		      room+2, estimate->getX(), estimate->getY(), estimate->getTheta(), estimate2->getX(), estimate2->getY(), estimate2->getTheta());
+
 	delete estimate;
+	delete estimate2;
 }
 
 float NorthStar::_getFilteredX() {

@@ -27,11 +27,7 @@ int main(int argc, char *argv[]) {
 */
 
 // Project 2 Code
-
-/*	robot->move(DIR_EAST, 5);
-	robot->turn(DIR_RIGHT, DEGREE_90);
-	robot->turn(DIR_LEFT, DEGREE_90);
-	
+/*
 	robot->move(DIR_EAST, 5);
 	robot->turn(DIR_RIGHT, DEGREE_90);
 	robot->move(DIR_SOUTH, 3);
