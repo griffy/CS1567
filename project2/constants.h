@@ -106,10 +106,11 @@ const float COL_OFFSET[2] = {193.0, 234.0};
 //DON'T TRUST ROOM 4 for Gort or Bender
 //
 //Gort, project 2
-//NS_ROOM_ORIGINS_FROM_COL[4][2] = {{48.0,-97.0}, {-95.0,32.0}, {84.0, 191.0}, {237.0, 61.0}}
+//NS_ROOM_ORIGINS_FROM_COL[4][2] = {{48.0,-97.0}, {-95.0,32.0}, {84.0, 191.0}, {212.0, 102.0}};
 //Bender, project 2
-const float NS_ROOM_ORIGINS_FROM_COL[4][2] = {{36.0,-125.0}, {-116.0,18.0}, {62.0, 174.0}, {231.0, 57.0}};
-
+//const float NS_ROOM_ORIGINS_FROM_COL[4][2] = {{36.0,-125.0}, {-116.0,18.0}, {62.0, 174.0}, {193.0, 61.0}};
+// Johnny5, project 2
+const float NS_ROOM_ORIGINS_FROM_COL[4][2] = {{5.0, -104.0}, {-144.0, 25.0}, {32.0, 200.0}, {195.0, 32.0}};
 
 const float THETA_SHIFT[4] = {1.5708, -1.5708, 1.5708, -1.5708}; //Value necessary to push the theta = 0 onto the x-axis rather than the y
 
