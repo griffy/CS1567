@@ -361,9 +361,9 @@ void Robot::center() {
         }
 
         int strafeSpeed = (int)fabs((1.0/centerGain));
-        // cap our speed at 4, since moving too slow is bad
-        if (strafeSpeed > 4) {
-            strafeSpeed = 4;
+        // cap our speed at 8
+        if (strafeSpeed > 8) {
+            strafeSpeed = 8;
         }
         LOG.write(LOG_LOW, "pid_speeds", "strafe: %d", strafeSpeed);
 
@@ -404,12 +404,17 @@ void Robot::turnRight(int speed) {
 
 /* Strafes the robot left at the given speed */
 void Robot::strafeLeft(int speed) {
-    _robotInterface->Move(RI_MOVE_LEFT, speed);
+    // we need about 5 commands to actually strafe sideways
+    for (int i = 0; i < 5; i++) {
+        _robotInterface->Move(RI_MOVE_LEFT, speed);
+    }
 }
 
 /* Strafes the robot right at the given speed */
 void Robot::strafeRight(int speed) {
-    _robotInterface->Move(RI_MOVE_RIGHT, speed);
+    for (int i = 0; i < 5; i++) {
+        _robotInterface->Move(RI_MOVE_RIGHT, speed);
+    }
 }
 
 /* Stops the robot, updating movement variables */
