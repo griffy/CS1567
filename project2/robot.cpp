@@ -273,9 +273,6 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
 
     float thetaGain;
  
-    //REMOVE THIS
-    thetaGoal = 0.0;
-
     printf("adjusting theta\n");
     do {	
 	    updatePose();
@@ -356,7 +353,7 @@ void Robot::center() {
 
         if (fabs(centerError) < MAX_CENTER_ERROR) {
             // we're close enough to centered, so stop adjusting
-            LOG.write(LOG_LOW, "center", "Center error: %f < %f, stop correcting.", centerError, MAX_CENTER_ERROR);
+            LOG.write(LOG_LOW, "center", "Center error: |%f| < %f, stop correcting.", centerError, MAX_CENTER_ERROR);
             break;
         }
 
