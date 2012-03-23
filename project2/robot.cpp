@@ -150,7 +150,7 @@ void Robot::move(int direction, int numCells) {
         moveTo(goalX, goalY);
 
         cellsTraveled++;
-
+        LOG.write(LOG_LOW, "move", "MADE IT TO CELL %d\n\n\n", cellsTraveled);
     }
 }
 
@@ -229,9 +229,6 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
 
         thetaDesired = atan2(yError, xError);
         thetaDesired = Util::normalizeTheta(thetaDesired);
-
-	//REMOVE THIS
-	thetaDesired = 0.0;
 
         thetaError = thetaDesired - _pose->getTheta();
         thetaError = Util::normalizeThetaError(thetaError);

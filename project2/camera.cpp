@@ -162,6 +162,7 @@ float Camera::centerError(int color) {
         }
         return totalGoodCenterDistError / (float)numGoodCenterDistErrors;
     }
+
     return totalGoodSlopeError / (float)numGoodSlopeErrors;
 }
 
