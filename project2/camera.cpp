@@ -124,7 +124,7 @@ void Camera::update() {
     _yellowSquares = findSquaresOf(COLOR_YELLOW, DEFAULT_SQUARE_SIZE);
 
     // update the open windows instantly
-    cvWaitKey(1);
+    cvWaitKey(10);
 }
 
 float Camera::centerError(int color) {
