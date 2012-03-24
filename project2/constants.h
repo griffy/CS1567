@@ -54,6 +54,7 @@
 
 // acceptable threshold for being in the center of squares
 #define MAX_CENTER_ERROR 0.40
+#define MAX_TURN_CENTER_ERROR 0.2
 
 // the largest filter size (used for prefilling data)
 #define MAX_FILTER_TAPS 7
