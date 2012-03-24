@@ -1,3 +1,19 @@
+/**
+ * constants.h
+ * 
+ * @brief 
+ * 		This header defines constants for use throughout the project
+ * 
+ * @author
+ * 		Tom Nason
+ * 		Joel Griffith
+ * 		Shawn Hanna
+ * 
+ * @date
+ * 		created - 2/2/2012
+ * 		modified - 3/24/2012
+ **/
+
 #ifndef CS1567_CONSTANTS_H
 #define CS1567_CONSTANTS_H
 

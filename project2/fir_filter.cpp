@@ -1,3 +1,19 @@
+/**
+ * fir_filter.cpp
+ * 
+ * @brief 
+ * 		This class is used for applying a FIR filter to arbitrary data
+ * 
+ * @author
+ * 		Shawn Hanna
+ * 		Tom Nason
+ * 		Joel Griffith
+ * 
+ * @date
+ * 		created - 2/2/2012
+ * 		modified - 2/25/2012
+ **/
+
 #include "fir_filter.h"
 
 #include <cstdlib>

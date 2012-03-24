@@ -1,3 +1,19 @@
+/**
+ * utilities.cpp
+ * 
+ * @brief 
+ * 		This namespace contains commonly used functions that can be used throughout the program
+ * 
+ * @author
+ * 		Tom Nason
+ * 		Joel Griffith
+ * 		Shawn Hanna
+ * 
+ * @date
+ * 		created - 2/2/2012
+ * 		modified - 2/28/2012
+ **/
+
 #include "utilities.h"
 #include "constants.h"
 #include <stdio.h>

@@ -1,3 +1,19 @@
+/**
+ * PID.cpp
+ * 
+ * @brief 
+ * 		This class is a basic PID controller.  It creates, stores, and returns the value from the PID
+ * 
+ * @author
+ * 		Tom Nason
+ * 		Joel Griffith
+ * 		Shawn Hanna
+ * 
+ * @date
+ * 		created - 2/12/2012
+ * 		modified - 3/24/2012
+ **/
+
 #include "PID.h"
 #include "logger.h"
 

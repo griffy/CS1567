@@ -1,3 +1,19 @@
+/**
+ * pose.cpp
+ * 
+ * @brief 
+ * 		This class is used for keeping the robot's physical pose (x,y,theta) and performing calculations on it
+ * 
+ * @author
+ * 		Shawn Hanna
+ * 		Tom Nason
+ * 		Joel Griffith
+ * 
+ * @date
+ * 		created - 2/2/2012
+ * 		modified - 3/24/2012
+ **/
+
 #include "pose.h"
 #include "constants.h"
 #include "utilities.h"

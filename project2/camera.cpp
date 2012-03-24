@@ -1,3 +1,20 @@
+/**
+ * camera.cpp
+ * 
+ * @brief 
+ * 		This class defines the rovio's camera. It has functions for accessing, storing, and processing the image
+ * 		returned from the robot
+ * 
+ * @author
+ * 		Shawn Hanna
+ * 		Tom Nason
+ * 		Joel Griffith
+ * 
+ * @date
+ * 		created - 3//2012
+ * 		modified - 3/24/2012
+ **/
+
 #include "camera.h"
 #include "logger.h"
 #include <robot_color.h>
