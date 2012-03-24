@@ -5,7 +5,7 @@
 #define MIN_SLOPE_DIFFERENCE 0.12
 #define MAX_SLOPE_DIFFERENCE 0.5
 
-#define MAX_CAMERA_ERRORS 5
+#define MAX_CAMERA_ERRORS 10
 
 Camera::Camera(RobotInterface *robotInterface) {
     _robotInterface = robotInterface;
