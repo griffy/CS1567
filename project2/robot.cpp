@@ -341,8 +341,6 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
 
 void Robot::center() {
     while (true) {
-        // TODO: if this is unreliable, try filtering
-        // the errors and taking the filtered average to work with
         updateCamera();
 
         float centerError = _camera->centerError(COLOR_PINK);
