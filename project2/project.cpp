@@ -1,3 +1,20 @@
+/**
+ * project.cpp
+ * 
+ * @brief 
+ * 		This program commands the robot to perform a task. It has functionality that enables
+ * 		it to call functions and access members in the Robot class
+ * 
+ * @author
+ * 		Joel Griffith
+ * 		Shawn Hanna
+ * 		Tom Nason
+ * 
+ * @date
+ * 		created - 2/2/2012
+ * 		modified - 3/24/2012
+ **/
+
 #include "robot.h"
 #include "logger.h"
 #include "camera.h"
@@ -27,9 +44,17 @@ int main(int argc, char *argv[]) {
 */
 
 // Project 2 Code
-	robot->move(DIR_EAST, 5);
-	robot->turn(DIR_RIGHT, DEGREE_90);
-	robot->move(DIR_SOUTH, 3);
+for (int i = 0; i<1; i++){
+	robot->strafeLeft(1);
+}
+sleep(1);
+for (int i = 0; i<1; i++){
+	robot->strafeRight(1);
+}
+
+	//robot->move(DIR_EAST, 5);
+	//robot->turn(DIR_RIGHT, DEGREE_90);
+	//robot->move(DIR_SOUTH, 3);
 
 	delete robot;
 

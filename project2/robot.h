@@ -110,7 +110,7 @@ private:
 	// stores the most recent speed that the robot was told. set during both turns and moving straight instructions
 	int _speed;	
 	char _turnDirection;			// value of 1 means turning right, 0 means left
-	bool _movingForward;		// set if moving forward/stopped
+	bool _movingForward;			// set if moving forward/stopped
 
     PID* _distancePID;
     PID* _thetaPID;

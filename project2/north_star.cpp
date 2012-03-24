@@ -1,3 +1,20 @@
+/**
+ * north_star.cpp
+ * 
+ * @brief 
+ * 		This class performs all functions for the north star sensors (except for when to update the data)
+ * 		It stores the raw and filtered data, and contains functions for converting the data into global coordinates
+ * 
+ * @author
+ * 		Shawn Hanna
+ * 		Tom Nason
+ * 		Joel Griffith
+ * 
+ * @date
+ * 		created - 2/2/2012
+ * 		modified - 3/24/2012
+ **/
+
 #include "north_star.h"
 #include "constants.h"
 #include "logger.h"

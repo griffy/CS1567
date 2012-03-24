@@ -1,3 +1,20 @@
+/**
+ * robot.cpp
+ * 
+ * @brief 
+ * 		This class defines the rovio robot, and performs operations that the system can do, such as movement and 
+ * 		requesting sensor updates.  It also stores the sensor classes and vehicle position
+ * 
+ * @author
+ * 		Tom Nason
+ * 		Joel Griffith
+ * 		Shawn Hanna
+ * 
+ * @date
+ * 		created - 2/2/2012
+ * 		modified - 3/24/2012
+ **/
+
 #include "robot.h"
 #include "phrases.h"
 #include "logger.h"
@@ -355,11 +372,15 @@ void Robot::center() {
             break;
         }
 
-        int strafeSpeed = (int)fabs((1.0/centerGain));
+        int strafeSpeed = (int)fabs((centerGain));
+		
         // cap our speed at 8
-        if (strafeSpeed > 8) {
-            strafeSpeed = 8;
+        if (strafeSpeed > 10) {
+            //strafeSpeed = 10;
         }
+        else if(strafeSpeed < 4) {
+			//strafeSpeed = 4;
+		}
         LOG.write(LOG_LOW, "pid_speeds", "strafe: %d", strafeSpeed);
 
         if (centerError < 0) {
@@ -400,15 +421,15 @@ void Robot::turnRight(int speed) {
 /* Strafes the robot left at the given speed */
 void Robot::strafeLeft(int speed) {
     // we need about 5 commands to actually strafe sideways
-    for (int i = 0; i < 5; i++) {
-        _robotInterface->Move(RI_MOVE_LEFT, speed);
+    for (int i = 0; i < 2+speed*2.5; i++) {
+        _robotInterface->Move(RI_MOVE_LEFT, 10);
     }
 }
 
 /* Strafes the robot right at the given speed */
 void Robot::strafeRight(int speed) {
-    for (int i = 0; i < 5; i++) {
-        _robotInterface->Move(RI_MOVE_RIGHT, speed);
+    for (int i = 0; i < 2+speed*2.5; i++) {
+        _robotInterface->Move(RI_MOVE_RIGHT, 10);
     }
 }
 

@@ -1,9 +1,3 @@
-/**
- * @author Shawn Hanna
- * @group_number 1
- * @date 2/7/2012
-**/
-
 #ifndef CS1567_PID_H
 #define CS1567_PID_H
 
