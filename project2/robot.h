@@ -69,10 +69,12 @@ public:
     // moves the number of cells in the given direction
     void move(int direction, int numCells);
     void turn(int direction, float radians);
+    void moveToCell(float x, float y);
     //moves to the given x/y coordinates, without stopping
     void moveTo(float x, float y);
     float moveToUntil(float x, float y, float thetaErrorLimit);
     void turnTo(float theta, float thetaErrorLimit);
+    void turnCenter();
     void center();
 
     void setFailLimit(int limit);
@@ -115,7 +117,7 @@ private:
     PID* _distancePID;
     PID* _thetaPID;
     PID* _centerPID;
-    PID* _slopePID;
+    PID* _turnCenterPID;
 
     int _failLimit;
 
