@@ -231,7 +231,7 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
         thetaDesired = Util::normalizeTheta(thetaDesired);
 
 	//REMOVE THIS
-	thetaDesired = 0.0;
+	//thetaDesired = 0.0;
 
         thetaError = thetaDesired - _pose->getTheta();
         thetaError = Util::normalizeThetaError(thetaError);
@@ -277,7 +277,7 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
     float thetaGain;
  
     //REMOVE THIS
-    thetaGoal = 0.0;
+    //thetaGoal = 0.0;
 
     printf("adjusting theta\n");
     do {	

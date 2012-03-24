@@ -5,6 +5,7 @@
 
 NorthStar::NorthStar(RobotInterface *robotInterface)
 : PositionSensor(robotInterface) {
+	_lastRoom = -1;
 	_filterX = new FIRFilter("filters/ns_x.ffc");
 	_filterY = new FIRFilter("filters/ns_y.ffc");
 	_filterTheta = new FIRFilter("filters/ns_theta.ffc");
@@ -18,9 +19,17 @@ NorthStar::~NorthStar() {
 
 /* Requires the interface be updated prior to calling */
 void NorthStar::updatePose(int room) {
+
+	if(_lastRoom != -1 && _lastRoom != room) {
+		_filterX->seed(_robotInterface->X());
+		_filterY->seed(_robotInterface->Y());
+		_filterTheta->seed(_robotInterface->Theta());
+	}
+
 	float x = _getFilteredX();
 	float y = _getFilteredY();
 	float theta = _getFilteredTheta();
+
 
 	LOG.printfFile(LOG_LOW, "ns_positions_raw", 
 			  "%d, %f, %f, %f\n",
@@ -97,6 +106,8 @@ void NorthStar::updatePose(int room) {
 
 	delete estimate;
 	delete estimate2;
+
+	_lastRoom = room;
 }
 
 float NorthStar::_getFilteredX() {

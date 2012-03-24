@@ -13,6 +13,7 @@ private:
 	FIRFilter *_filterX;
 	FIRFilter *_filterY;
 	FIRFilter *_filterTheta;
+	int _lastRoom;
 
 	float _getFilteredX();
 	float _getFilteredY();
