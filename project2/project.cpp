@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
 
 	Robot *robot = new Robot(argv[1], 0);
 
-	robot->center();
+//	robot->center();
 /* Camera Testing Code
 	while (true) {
 		robot->updateCamera();
