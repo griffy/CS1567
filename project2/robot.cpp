@@ -431,6 +431,8 @@ void Robot::center() {
 
         float centerError = _camera->centerError(COLOR_PINK);
         float centerGain = _centerPID->updatePID(centerError);
+		/// TODO remove break
+		break;
 
         LOG.write(LOG_LOW, "center", "center error: %f", centerError);
         LOG.write(LOG_LOW, "center", "center gain: %f", centerGain);

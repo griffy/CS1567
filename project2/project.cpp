@@ -37,6 +37,24 @@ int main(int argc, char *argv[]) {
 
 	robot->center();
 
+/* Camera Testing Code
+	while (true) {
+		robot->updateCamera();
+		robot->_camera->centerError(COLOR_PINK);
+		cvWaitKey(0);
+	}
+*/
+
+/*
+for (int i = 0; i<1; i++){
+	robot->strafeLeft(1);
+}
+sleep(1);
+for (int i = 0; i<1; i++){
+	robot->strafeRight(1);
+}
+*/
+
 // Project 2 Code
 /*
 	robot->move(DIR_EAST, 5);

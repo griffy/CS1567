@@ -219,6 +219,9 @@ float Camera::corridorSlopeError(int color) {
 
     regressionLine leftSide = leastSquaresRegression(color, SIDE_LEFT);
     regressionLine rightSide = leastSquaresRegression(color, SIDE_RIGHT);
+	
+	LOG.write(LOG_HIGH, "leftRegLine", "%f\n", leftSide.slope);
+	LOG.write(LOG_HIGH, "rightRegLine", "%f\n", rightSide.slope);
 
     IplImage *bgr = getBGRImage();
     if (bgr != NULL) {
@@ -423,7 +426,7 @@ regressionLine Camera::leastSquaresRegression(int color, int side) {
     
     } else { //We don't perform an extrapolation if there aren't enough squares
         result.intercept = -999; //Some sort of error flag value, though we can also just check the numSquares value
-	result.slope = -999;
+		result.slope = -999;
     }
 
     return result;
