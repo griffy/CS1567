@@ -177,8 +177,10 @@ float Camera::centerError(int color) {
     if (numGoodSlopeErrors == 0) {
         // we couldn't find any slopes, so default
         // to using the center distance instead
+        printf("Couldn't find any slopes, default to using center distance...\n");
         if (numGoodCenterDistErrors == 0) {
             // we also couldn't find any squares.. oh snap
+			printf("Couldn't find center distance either... OH SNAP!!!!!\n");
             return 0;
         }
         return totalGoodCenterDistError / (float)numGoodCenterDistErrors;
@@ -236,11 +238,11 @@ float Camera::corridorSlopeError(int color) {
 		//do something to define error relative to the differences of the slopes
 
         // sanity-check the slopes to make sure we have good ones to go off of
-		if(rightSide.slope > -2.5 && rightSide.slope < -.01) {
+		if(rightSide.slope > -2.5 && rightSide.slope < -0.01 && rightSide.slope != -0.500000 && rightSide.slope != 0.500000) {
 			//seems like a good slope
 			hasSlopeRight = true;
 		}
-		if(leftSide.slope < 2.5 && leftSide.slope > .01) {
+		if(leftSide.slope < 2.5 && leftSide.slope > 0.01 && leftSide.slope != -0.500000 && leftSide.slope != 0.500000) {
 			//seems like a good slope
 			hasSlopeLeft = true;
 		}
@@ -277,15 +279,18 @@ float Camera::corridorSlopeError(int color) {
 		
 		if( hasSlopeLeft && !hasSlopeRight ){
 			//no right slope, so interpolate based on left
+			printf("HAS LEFT\n");
 			return 1;
 		}
 		
 		if( !hasSlopeLeft && hasSlopeRight ){
 			//no right slope, so interpolate based on left
+			printf("HAS RIGHT\n");
 			return -1;
 		}
 		
 		if (!hasSlopeLeft && !hasSlopeRight){
+			printf("HAS NONE\n");
 			return -999.0;
 		}
 	}
