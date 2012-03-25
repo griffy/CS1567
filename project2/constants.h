@@ -74,7 +74,7 @@
 #define MAX_THETA_ERROR DEGREE_30
 
 // acceptable threshold for being in the center of squares
-#define MAX_CENTER_ERROR 0.40
+#define MAX_CENTER_ERROR 0.15
 #define MAX_TURN_CENTER_ERROR 0.20
 
 // the largest filter size (used for prefilling data)
