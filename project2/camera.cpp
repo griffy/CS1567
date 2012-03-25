@@ -11,8 +11,8 @@
  * 		Joel Griffith
  * 
  * @date
- * 		created - 3//2012
- * 		modified - 3/24/2012
+ * 		created - 3/2/2012
+ * 		modified - 3/25/2012
  **/
 
 #include "camera.h"
@@ -25,9 +25,11 @@
 
 #define RIGHT_LEFT_SLOPE -0.35
 #define RIGHT_RIGHT_SLOPE -2.22
+#define RIGHT_MIDDLE_SLOPE -0.67
 
 #define LEFT_LEFT_SLOPE 2.6
 #define LEFT_RIGHT_SLOPE 0.55
+#define LEFT_MIDDLE_SLOPE 0.7
 
 #define MAX_SLOPE_DIFFERENCE 0.5
 
@@ -275,7 +277,8 @@ float Camera::corridorSlopeError(int color) {
 		if( hasSlopeLeft && !hasSlopeRight ){
 			//no right slope, so interpolate based on left
 			LOG.write(LOG_LOW, "corridorSlopeError", "only left slope, interpolating\n");
-			float leftTranslate = Util::mapValue(leftSide.slope, LEFT_LEFT_SLOPE, LEFT_RIGHT_SLOPE, -1, 1);
+			//float leftTranslate = Util::mapValue(leftSide.slope, LEFT_LEFT_SLOPE, LEFT_RIGHT_SLOPE, -1, 1);
+			float leftTranslate = leftSide.slope - LEFT_MIDDLE_SLOPE;
             LOG.write(LOG_LOW, "corridorSlopeError", "left translate: %f\n", leftTranslate);
 			return leftTranslate;
             // used to return -1
@@ -284,7 +287,8 @@ float Camera::corridorSlopeError(int color) {
 		if( !hasSlopeLeft && hasSlopeRight ){
 			//no right slope, so interpolate based on left
             LOG.write(LOG_LOW, "corridorSlopeError", "only right slope, interpolating\n");
-			float rightTranslate  = Util::mapValue(rightSide.slope, RIGHT_LEFT_SLOPE, RIGHT_RIGHT_SLOPE, -1, 1);
+			//float rightTranslate  = Util::mapValue(rightSide.slope, RIGHT_LEFT_SLOPE, RIGHT_RIGHT_SLOPE, -1, 1);
+			float rightTranslate= -(rightSide.slope - RIGHT_MIDDLE_SLOPE);
             LOG.write(LOG_LOW, "corridorSlopeError", "right translate: %f\n", rightTranslate);
 			return rightTranslate;
             // used to return 1
