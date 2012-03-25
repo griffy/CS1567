@@ -56,27 +56,11 @@ for (int i = 0; i<1; i++){
 
 // Project 2 Code
 
-	robot->center();
+	for(int i=0; i< 10; i++){
+		robot->center();
 		cvWaitKey(0);
-	robot->center();
-		cvWaitKey(0);
-	robot->center();
-		cvWaitKey(0);
-	robot->center();
-		cvWaitKey(0);
-	robot->center();
-		cvWaitKey(0);
-	robot->center();
-		cvWaitKey(0);
-	robot->center();
-		cvWaitKey(0);
-	robot->center();
-		cvWaitKey(0);
-	robot->center();
-		cvWaitKey(0);
-	robot->center();
-		cvWaitKey(0);
-	
+	}
+	exit(0);
 
 	robot->move(DIR_EAST, 5);
 	robot->turn(DIR_RIGHT, DEGREE_90);
