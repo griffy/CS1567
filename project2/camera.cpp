@@ -471,10 +471,10 @@ float Camera::centerDistanceError(int color) {
             // set the square with the smallest area to
             // be the one too far back
             if (leftSquare->area > rightSquare->area) {
-                return -1;
+                return -0.5;
             }
             else {
-                return 1;
+                return 0.5;
             }
         }
     }
