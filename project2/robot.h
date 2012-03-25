@@ -69,10 +69,12 @@ public:
     // moves the number of cells in the given direction
     void move(int direction, int numCells);
     void turn(int direction, float radians);
+    void moveToCell(float x, float y);
     //moves to the given x/y coordinates, without stopping
     void moveTo(float x, float y);
     float moveToUntil(float x, float y, float thetaErrorLimit);
     void turnTo(float theta, float thetaErrorLimit);
+    void turnCenter();
     void center();
 
     void setFailLimit(int limit);
@@ -110,12 +112,12 @@ private:
 	// stores the most recent speed that the robot was told. set during both turns and moving straight instructions
 	int _speed;	
 	char _turnDirection;			// value of 1 means turning right, 0 means left
-	bool _movingForward;		// set if moving forward/stopped
+	bool _movingForward;			// set if moving forward/stopped
 
     PID* _distancePID;
     PID* _thetaPID;
     PID* _centerPID;
-    PID* _slopePID;
+    PID* _turnCenterPID;
 
     int _failLimit;
 

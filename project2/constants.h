@@ -1,3 +1,19 @@
+/**
+ * constants.h
+ * 
+ * @brief 
+ * 		This header defines constants for use throughout the project
+ * 
+ * @author
+ * 		Tom Nason
+ * 		Joel Griffith
+ * 		Shawn Hanna
+ * 
+ * @date
+ * 		created - 2/2/2012
+ * 		modified - 3/24/2012
+ **/
+
 #ifndef CS1567_CONSTANTS_H
 #define CS1567_CONSTANTS_H
 
@@ -36,6 +52,8 @@
 #define MAX_THETA_GAIN 0.05
 #define MIN_CENTER_GAIN -0.05
 #define MAX_CENTER_GAIN 0.05
+#define MIN_TURN_CENTER_GAIN -0.05
+#define MAX_TURN_CENTER_GAIN 0.05
 
 // PID tuning constants
 #define PID_DIST_KP 0.8
@@ -47,6 +65,9 @@
 #define PID_CENTER_KP 0.03
 #define PID_CENTER_KI 0.0001
 #define PID_CENTER_KD 0.0001
+#define PID_TURN_CENTER_KP 0.03
+#define PID_TURN_CENTER_KI 0.0001
+#define PID_TURN_CENTER_KD 0.0001
 
 // acceptable proximities from base
 #define MAX_DIST_ERROR 25.0 // in cm
@@ -54,7 +75,7 @@
 
 // acceptable threshold for being in the center of squares
 #define MAX_CENTER_ERROR 0.40
-#define MAX_TURN_CENTER_ERROR 0.2
+#define MAX_TURN_CENTER_ERROR 0.20
 
 // the largest filter size (used for prefilling data)
 #define MAX_FILTER_TAPS 7

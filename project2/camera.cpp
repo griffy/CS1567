@@ -1,3 +1,20 @@
+/**
+ * camera.cpp
+ * 
+ * @brief 
+ * 		This class defines the rovio's camera. It has functions for accessing, storing, and processing the image
+ * 		returned from the robot
+ * 
+ * @author
+ * 		Shawn Hanna
+ * 		Tom Nason
+ * 		Joel Griffith
+ * 
+ * @date
+ * 		created - 3//2012
+ * 		modified - 3/24/2012
+ **/
+
 #include "camera.h"
 #include "logger.h"
 #include <robot_color.h>
@@ -139,9 +156,6 @@ float Camera::centerError(int color) {
         float slopeError = corridorSlopeError(color);
         float centerDistError = centerDistanceError(color);
 
-        LOG.write(LOG_LOW, "centerError", "slope error %d: %f", i+1, slopeError);
-        LOG.write(LOG_LOW, "centerError", "center dist error %d: %f", i+1, centerDistError);
-
         if (slopeError != -999) {
             numGoodSlopeErrors++;
             totalGoodSlopeError += slopeError;
@@ -152,6 +166,13 @@ float Camera::centerError(int color) {
             totalGoodCenterDistError += centerDistError;
         }
     }
+
+    LOG.write(LOG_LOW, "centerError", 
+              "avg slope error: %f", 
+              (numGoodSlopeErrors == 0) ? -999 : (totalGoodSlopeError / (float)numGoodSlopeErrors));
+    LOG.write(LOG_LOW, "centerError", 
+              "avg center dist error: %f", 
+              (numGoodCenterDistErrors == 0) ? -999 : (totalGoodCenterDistError / (float)numGoodCenterDistErrors));
 
     if (numGoodSlopeErrors == 0) {
         // we couldn't find any slopes, so default

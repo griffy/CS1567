@@ -1,3 +1,20 @@
+/**
+ * robot.cpp
+ * 
+ * @brief 
+ * 		This class defines the rovio robot, and performs operations that the system can do, such as movement and 
+ * 		requesting sensor updates.  It also stores the sensor classes and vehicle position
+ * 
+ * @author
+ * 		Tom Nason
+ * 		Joel Griffith
+ * 		Shawn Hanna
+ * 
+ * @date
+ * 		created - 2/2/2012
+ * 		modified - 3/24/2012
+ **/
+
 #include "robot.h"
 #include "phrases.h"
 #include "logger.h"
@@ -49,10 +66,12 @@ Robot::Robot(std::string address, int id) {
     PIDConstants distancePIDConstants = {PID_DIST_KP, PID_DIST_KI, PID_DIST_KD};
     PIDConstants thetaPIDConstants = {PID_THETA_KP, PID_THETA_KI, PID_THETA_KD};
     PIDConstants centerPIDConstants = {PID_CENTER_KP, PID_CENTER_KI, PID_CENTER_KD};
+    PIDConstants turnCenterPIDConstants = {PID_TURN_CENTER_KP, PID_TURN_CENTER_KI, PID_TURN_CENTER_KD};
 
     _distancePID = new PID(&distancePIDConstants, MAX_DIST_GAIN, MIN_DIST_GAIN);
     _thetaPID = new PID(&thetaPIDConstants, MAX_THETA_GAIN, MIN_THETA_GAIN);
     _centerPID = new PID(&centerPIDConstants, MAX_CENTER_GAIN, MIN_CENTER_GAIN);
+    _turnCenterPID = new PID(&turnCenterPIDConstants, MAX_TURN_CENTER_GAIN, MIN_TURN_CENTER_GAIN);
 
     printf("pid controllers initialized\n");
     
@@ -147,7 +166,7 @@ void Robot::move(int direction, int numCells) {
             goalX -= CELL_SIZE;
             break;
         }
-        moveTo(goalX, goalY);
+        moveToCell(goalX, goalY);
 
         cellsTraveled++;
         LOG.write(LOG_LOW, "move", "MADE IT TO CELL %d\n\n\n", cellsTraveled);
@@ -165,6 +184,31 @@ void Robot::turn(int direction, float radians) {
         goalTheta = Util::normalizeTheta(_pose->getTheta()-radians);
         turnTo(goalTheta, MAX_THETA_ERROR);
     }
+}
+
+// Moves to a cell in the global coord system at the specified cm,
+// using both kalman and square detection for centering as it moves
+void Robot::moveToCell(float x, float y) {
+    printf("beginning move to cell at (%f, %f)\n", x, y);
+
+    float thetaError;
+    do {
+        // move to the location until theta is off by too much
+        thetaError = moveToUntil(x, y, MAX_THETA_ERROR);
+        float goal = Util::normalizeTheta(_pose->getTheta() + thetaError);
+        if (thetaError != 0) {
+            // if we're off in theta, turn to adjust 
+            turnTo(goal, MAX_THETA_ERROR);
+            // finally, center between squares as a sanity check
+            turnCenter();
+        }
+    } while (thetaError != 0);
+
+    _distancePID->flushPID();
+    _thetaPID->flushPID();
+
+    // reset wheel encoder pose to be Kalman pose since we hit our base
+    _wheelEncoders->resetPose(_pose);
 }
 
 // Moves to a location in the global coordinate system (in cm)
@@ -339,6 +383,45 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
     printf("theta acceptable\n");
 }
 
+void Robot::turnCenter() {
+    while (true) {
+        updateCamera();
+
+        float turnCenterError = _camera->centerError(COLOR_PINK);
+        float turnCenterGain = _turnCenterPID->updatePID(turnCenterError);
+
+        LOG.write(LOG_LOW, "turnCenter", "turn center error: %f", turnCenterError);
+        LOG.write(LOG_LOW, "turnCenter", "turn center gain: %f", turnCenterGain);
+
+        if (fabs(turnCenterError) < MAX_TURN_CENTER_ERROR) {
+            // we're close enough to centered, so stop adjusting
+            LOG.write(LOG_LOW, "turnCenter", 
+                      "turn center error: |%f| < %f, stop correcting.", 
+                      turnCenterError, 
+                      MAX_TURN_CENTER_ERROR);
+            break;
+        }
+
+        int turnSpeed = (int)fabs((1.0/turnCenterGain));
+        // cap our speed
+        if (turnSpeed > 6) {
+            turnSpeed = 6;
+        }
+        LOG.write(LOG_LOW, "pid_speeds", "turn: %d", turnSpeed);
+
+        if (turnCenterError < 0) {
+            LOG.write(LOG_LOW, "turnCenter", "Turn center error: %f, move right", turnCenterError);
+            turnRight(turnSpeed);
+        }
+        else {
+            LOG.write(LOG_LOW, "turnCenter", "Turn center error: %f, move left", turnCenterError);
+            turnLeft(turnSpeed);
+        }
+    }
+
+    _turnCenterPID->flushPID();
+}
+
 void Robot::center() {
     while (true) {
         updateCamera();
@@ -355,11 +438,15 @@ void Robot::center() {
             break;
         }
 
-        int strafeSpeed = (int)fabs((1.0/centerGain));
+        int strafeSpeed = (int)fabs((centerGain));
+		
         // cap our speed at 8
-        if (strafeSpeed > 8) {
-            strafeSpeed = 8;
+        if (strafeSpeed > 10) {
+            //strafeSpeed = 10;
         }
+        else if(strafeSpeed < 4) {
+			//strafeSpeed = 4;
+		}
         LOG.write(LOG_LOW, "pid_speeds", "strafe: %d", strafeSpeed);
 
         if (centerError < 0) {
@@ -400,15 +487,15 @@ void Robot::turnRight(int speed) {
 /* Strafes the robot left at the given speed */
 void Robot::strafeLeft(int speed) {
     // we need about 5 commands to actually strafe sideways
-    for (int i = 0; i < 5; i++) {
-        _robotInterface->Move(RI_MOVE_LEFT, speed);
+    for (int i = 0; i < 2+speed*2.5; i++) {
+        _robotInterface->Move(RI_MOVE_LEFT, 10);
     }
 }
 
 /* Strafes the robot right at the given speed */
 void Robot::strafeRight(int speed) {
-    for (int i = 0; i < 5; i++) {
-        _robotInterface->Move(RI_MOVE_RIGHT, speed);
+    for (int i = 0; i < 2+speed*2.5; i++) {
+        _robotInterface->Move(RI_MOVE_RIGHT, 10);
     }
 }
 

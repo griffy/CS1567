@@ -1,3 +1,20 @@
+/**
+ * wheel_encoders.cpp
+ * 
+ * @brief 
+ * 		This class performs all functions for the wheel encoder sensors (except for when to update the data)
+ * 		It stores the raw and filtered data, and contains functions for converting the data into global coordinates
+ * 
+ * @author
+ * 		Joel Griffith
+ * 		Shawn Hanna
+ * 		Tom Nason
+ * 
+ * @date
+ * 		created - 2/2/2012
+ * 		modified - 3/24/2012
+ **/
+
 #include "wheel_encoders.h"
 #include "constants.h"
 #include "utilities.h"
