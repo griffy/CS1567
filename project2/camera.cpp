@@ -184,6 +184,7 @@ float Camera::centerError(int color) {
               "avg center dist error: %f", 
               (numGoodCenterDistErrors == 0) ? -999 : (totalGoodCenterDistError / (float)numGoodCenterDistErrors));
 
+/*
     if (numGoodSlopeErrors == 0) {
         // we couldn't find any slopes, so default
         // to using the center distance instead
@@ -197,6 +198,12 @@ float Camera::centerError(int color) {
     }
 
     return totalGoodSlopeError / (float)numGoodSlopeErrors;
+*/
+
+    if (numGoodCenterDistErrors == 0) {
+        return 0;
+    }
+    return totalGoodCenterDistError / (float)numGoodCenterDistErrors;
 }
 
 /** ***************************************
