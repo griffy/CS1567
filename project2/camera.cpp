@@ -23,9 +23,15 @@
 #define MAX_SLOPE 2.5
 #define MIN_SLOPE 0.01
 
+#define RIGHT_LEFT_SLOPE -0.35
+#define RIGHT_RIGHT_SLOPE -2.22
+
+#define LEFT_LEFT_SLOPE 2.6
+#define LEFT_RIGHT_SLOPE 0.55
+
 #define MAX_SLOPE_DIFFERENCE 0.5
 
-#define MAX_CAMERA_ERRORS 8
+#define MAX_CAMERA_ERRORS 100
 
 Camera::Camera(RobotInterface *robotInterface) {
     _robotInterface = robotInterface;
@@ -154,6 +160,7 @@ float Camera::centerError(int color) {
     float totalGoodCenterDistError = 0.0;
 
     for (int i = 0; i < MAX_CAMERA_ERRORS; i++) {
+		printf("ITERATION #: %d\n", i);
         update();
 
         float slopeError = corridorSlopeError(color);
@@ -241,13 +248,15 @@ float Camera::corridorSlopeError(int color) {
 		//do something to define error relative to the differences of the slopes
 
         // sanity-check the slopes to make sure we have good ones to go off of
-		if(rightSide.slope > -MAX_SLOPE && rightSide.slope < -MIN_SLOPE && rightSide.slope != -0.500000 && rightSide.slope != 0.500000) {
+		if(rightSide.slope > RIGHT_RIGHT_SLOPE && rightSide.slope < RIGHT_LEFT_SLOPE && rightSide.slope != -0.500000 && rightSide.slope != 0.500000) {
 			//seems like a good slope
 			hasSlopeRight = true;
+			LOG.write(LOG_HIGH, "rightRegression", "%f\n", rightSide.slope);
 		}
-		if(leftSide.slope < MAX_SLOPE && leftSide.slope > MIN_SLOPE && leftSide.slope != -0.500000 && leftSide.slope != 0.500000) {
+		if(leftSide.slope < LEFT_LEFT_SLOPE && leftSide.slope > LEFT_RIGHT_SLOPE && leftSide.slope != -0.500000 && leftSide.slope != 0.500000) {
 			//seems like a good slope
 			hasSlopeLeft = true;
+			LOG.write(LOG_HIGH, "leftRegression", "%f\n", leftSide.slope);
 		}
 		
 		float difference = leftSide.slope + rightSide.slope;
@@ -264,7 +273,7 @@ float Camera::corridorSlopeError(int color) {
 		if( hasSlopeLeft && !hasSlopeRight ){
 			//no right slope, so interpolate based on left
 			LOG.write(LOG_LOW, "corridorSlopeError", "only left slope, interpolating\n");
-			float leftTranslate = Util::mapValue(leftSide.slope, MIN_SLOPE, MAX_SLOPE, -1, 1);
+			float leftTranslate = Util::mapValue(leftSide.slope, LEFT_LEFT_SLOPE, LEFT_RIGHT_SLOPE, -1, 1);
             LOG.write(LOG_LOW, "corridorSlopeError", "left translate: %f\n", leftTranslate);
 			return leftTranslate;
             // used to return -1
@@ -273,7 +282,7 @@ float Camera::corridorSlopeError(int color) {
 		if( !hasSlopeLeft && hasSlopeRight ){
 			//no right slope, so interpolate based on left
             LOG.write(LOG_LOW, "corridorSlopeError", "only right slope, interpolating\n");
-			float rightTranslate  = Util::mapValue(rightSide.slope, -MAX_SLOPE, -MIN_SLOPE, -1, 1);
+			float rightTranslate  = Util::mapValue(rightSide.slope, RIGHT_LEFT_SLOPE, RIGHT_RIGHT_SLOPE, -1, 1);
             LOG.write(LOG_LOW, "corridorSlopeError", "right translate: %f\n", rightTranslate);
 			return rightTranslate;
             // used to return 1
