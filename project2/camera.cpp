@@ -19,7 +19,9 @@
 #include "logger.h"
 #include <robot_color.h>
 
-#define MIN_SLOPE_DIFFERENCE 0.12
+#define MAX_SLOPE 2.5
+#define MIN_SLOPE 0.01
+
 #define MAX_SLOPE_DIFFERENCE 0.5
 
 #define MAX_CAMERA_ERRORS 8
@@ -238,55 +240,36 @@ float Camera::corridorSlopeError(int color) {
 		//do something to define error relative to the differences of the slopes
 
         // sanity-check the slopes to make sure we have good ones to go off of
-		if(rightSide.slope > -2.5 && rightSide.slope < -0.01 && rightSide.slope != -0.500000 && rightSide.slope != 0.500000) {
+		if(rightSide.slope > -MAX_SLOPE && rightSide.slope < -MIN_SLOPE && rightSide.slope != -0.500000 && rightSide.slope != 0.500000) {
 			//seems like a good slope
 			hasSlopeRight = true;
 		}
-		if(leftSide.slope < 2.5 && leftSide.slope > 0.01 && leftSide.slope != -0.500000 && leftSide.slope != 0.500000) {
+		if(leftSide.slope < MAX_SLOPE && leftSide.slope > MIN_SLOPE && leftSide.slope != -0.500000 && leftSide.slope != 0.500000) {
 			//seems like a good slope
 			hasSlopeLeft = true;
 		}
 		
 		float difference = leftSide.slope + rightSide.slope;
 		if (hasSlopeLeft && hasSlopeRight) {
-			//determine location based on difference in slope
-//TODO: Delete below?
-/*			if (fabs(difference) <= MIN_SLOPE_DIFFERENCE) {
-				LOG.printfScreen(LOG_HIGH, "regression", "It seems to be going straight... continue\n");
-			}
-			else if(difference > 0){
-				LOG.printfScreen(LOG_HIGH, "regression", "Probably too far to the left... try strafing right\n");
-			}
-			else if(difference < 0){
-				LOG.printfScreen(LOG_HIGH, "regression", "Probably too far to the right... try strafing left\n");
-			}
-*/
-            // OLD CODE TODO: check that this puts the number in the proper range (-1 to 1)
-            //
-	    //		return (1.35-leftSide.slope)*1.176;
-	    //		return (-.9-rightSide.slope)*2;
-	    //
-	    //
-	    //	NEW CODE TODO: Make sure these push us in the correct directions!	
 			if(difference > MAX_SLOPE_DIFFERENCE) {
 				return 1;
 			} else if (difference < -MAX_SLOPE_DIFFERENCE) {
 				return -1;
 			} else {
-				return difference/MAX_SLOPE_DIFFERENCE;
+				return difference/MAX_SLOPE;
 			}
 		}
 		
 		if( hasSlopeLeft && !hasSlopeRight ){
 			//no right slope, so interpolate based on left
 			printf("HAS LEFT\n");
-			return 1;
+			return -1;
 		}
 		
 		if( !hasSlopeLeft && hasSlopeRight ){
 			//no right slope, so interpolate based on left
 			printf("HAS RIGHT\n");
-			return -1;
+			return 1;
 		}
 		
 		if (!hasSlopeLeft && !hasSlopeRight){
@@ -426,6 +409,8 @@ regressionLine Camera::leastSquaresRegression(int color, int side) {
 
 
 /* Returns an error in range [-1, 1] where 0 is no error */
+// negative means move right
+// positive means move left
 float Camera::centerDistanceError(int color) {
     int width;
     switch (color) {
@@ -478,10 +463,10 @@ float Camera::centerDistanceError(int color) {
     else if (leftSquare == NULL) {
         // it seems to be out of view, so we set the error to 
         // the max it could be
-        return (float)center / (float)width;
+        return 1;
     } 
     else if (rightSquare == NULL) {
-        return (float)-center / (float)width;;
+        return -1;
     }
 
     // otherwise, we have two squares, so find the difference
@@ -489,7 +474,7 @@ float Camera::centerDistanceError(int color) {
     int rightError = center - rightSquare->center.x;
 
     //Return difference in errors
-    return (float)(leftError + rightError) / (float)width;
+    return (float)(leftError + rightError) / (float)center;
 }
 
 /* Error is defined to be the distance of the square
