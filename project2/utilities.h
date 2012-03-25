@@ -37,6 +37,8 @@ namespace Util {
 
     float normalizeThetaError(float thetaError);
     float normalizeTheta(float theta);
+	
+	float mapValue(float value, float leftMin, float leftMax, float rightMin, float rightMax);
 
     int nameFrom(std::string);
 };

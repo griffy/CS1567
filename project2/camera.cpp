@@ -17,6 +17,7 @@
 
 #include "camera.h"
 #include "logger.h"
+#include "utilities.h"
 #include <robot_color.h>
 
 #define MAX_SLOPE 2.5
@@ -24,7 +25,7 @@
 
 #define MAX_SLOPE_DIFFERENCE 0.5
 
-#define MAX_CAMERA_ERRORS 10
+#define MAX_CAMERA_ERRORS 8
 
 Camera::Camera(RobotInterface *robotInterface) {
     _robotInterface = robotInterface;
@@ -179,8 +180,10 @@ float Camera::centerError(int color) {
     if (numGoodSlopeErrors == 0) {
         // we couldn't find any slopes, so default
         // to using the center distance instead
+        printf("Couldn't find any slopes, default to using center distance...\n");
         if (numGoodCenterDistErrors == 0) {
             // we also couldn't find any squares.. oh snap
+			printf("Couldn't find center distance either... OH SNAP!!!!!\n");
             return 0;
         }
         return totalGoodCenterDistError / (float)numGoodCenterDistErrors;
@@ -238,11 +241,11 @@ float Camera::corridorSlopeError(int color) {
 		//do something to define error relative to the differences of the slopes
 
         // sanity-check the slopes to make sure we have good ones to go off of
-		if(rightSide.slope > -MAX_SLOPE && rightSide.slope < -MIN_SLOPE) {
+		if(rightSide.slope > -MAX_SLOPE && rightSide.slope < -MIN_SLOPE && rightSide.slope != -0.500000 && rightSide.slope != 0.500000) {
 			//seems like a good slope
 			hasSlopeRight = true;
 		}
-		if(leftSide.slope < MAX_SLOPE && leftSide.slope > MIN_SLOPE) {
+		if(leftSide.slope < MAX_SLOPE && leftSide.slope > MIN_SLOPE && leftSide.slope != -0.500000 && leftSide.slope != 0.500000) {
 			//seems like a good slope
 			hasSlopeLeft = true;
 		}
@@ -257,18 +260,27 @@ float Camera::corridorSlopeError(int color) {
 				return -difference/MAX_SLOPE;
 			}
 		}
-		
-		if( hasSlopeLeft && !hasSlopeRight ){
-			//no right slope, so interpolate based on left
-			return -1;
-		}
-		
-		if( !hasSlopeLeft && hasSlopeRight ){
-			//no right slope, so interpolate based on left
-			return 1;
+		{
+			using namespace Util;
+			if( hasSlopeLeft && !hasSlopeRight ){
+				//no right slope, so interpolate based on left
+				printf("HAS LEFT\n");
+				float leftTranslate = mapValue(leftSide.slope, MIN_SLOPE, MAX_SLOPE, -1, 1);
+				printf("Left Translate: %f\n", leftTranslate);
+				return leftTranslate;
+			}
+			
+			if( !hasSlopeLeft && hasSlopeRight ){
+				//no right slope, so interpolate based on left
+				printf("HAS RIGHT\n");
+				float rightTranslate  = mapValue(rightSide.slope, -MAX_SLOPE, -MIN_SLOPE, -1, 1);
+				printf("Right Translate: %f\n", rightTranslate);
+				return rightTranslate;
+			}
 		}
 		
 		if (!hasSlopeLeft && !hasSlopeRight){
+			printf("HAS NONE\n");
 			return -999.0;
 		}
 	}

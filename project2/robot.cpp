@@ -302,6 +302,9 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
         if (moveSpeed > 6) {
             moveSpeed = 6;
         }
+        else if (moveSpeed < 0){
+			moveSpeed = 0;
+		}
 
         LOG.write(LOG_MED, "pid_speeds", "forward: %d", moveSpeed);
 
@@ -486,15 +489,17 @@ void Robot::turnRight(int speed) {
 
 /* Strafes the robot left at the given speed */
 void Robot::strafeLeft(int speed) {
+	_speed=0;
     // we need about 5 commands to actually strafe sideways
-    for (int i = 0; i < 2+speed*2.5; i++) {
+    for (int i = 0; i < 3+speed*2.5; i++) {
         _robotInterface->Move(RI_MOVE_LEFT, 10);
     }
 }
 
 /* Strafes the robot right at the given speed */
 void Robot::strafeRight(int speed) {
-    for (int i = 0; i < 2+speed*2.5; i++) {
+	_speed=0;
+    for (int i = 0; i < 3+speed*2.5; i++) {
         _robotInterface->Move(RI_MOVE_RIGHT, 10);
     }
 }
@@ -550,11 +555,13 @@ void Robot::updatePose() {
  *  }
  */
 
-    if (_speed == 0) {
+    if (_speed <= 0) {
+		_speed=0;
         _kalmanFilter->setVelocity(0.0, 0.0, 0.0);
     }
     else {
     	if (_movingForward) {
+			printf("Speed: %d\n", _speed);
     		float speedX = SPEED_FORWARD[_speed];
     		float speedY = SPEED_FORWARD[_speed];
 

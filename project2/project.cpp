@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
 
 	Robot *robot = new Robot(argv[1], 0);
 
-	robot->center();
+	//robot->center();
 /* Camera Testing Code
 	while (true) {
 		robot->updateCamera();
@@ -44,7 +44,6 @@ int main(int argc, char *argv[]) {
 	}
 */
 
-// Project 2 Code
 /*
 for (int i = 0; i<1; i++){
 	robot->strafeLeft(1);
@@ -54,9 +53,11 @@ for (int i = 0; i<1; i++){
 	robot->strafeRight(1);
 }
 */
-	//robot->move(DIR_EAST, 5);
-	//robot->turn(DIR_RIGHT, DEGREE_90);
-	//robot->move(DIR_SOUTH, 3);
+
+// Project 2 Code
+	robot->move(DIR_EAST, 5);
+	robot->turn(DIR_RIGHT, DEGREE_90);
+	robot->move(DIR_SOUTH, 3);
 
 /* Sensor Testing Code 1
   	/*Pose * bases[NUM_BASES];
