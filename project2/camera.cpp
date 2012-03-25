@@ -236,7 +236,7 @@ float Camera::corridorSlopeError(int color) {
 
 	bool hasSlopeRight = false;
     bool hasSlopeLeft = false;
-    //TODO: Make this into a useful error value for robot control
+
     if(leftSide.numSquares >= 2 && rightSide.numSquares >= 2) { //if lines are found on both sides...
 		//do something to define error relative to the differences of the slopes
 
@@ -260,27 +260,27 @@ float Camera::corridorSlopeError(int color) {
 				return -difference/MAX_SLOPE;
 			}
 		}
-		{
-			using namespace Util;
-			if( hasSlopeLeft && !hasSlopeRight ){
-				//no right slope, so interpolate based on left
-				printf("HAS LEFT\n");
-				float leftTranslate = mapValue(leftSide.slope, MIN_SLOPE, MAX_SLOPE, -1, 1);
-				printf("Left Translate: %f\n", leftTranslate);
-				return leftTranslate;
-			}
-			
-			if( !hasSlopeLeft && hasSlopeRight ){
-				//no right slope, so interpolate based on left
-				printf("HAS RIGHT\n");
-				float rightTranslate  = mapValue(rightSide.slope, -MAX_SLOPE, -MIN_SLOPE, -1, 1);
-				printf("Right Translate: %f\n", rightTranslate);
-				return rightTranslate;
-			}
+
+		if( hasSlopeLeft && !hasSlopeRight ){
+			//no right slope, so interpolate based on left
+			LOG.write(LOG_LOW, "corridorSlopeError", "only left slope, interpolating\n");
+			float leftTranslate = Util::mapValue(leftSide.slope, MIN_SLOPE, MAX_SLOPE, -1, 1);
+            LOG.write(LOG_LOW, "corridorSlopeError", "left translate: %f\n", leftTranslate);
+			return leftTranslate;
+            // used to return -1
+		}
+		
+		if( !hasSlopeLeft && hasSlopeRight ){
+			//no right slope, so interpolate based on left
+            LOG.write(LOG_LOW, "corridorSlopeError", "only right slope, interpolating\n");
+			float rightTranslate  = Util::mapValue(rightSide.slope, -MAX_SLOPE, -MIN_SLOPE, -1, 1);
+            LOG.write(LOG_LOW, "corridorSlopeError", "right translate: %f\n", rightTranslate);
+			return rightTranslate;
+            // used to return 1
 		}
 		
 		if (!hasSlopeLeft && !hasSlopeRight){
-			printf("HAS NONE\n");
+            LOG.write(LOG_LOW, "corridorSlopeError", "no slopes!\n");
 			return -999.0;
 		}
 	}
