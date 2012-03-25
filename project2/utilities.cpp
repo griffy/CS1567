@@ -21,8 +21,8 @@
 #include <math.h>
 
 namespace Util {
-    // Performs a matrix multiplication of two matrices, A and B,
-    // storing the result in a third matrix, C
+    /// Performs a matrix multiplication of two matrices, A and B,
+    /// storing the result in a third matrix, C
     void matrixMult(float *mA, int lA, int hA, float *mB, int lB, int hB, float *mC) {
         if (hA != lB) {
             printf("Inner matrix dimensions do not match!\n");
@@ -39,8 +39,8 @@ namespace Util {
         }
     }
 
-    // Takes an error, possibly negative, and converts it to
-    // the appropriate representation used internally by robot
+    /// Takes an error, possibly negative, and converts it to
+    /// the appropriate representation used internally by robot
     float normalizeThetaError(float thetaError) {
         while (thetaError <= -PI) {
             thetaError += 2*PI;
@@ -51,9 +51,9 @@ namespace Util {
         return thetaError;
     }
 
-    /* Input: A number in range [-inf, inf] (usually [-pi, pi])
-       Returns: A number in range [0, 2pi]
-    */
+    /** Input: A number in range [-inf, inf] (usually [-pi, pi])
+     *  Returns: A number in range [0, 2pi]
+     */
     float normalizeTheta(float theta) {
         while (theta >= 2*PI) {
             theta -= 2*PI;
@@ -64,8 +64,8 @@ namespace Util {
         return theta;
     }
 
-    // Returns the name, which is an integer, of the robot
-    // according to its address
+    /// Returns the name, which is an integer, of the robot
+    /// according to its address
     int nameFrom(std::string address) {
         for (int i = 0; i < NUM_ROBOTS; i++) {
             if (ROBOTS[i] == address) {
@@ -78,4 +78,13 @@ namespace Util {
             }
         }
     }
+    
+    /// maps the value from the range leftMin/leftMax to rightMin/rightMax
+    float mapValue(float value, float leftMin, float leftMax, float rightMin, float rightMax){
+		float leftSpan = leftMax - leftMin;
+		float rightSpan = rightMax - rightMin;
+		float valueScaled = (value - leftMin) / (leftSpan);
+		return rightMin + (valueScaled * rightSpan);
+	}
+
 };

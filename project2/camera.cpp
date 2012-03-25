@@ -17,6 +17,7 @@
 
 #include "camera.h"
 #include "logger.h"
+#include "utilities.h"
 #include <robot_color.h>
 
 #define MAX_SLOPE 2.5
@@ -259,17 +260,23 @@ float Camera::corridorSlopeError(int color) {
 				return difference/MAX_SLOPE;
 			}
 		}
-		
-		if( hasSlopeLeft && !hasSlopeRight ){
-			//no right slope, so interpolate based on left
-			printf("HAS LEFT\n");
-			return -1;
-		}
-		
-		if( !hasSlopeLeft && hasSlopeRight ){
-			//no right slope, so interpolate based on left
-			printf("HAS RIGHT\n");
-			return 1;
+		{
+			using namespace Util;
+			if( hasSlopeLeft && !hasSlopeRight ){
+				//no right slope, so interpolate based on left
+				printf("HAS LEFT\n");
+				float leftTranslate = mapValue(leftSide.slope, MIN_SLOPE, MAX_SLOPE, -1, 1);
+				printf("Left Translate: %f\n", leftTranslate);
+				return leftTranslate;
+			}
+			
+			if( !hasSlopeLeft && hasSlopeRight ){
+				//no right slope, so interpolate based on left
+				printf("HAS RIGHT\n");
+				float rightTranslate  = mapValue(rightSide.slope, -MAX_SLOPE, -MIN_SLOPE, -1, 1);
+				printf("Right Translate: %f\n", rightTranslate);
+				return rightTranslate;
+			}
 		}
 		
 		if (!hasSlopeLeft && !hasSlopeRight){
