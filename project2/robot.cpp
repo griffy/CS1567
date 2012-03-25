@@ -149,6 +149,7 @@ void Robot::move(int direction, int numCells) {
         center();
         // reset the wheel encoder totals
         _robotInterface->reset_state();
+		updatePose();
         // based on the direction, move in the global coord system
         float goalX = _pose->getX();
         float goalY = _pose->getY();
@@ -190,7 +191,7 @@ void Robot::turn(int direction, float radians) {
 // using both kalman and square detection for centering as it moves
 void Robot::moveToCell(float x, float y) {
     printf("beginning move to cell at (%f, %f)\n", x, y);
-
+	printf("Current location: %f, %f, %f", _pose->getX(), _pose->getY(), _pose->getTheta());
     float thetaError;
     do {
         // move to the location until theta is off by too much

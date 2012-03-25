@@ -11,8 +11,8 @@
  * 		Joel Griffith
  * 
  * @date
- * 		created - 3//2012
- * 		modified - 3/24/2012
+ * 		created - 3/2/2012
+ * 		modified - 3/25/2012
  **/
 
 #include "camera.h"
