@@ -52,9 +52,9 @@ void NorthStar::updatePose(int room) {
 			  "%d, %f, %f, %f\n",
 			  room+2, x, y, theta);
 	
-//	LOG.write(LOG_LOW, "ns estimates", 
-//			  "filtered x: %f, filtered y: %f, filtered theta: %f",
-//			  x, y, theta);
+	LOG.write(LOG_LOW, "ns_estimates_raw", 
+			  "filtered x: %f, filtered y: %f, filtered theta: %f",
+			  x, y, theta);
 
 	Pose *estimate = new Pose(x, y, theta);
 
@@ -113,8 +113,8 @@ void NorthStar::updatePose(int room) {
 		  	  "%d, %f, %f, %f\n",
 		      room+2, _pose->getX(), _pose->getY(), _pose->getTheta());
 
-	LOG.write(LOG_LOW, "ns_estimates", 
-		  	  "room %d, new pose: x: %f, y: %f, theta: %f",
+	LOG.write(LOG_LOW, "ns_estimates_clean", 
+		  	  "End: room %d, new pose: x: %f, y: %f, theta: %f",
 		      room+2, _pose->getX(), _pose->getY(), _pose->getTheta());
 
 	LOG.write(LOG_LOW, "ns_correction_check",

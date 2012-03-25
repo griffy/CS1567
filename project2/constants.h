@@ -88,10 +88,20 @@
 #define WE_SCALE 4.0 // (avg) ticks per cm
 
 // the average ticks per cm in x and y per room
-const float NS_ROOM_SCALE[4][2] =  {{49.2, 37.1}, 
-                 				    {45.4, 57.6}, 
-				                    {59.6, 36.7}, 
-			                	    {37.4, 53.5}};  //Rosie Data
+const float NS_ROOM_SCALE[4][2] =      {{58.1, 52.3},		//Bender data - Project 2, slightly weighted towards hallway values
+					{58.8, 47.5},
+					{59.6, 36.7}, //Room 4 = DONT CARE, if we start using, find parameters
+					{53.6, 71.7}}; 
+//Notes regarding room scale values: 	Rooms 2 and 3 Y values vary greatly depending on robot orientation within the corridor (moving via strafe or straight)
+//						Larger when straight, smaller when strafe
+//					Room 5 y varies similarly
+//					Room 2 may be dodgy at end of corridor (X and Y)
+//	High quality values: NS2x, NS5x, (lesser so) NS3x, NS5y
+
+//                 				   {{49.2, 37.1}, 
+//                 				    {45.4, 57.6}, 
+//				                    {59.6, 36.7}, 
+//			                	    {37.4, 53.5}};  //Rosie Data - Project 1
 			   
 
 // ROTATION is angle relative to room 2's base where 0 degrees is parallel to far wall

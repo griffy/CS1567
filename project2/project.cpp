@@ -83,7 +83,7 @@ for (int i = 0; i<1; i++){
    	}
 */
 
-/*
+
 // Sensor Testing Code 2
 	while(1) {
 		robot->updatePose();
@@ -104,11 +104,11 @@ for (int i = 0; i<1; i++){
 		robot->moveForward(4);
 		robot->moveForward(4);
 		robot->moveForward(4);
-		robot->moveForward(4);	
+		robot->moveForward(4);	*/
 	}
 
 	delete robot;
-*/
+
 
 /* Project 1 Code
     // Base locations in cm within the global coordinate system
