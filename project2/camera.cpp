@@ -183,7 +183,6 @@ float Camera::centerError(int color) {
               "avg center dist error: %f", 
               (numGoodCenterDistErrors == 0) ? -999 : (totalGoodCenterDistError / (float)numGoodCenterDistErrors));
 
-/*
     if (numGoodSlopeErrors == 0) {
         // we couldn't find any slopes, so default
         // to using the center distance instead
@@ -197,12 +196,6 @@ float Camera::centerError(int color) {
     }
 
     return totalGoodSlopeError / (float)numGoodSlopeErrors;
-*/
-
-    if (numGoodCenterDistErrors == 0) {
-        return 0;
-    }
-    return totalGoodCenterDistError / (float)numGoodCenterDistErrors;
 }
 
 /** ***************************************
@@ -474,10 +467,10 @@ float Camera::centerDistanceError(int color) {
             // set the square with the smallest area to
             // be the one too far back
             if (leftSquare->area > rightSquare->area) {
-                return -0.5;
+                return -0.25;
             }
             else {
-                return 0.5;
+                return 0.25;
             }
         }
     }
@@ -507,8 +500,9 @@ float Camera::centerDistanceError(int color) {
  */
 
 bool Camera::onSamePlane(squares_t *leftSquare, squares_t *rightSquare) {
-    int difference = abs(leftSquare->center.y - rightSquare->center.y);
-    return (difference <= MAX_PLANE_SLOPE);
+    float slope = (float)(leftSquare->center.y - rightSquare->center.y) / 
+                  (float)(leftSquare->center.x - rightSquare->center.x);
+    return (fabs(slope) <= MAX_PLANE_SLOPE);
 }
 
 squares_t* Camera::leftBiggestSquare(int color) {

@@ -167,7 +167,6 @@ void Robot::move(int direction, int numCells) {
             break;
         }
         moveToCell(goalX, goalY);
-
         cellsTraveled++;
         LOG.write(LOG_LOW, "move", "MADE IT TO CELL %d\n\n\n", cellsTraveled);
     }
