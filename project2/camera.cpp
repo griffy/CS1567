@@ -250,11 +250,11 @@ float Camera::corridorSlopeError(int color) {
 		float difference = leftSide.slope + rightSide.slope;
 		if (hasSlopeLeft && hasSlopeRight) {
 			if(difference > MAX_SLOPE_DIFFERENCE) {
-				return 1;
-			} else if (difference < -MAX_SLOPE_DIFFERENCE) {
 				return -1;
+			} else if (difference < -MAX_SLOPE_DIFFERENCE) {
+				return 1;
 			} else {
-				return difference/MAX_SLOPE;
+				return -difference/MAX_SLOPE;
 			}
 		}
 		
