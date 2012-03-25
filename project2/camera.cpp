@@ -35,9 +35,9 @@ Camera::Camera(RobotInterface *robotInterface) {
     _pinkSquares = NULL;
     _yellowSquares = NULL;
 
-//    cvNamedWindow("Thresholded", CV_WINDOW_AUTOSIZE);
-//    cvNamedWindow("Biggest Squares Distances", CV_WINDOW_AUTOSIZE);
-//    cvNamedWindow("Slopes", CV_WINDOW_AUTOSIZE);
+    cvNamedWindow("Thresholded", CV_WINDOW_AUTOSIZE);
+    cvNamedWindow("Biggest Squares Distances", CV_WINDOW_AUTOSIZE);
+    cvNamedWindow("Slopes", CV_WINDOW_AUTOSIZE);
 
     _robotInterface->Move(RI_HEAD_MIDDLE, 1);
 }
