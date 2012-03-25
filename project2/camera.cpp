@@ -31,7 +31,7 @@
 
 #define MAX_SLOPE_DIFFERENCE 0.5
 
-#define MAX_CAMERA_ERRORS 100
+#define MAX_CAMERA_ERRORS 7
 
 Camera::Camera(RobotInterface *robotInterface) {
     _robotInterface = robotInterface;
@@ -160,7 +160,6 @@ float Camera::centerError(int color) {
     float totalGoodCenterDistError = 0.0;
 
     for (int i = 0; i < MAX_CAMERA_ERRORS; i++) {
-		printf("ITERATION #: %d\n", i);
         update();
 
         float slopeError = corridorSlopeError(color);
@@ -472,10 +471,10 @@ float Camera::centerDistanceError(int color) {
             // set the square with the smallest area to
             // be the one too far back
             if (leftSquare->area > rightSquare->area) {
-                rightSquare = NULL;
+                return -1;
             }
             else {
-                leftSquare = NULL;
+                return 1;
             }
         }
     }
@@ -486,10 +485,10 @@ float Camera::centerDistanceError(int color) {
     else if (leftSquare == NULL) {
         // it seems to be out of view, so we set the error to 
         // the max it could be
-        return 1;
+        return -1;
     } 
     else if (rightSquare == NULL) {
-        return -1;
+        return 1;
     }
 
     // otherwise, we have two squares, so find the difference
