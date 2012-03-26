@@ -39,7 +39,14 @@ NorthStar::~NorthStar() {
 	delete _filterTheta;
 }
 
-/* Requires the interface be updated prior to calling */
+/**************************************************
+ * Definition:  - This method serves to pull new NorthStar values from the robot and transform them into the global coordinate system
+ * 		- Specific corrections for room changes and non-linearity are included here as well
+ * 
+ * Parameters: room - integer value corresponding to the NorthStar room the robot currently resides in
+ * 
+ * Notes: Requires the interface be updated prior to calling 
+ *************************************************/
 void NorthStar::updatePose(int room) {
 
 	int order = _filterX->getOrder(); //Assume X and Y fir filters are of the same order
@@ -112,6 +119,7 @@ void NorthStar::updatePose(int room) {
 	float sy = NS_ROOM_SCALE[room][1];
 	estimate->scale(sx, sy);
 	estimate2->scale(sx, sy);
+
 //	LOG.write(LOG_LOW, "ns estimates", 
 //		  	  "room %d, pose scale x: %f, pose scale y: %f, pose scale theta: %f, pose total theta: %f",
 //		      room+2, estimate->getX(), estimate->getY(), estimate->getTheta(), estimate->getTotalTheta());
@@ -155,15 +163,23 @@ void NorthStar::updatePose(int room) {
 	_lastRoom = room;
 }
 
+/************************************************
+ * _getFilteredX()/_getFilteredY()/_getFilteredTheta()
+ * 	- Wrapper method(s) for robotInterface NorthStar access
+ * 
+ * Returns: filtered coordinate value
+ ***********************************************/
 float NorthStar::_getFilteredX() {
     int x = _robotInterface->X();
     return _filterX->filter((float) x);
 }
 
+
 float NorthStar::_getFilteredY() {
     int y = _robotInterface->Y();
     return _filterY->filter((float) y);
 }
+
 
 float NorthStar::_getFilteredTheta() {
     float theta = _robotInterface->Theta();
