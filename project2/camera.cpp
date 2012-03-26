@@ -160,12 +160,25 @@ float Camera::centerError(int color) {
     int numGoodCenterDistErrors = 0;
     float totalGoodSlopeError = 0.0;
     float totalGoodCenterDistError = 0.0;
+	
+	int numWallErrors = 0;
+	float wallSide = 10000;
 
     for (int i = 0; i < MAX_CAMERA_ERRORS; i++) {
         update();
 
         float slopeError = corridorSlopeError(color);
         float centerDistError = centerDistanceError(color);
+
+		if (slopeError == -10){
+			//looking at left side (probably)
+			numWallErrors++;
+			wallSide--;
+		}
+		else if(slopeError == 10){
+			numWallErrors++;
+			wallSide++;
+		}
 
         if (slopeError != -999) {
             numGoodSlopeErrors++;
@@ -178,13 +191,19 @@ float Camera::centerError(int color) {
         }
     }
 
+    if(numWallErrors>2){
+		LOG.write(LOG_HIGH, "centerError", "might be looking at a wall... %f", wallSide);
+		return wallSide;
+	}
+
     LOG.write(LOG_LOW, "centerError", 
               "avg slope error: %f", 
               (numGoodSlopeErrors == 0) ? -999 : (totalGoodSlopeError / (float)numGoodSlopeErrors));
     LOG.write(LOG_LOW, "centerError", 
               "avg center dist error: %f", 
               (numGoodCenterDistErrors == 0) ? -999 : (totalGoodCenterDistError / (float)numGoodCenterDistErrors));
-
+	
+	
     if (numGoodSlopeErrors == 0) {
         // we couldn't find any slopes, so default
         // to using the center distance instead
@@ -261,6 +280,16 @@ float Camera::corridorSlopeError(int color) {
 			//seems like a good slope
 			hasSlopeLeft = true;
 			LOG.write(LOG_HIGH, "leftRegression", "%f\n", leftSide.slope);
+		}
+		
+		if(rightSide.slope > 0){
+			//probably looking at the 'left side' wall
+			return -10;
+		}
+		
+		if(leftSide.slope < 0){
+			//probably looking at the 'right side' wall
+			return 10;
 		}
 		
 		float difference = leftSide.slope + rightSide.slope;

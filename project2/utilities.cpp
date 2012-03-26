@@ -87,4 +87,8 @@ namespace Util {
 		return rightMin + (valueScaled * rightSpan);
 	}
 
+    int capSpeed(int speed, int cap) {
+        return min(max(speed, 0), cap);
+    }
+
 };

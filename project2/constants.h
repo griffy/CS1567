@@ -22,7 +22,8 @@
 #define DEGREE_20 0.34906585
 #define DEGREE_25 0.436332313
 #define DEGREE_30 0.523598776 // pi/6
-#define DEGREE_60 1.04719755 // pi/6
+#define DEGREE_45 0.785398163 // pi/4
+#define DEGREE_60 1.04719755 // pi/3
 #define DEGREE_90 1.57079633 // pi/2
 #define DEGREE_150 2.617993878 // 5pi/6
 
@@ -31,12 +32,12 @@
 #define MAX_UPDATE_FAILS 5 // max allowable fails to update robot interface
 
 // Kalman uncertainties
-#define PROC_X_UNCERTAIN 0.05
-#define PROC_Y_UNCERTAIN 0.05
-#define PROC_THETA_UNCERTAIN 0.05
+#define PROC_X_UNCERTAIN 0.25
+#define PROC_Y_UNCERTAIN 0.25
+#define PROC_THETA_UNCERTAIN 0.25
 
 #define NS_X_UNCERTAIN 0.15
-#define NS_Y_UNCERTAIN 0.15
+#define NS_Y_UNCERTAIN 0.25
 #define NS_THETA_UNCERTAIN 0.05
 
 #define WE_X_UNCERTAIN 0.05
@@ -74,7 +75,7 @@
 #define MAX_THETA_ERROR DEGREE_30
 
 // acceptable threshold for being in the center of squares
-#define MAX_CENTER_ERROR 0.15
+#define MAX_CENTER_ERROR 0.2
 #define MAX_TURN_CENTER_ERROR 0.20
 
 // the largest filter size (used for prefilling data)
@@ -140,7 +141,7 @@ const float COL_OFFSET[2] = {193.0, 234.0};
 //DON'T TRUST ROOM 4 for Gort or Bender
 //
 //Gort, project 2
-//NS_ROOM_ORIGINS_FROM_COL[4][2] = {{48.0,-97.0}, {-95.0,32.0}, {84.0, 191.0}, {212.0, 102.0}};
+//const float NS_ROOM_ORIGINS_FROM_COL[4][2] = {{48.0,-97.0}, {-95.0,32.0}, {84.0, 191.0}, {212.0, 102.0}};
 //Bender, project 2
 const float NS_ROOM_ORIGINS_FROM_COL[4][2] = {{36.0,-125.0}, {-116.0,18.0}, {62.0, 174.0}, {193.0, 61.0}}; //61 is old NS5Y value, 36 is better
 // Johnny5, project 2

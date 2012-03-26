@@ -40,6 +40,8 @@ namespace Util {
 	
 	float mapValue(float value, float leftMin, float leftMax, float rightMin, float rightMax);
 
+    int capSpeed(int speed, int cap);
+    
     int nameFrom(std::string);
 };
 
