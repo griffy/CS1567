@@ -200,7 +200,7 @@ void Robot::moveToCell(float x, float y) {
             // if we're off in theta, turn to adjust 
             turnTo(goal, MAX_THETA_ERROR);
             // finally, center between squares as a sanity check
-            //turnCenter();
+            turnCenter();
         }
     } while (thetaError != 0);
 
@@ -298,13 +298,7 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
             return thetaError;
         }
         int moveSpeed = (int)(1.0/distGain);
-        // cap our speed at 6, since going too slow causes problems
-        if (moveSpeed > 6) {
-            moveSpeed = 6;
-        }
-        else if (moveSpeed < 0){
-			moveSpeed = 0;
-		}
+        moveSpeed = Util::capSpeed(moveSpeed, 6);
 
         LOG.write(LOG_MED, "pid_speeds", "forward: %d", moveSpeed);
 
@@ -360,10 +354,7 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
             LOG.write(LOG_MED, "turn_adjust", 
                       "direction: right, since theta error < -limit");
             int turnSpeed = (int)fabs((1.0/thetaGain));
-            // cap our speed at 6, since turning too slow causes problems
-            if (turnSpeed > 6) {
-                turnSpeed = 6;
-            }
+            turnSpeed = Util::capSpeed(turnSpeed, 6);
 
             LOG.write(LOG_MED, "pid_speeds", "turn: %d", turnSpeed);
 
@@ -373,9 +364,7 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
             LOG.write(LOG_MED, "turn_adjust", 
                       "direction: left, since theta error > limit");
             int turnSpeed = (int)fabs((1.0/thetaGain));
-            if (turnSpeed > 6) {
-                turnSpeed = 6;
-            }
+            turnSpeed = Util::capSpeed(turnSpeed, 6);
 
             LOG.write(LOG_MED, "pid_speeds", "turn: %d", turnSpeed);
 
@@ -388,6 +377,8 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
 
 void Robot::turnCenter() {
     while (true) {
+        sleep(1);
+
         updateCamera();
 
         float turnCenterError = _camera->centerError(COLOR_PINK);
@@ -406,10 +397,8 @@ void Robot::turnCenter() {
         }
 
         int turnSpeed = (int)fabs((1.0/turnCenterGain));
-        // cap our speed
-        if (turnSpeed > 6) {
-            turnSpeed = 6;
-        }
+        turnSpeed = Util::capSpeed(turnSpeed, 6);
+
         LOG.write(LOG_LOW, "pid_speeds", "turn: %d", turnSpeed);
 
         if (turnCenterError < 0) {
@@ -459,14 +448,8 @@ void Robot::center() {
 			}
 
 			int strafeSpeed = (int)fabs((centerGain));
+            strafeSpeed = Util::capSpeed(strafeSpeed, 8);
 			
-			// cap our speed at 8
-			if (strafeSpeed > 10) {
-				//strafeSpeed = 10;
-			}
-			else if(strafeSpeed < 4) {
-				//strafeSpeed = 4;
-			}
 			LOG.write(LOG_LOW, "pid_speeds", "strafe: %d", strafeSpeed);
 
 			if (centerError < 0) {
@@ -559,20 +542,6 @@ void Robot::updatePose() {
     _northStar->updatePose(getRoom());
     _wheelEncoders->updatePose(getRoom());
 
-/*
- * Legacy tuning function
- * 	Knowing that our WE theta value often deviated from real behavior, we opted to trust the NS value after a few turns had been executed,
- * 	under conditions of high signal strength
- *
- *  if (getStrength() > GOOD_NS_STRENGTH && _numTurns > 10) { // It's OVER 9000
- *      //reset the theta on the we
- *      _wheelEncoders->getPose()->setTheta(_northStar->getPose()->getTheta());
- *      _wheelEncoders->getPose()->setNumRotations(_northStar->getPose()->getNumRotations());
- *      // reset our turn counter, since it's purely for WE uncertainty
- *      _numTurns = 0;
- *  }
- */
-
     if (_speed <= 0) {
 		_speed=0;
         _kalmanFilter->setVelocity(0.0, 0.0, 0.0);
@@ -601,22 +570,6 @@ void Robot::updatePose() {
     	}
     }
 
-    /*
-    //update the kalman constants
-    float newX = 1000.0/getStrength(); 
-    float newY = 1500.0/getStrength();
-    float newTheta = 800.0/getStrength();
-    if (newX > 0.3) {
-        newX = .3;
-    }
-    if (newY > 0.3) {
-        newY = .3;
-    }
-    if (newTheta > 0.3) {
-        newTheta = .3;
-    }
-    */
-
     // if we're in room 2, don't trust north star so much
     if (getRoom() == ROOM_2) {
         _kalmanFilter->setNSUncertainty(NS_X_UNCERTAIN+0.05, 
@@ -628,18 +581,6 @@ void Robot::updatePose() {
                                         NS_Y_UNCERTAIN,
                                         NS_THETA_UNCERTAIN);
     }
-  
-    //Legacy tuning function, attempting to dynamically modify trust of the robot's state due to known deviations in WE theta from real behavior
-    // the more we turn, the less reliable wheel encoders become
-    /*
-    float weTurnUncertainty = (_numTurns / 5) * 0.01;
-    if (weTurnUncertainty > 0.1) {
-        weTurnUncertainty = 0.1;
-    }
-    _kalmanFilter->setWEUncertainty(WE_X_UNCERTAIN+weTurnUncertainty,
-                                    WE_Y_UNCERTAIN+weTurnUncertainty,
-                                    WE_THETA_UNCERTAIN+(weTurnUncertainty*2.0));
-    */
 
     // pass updated poses to kalman filter and update main pose
     _kalmanFilter->filter(_northStar->getPose(), 
