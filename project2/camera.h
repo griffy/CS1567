@@ -3,7 +3,7 @@
  * 
  * @brief 
  * 		This class defines the rovio's camera. It has functions for accessing, storing, 
- *      and processing the images reeturned from the camera.
+ *      and processing the images returned from the camera.
  *
  * @author
  * 		Shawn Hanna
@@ -12,7 +12,7 @@
  * 
  * @date
  * 		created - 3/2/2012
- * 		modified - 3/25/2012
+ * 		modified - 3/26/2012
  **/
 
 #ifndef CS1567_CAMERA_H
@@ -27,6 +27,11 @@
 #include <robot_color.h>
 
 #include "fir_filter.h"
+
+// constants used by the constructor as defaults
+// for setting up the camera
+#define CAMERA_QUALITY RI_CAMERA_QUALITY_HIGH
+#define CAMERA_RESOLUTION RI_CAMERA_RES_320
 
 // constants for differentiating what colors to threshold in camera
 #define COLOR_PINK 0
@@ -57,7 +62,30 @@
 #define GREEN CV_RGB(0, 255, 0)
 #define BLUE CV_RGB(0, 0, 255)
 
-// 
+// define the min and max allowable slopes for lines of regression
+// through found squares
+#define MAX_SLOPE 2.5
+#define MIN_SLOPE 0.01
+
+// more specific slope limits for lines of regression based on 
+// empirical data
+#define RIGHT_LEFT_SLOPE -0.35
+#define RIGHT_RIGHT_SLOPE -2.22
+#define RIGHT_MIDDLE_SLOPE -0.67
+
+#define LEFT_LEFT_SLOPE 2.6
+#define LEFT_RIGHT_SLOPE 0.55
+#define LEFT_MIDDLE_SLOPE 0.7
+
+// the largest allowable difference between the slopes of two
+// lines of regression before deciding the slope error is at its max
+#define MAX_SLOPE_DIFFERENCE 0.5
+
+// how many images should be taken and processed to find (average)
+// center error 
+#define NUM_CAMERA_ERRORS 7
+
+// define a line for regression calculations to utilize slope error
 typedef struct regLine {
 	float intercept;
 	float slope;
@@ -70,16 +98,12 @@ public:
 	~Camera();
 	void setQuality(int quality);
 	void setResolution(int resolution);
-	void drawX(IplImage *image, squares_t *square, CvScalar color);
 	void update();
 	float centerError(int color);
 	float corridorSlopeError(int color);
     regressionLine leastSquaresRegression(int color, int side);	
 	float centerDistanceError(int color);
 	bool onSamePlane(squares_t *leftSquare, squares_t *rightSquare);
-	void calculateSlope(squares_t*, lineStruct *line);
-	float findPos(squares_t* square);
-	float estimatePos(squares_t* leftSquares, squares_t* rightSquares);
 	squares_t* leftBiggestSquare(int color);
 	squares_t* rightBiggestSquare(int color);
 	squares_t* findSquaresOf(int color, int areaThreshold);
@@ -87,22 +111,15 @@ public:
 	IplImage* getHSVImage();
 	IplImage* getBGRImage();
 	IplImage* getThresholdedImage(CvScalar low, CvScalar high);
-	
-	void vectorToSquares_t(std::vector<squares_t> * vec, squares_t * sqr);	//returns a list of squares starting at the pointer you give...
-	void sortSquaresX(squares_t * sqr, std::vector<squares_t> * vec);		//returns a vector of squares...
-	void sortSquaresY(squares_t * sqr, std::vector<squares_t> * vec);		//returns a vector of squares...
-	void sortSquaresSize(squares_t * sqr, std::vector<squares_t> * vec);		//returns a vector of squares...
+	void drawX(IplImage *image, squares_t *square, CvScalar color);
 private:
 	RobotInterface *_robotInterface;
-	FIRFilter *_centerDistErrorFilter;
-	FIRFilter *_slopeErrorFilter;
 	int _quality;
 	int _resolution;
 	IplImage *_pinkThresholded;
 	IplImage *_yellowThresholded;
 	squares_t *_pinkSquares;
 	squares_t *_yellowSquares;
-	std::vector<squares_t> sqrVec;
 };
 
 #endif
