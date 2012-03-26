@@ -46,46 +46,15 @@ int main(int argc, char *argv[]) {
 
 // Project 2 Code
 /*	robot->move(DIR_EAST, 5);
+	robot->move(DIR_EAST, 5);
 	robot->turn(DIR_RIGHT, DEGREE_90);
 	robot->move(DIR_SOUTH, 3);
-
-	delete robot;
-*/
+	
+// Sensor Testing Code
 /*
-for (int i = 0; i<1; i++){
-	robot->strafeLeft(1);
-}
-sleep(1);
-for (int i = 0; i<1; i++){
-	robot->strafeRight(1);
-}
-*/
-	//robot->move(DIR_EAST, 5);
-	//robot->turn(DIR_RIGHT, DEGREE_90);
-	//robot->move(DIR_SOUTH, 3);
-
-/* Sensor Testing Code 1
-  	/*Pose * bases[NUM_BASES];
-	bases[0] = new Pose(65, 0, 0); 
-	bases[1] = new Pose(130, 0, 0); 
-    	bases[2] = new Pose(195, 0, 0); 
-	bases[3] = new Pose(260, 0, 0); 
-    	bases[4] = new Pose(325, 0, 0);
-    	bases[5] = new Pose(325, -65, 0); 
-    	bases[6] = new Pose(325, -130, 0);
-
-    	for (int i = 0; i < NUM_BASES; i++) {
-    		printf("moving to base %d...\n", i+1);
-    		robot->moveTo(bases[i]->getX(), bases[i]->getY());
-    		printf("reached base %d!\n", i+1);
-   	}
-*/
-
-
-// Sensor Testing Code 2
 	while(1) {
 		robot->updatePose();
-/*		robot->moveForward(4);
+		robot->moveForward(4);
 		robot->moveForward(4);
 		robot->moveForward(4);
 		robot->moveForward(4);
@@ -102,13 +71,12 @@ for (int i = 0; i<1; i++){
 		robot->moveForward(4);
 		robot->moveForward(4);
 		robot->moveForward(4);
-		robot->moveForward(4);	*/
+		robot->moveForward(4);	
 	}
+*/
 
-	delete robot;
-
-
-/* Project 1 Code
+// Project 1 Code
+/*
     // Base locations in cm within the global coordinate system
 	Pose * bases[NUM_BASES];
 	bases[0] = new Pose(300, 0, 0); // base 1

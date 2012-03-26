@@ -149,6 +149,7 @@ void Robot::move(int direction, int numCells) {
         center();
         // reset the wheel encoder totals
         _robotInterface->reset_state();
+		updatePose();
         // based on the direction, move in the global coord system
         float goalX = _pose->getX();
         float goalY = _pose->getY();
@@ -167,7 +168,6 @@ void Robot::move(int direction, int numCells) {
             break;
         }
         moveToCell(goalX, goalY);
-
         cellsTraveled++;
         LOG.write(LOG_LOW, "move", "MADE IT TO CELL %d\n\n\n", cellsTraveled);
     }
@@ -190,7 +190,7 @@ void Robot::turn(int direction, float radians) {
 // using both kalman and square detection for centering as it moves
 void Robot::moveToCell(float x, float y) {
     printf("beginning move to cell at (%f, %f)\n", x, y);
-
+	printf("Current location: %f, %f, %f", _pose->getX(), _pose->getY(), _pose->getTheta());
     float thetaError;
     do {
         // move to the location until theta is off by too much
@@ -302,6 +302,9 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
         if (moveSpeed > 6) {
             moveSpeed = 6;
         }
+        else if (moveSpeed < 0){
+			moveSpeed = 0;
+		}
 
         LOG.write(LOG_MED, "pid_speeds", "forward: %d", moveSpeed);
 
@@ -429,7 +432,9 @@ void Robot::center() {
         float centerError = _camera->centerError(COLOR_PINK);
         float centerGain = _centerPID->updatePID(centerError);
 
-        LOG.write(LOG_LOW, "center", "center error: %f", centerError);
+        LOG.write(LOG_LOW, "center", "\t\t\t\tcenter error: %f", centerError);
+		/// TODO remove break
+		//break;
         LOG.write(LOG_LOW, "center", "center gain: %f", centerGain);
 
         if (fabs(centerError) < MAX_CENTER_ERROR) {
@@ -486,15 +491,17 @@ void Robot::turnRight(int speed) {
 
 /* Strafes the robot left at the given speed */
 void Robot::strafeLeft(int speed) {
+	_speed=0;
     // we need about 5 commands to actually strafe sideways
-    for (int i = 0; i < 2+speed*2.5; i++) {
+    for (int i = 0; i < 3+speed*2.5; i++) {
         _robotInterface->Move(RI_MOVE_LEFT, 10);
     }
 }
 
 /* Strafes the robot right at the given speed */
 void Robot::strafeRight(int speed) {
-    for (int i = 0; i < 2+speed*2.5; i++) {
+	_speed=0;
+    for (int i = 0; i < 3+speed*2.5; i++) {
         _robotInterface->Move(RI_MOVE_RIGHT, 10);
     }
 }
@@ -550,11 +557,13 @@ void Robot::updatePose() {
  *  }
  */
 
-    if (_speed == 0) {
+    if (_speed <= 0) {
+		_speed=0;
         _kalmanFilter->setVelocity(0.0, 0.0, 0.0);
     }
     else {
     	if (_movingForward) {
+			printf("Speed: %d\n", _speed);
     		float speedX = SPEED_FORWARD[_speed];
     		float speedY = SPEED_FORWARD[_speed];
 
