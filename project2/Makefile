@@ -5,7 +5,7 @@ CPP_LIB_FLAGS=$(LIB_FLAGS) -lrobot_if++
 LIB_LINK=-lhighgui -lcv -lcxcore -lm -lgslcblas -L/usr/lib64/atlas -lclapack
 LIB_LINK_NEW=-lopencv_core -lopencv_imgproc -lopencv_highgui -lm -lgslcblas -L/usr/lib64/atlas -llapack
 
-all: $(OBJS)
+all: $(OBJS) constants.h
 	g++ $(CFLAGS) -o project.out $(OBJS) $(CPP_LIB_FLAGS) $(LIB_LINK)
 
 new: $(OBJS) 

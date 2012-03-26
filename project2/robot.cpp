@@ -200,7 +200,7 @@ void Robot::moveToCell(float x, float y) {
             // if we're off in theta, turn to adjust 
             turnTo(goal, MAX_THETA_ERROR);
             // finally, center between squares as a sanity check
-            turnCenter();
+            //turnCenter();
         }
     } while (thetaError != 0);
 
@@ -431,37 +431,53 @@ void Robot::center() {
 
         float centerError = _camera->centerError(COLOR_PINK);
         float centerGain = _centerPID->updatePID(centerError);
-
-        LOG.write(LOG_LOW, "center", "\t\t\t\tcenter error: %f", centerError);
-		/// TODO remove break
-		//break;
-        LOG.write(LOG_LOW, "center", "center gain: %f", centerGain);
-
-        if (fabs(centerError) < MAX_CENTER_ERROR) {
-            // we're close enough to centered, so stop adjusting
-            LOG.write(LOG_LOW, "center", "Center error: |%f| < %f, stop correcting.", centerError, MAX_CENTER_ERROR);
-            break;
-        }
-
-        int strafeSpeed = (int)fabs((centerGain));
 		
-        // cap our speed at 8
-        if (strafeSpeed > 10) {
-            //strafeSpeed = 10;
-        }
-        else if(strafeSpeed < 4) {
-			//strafeSpeed = 4;
+		if(centerError > 5){
+			if(centerError < 100){
+				//probably looking at left side, turn right
+				LOG.write(LOG_HIGH, "center", "predict wall error -> turn right");
+				turnLeft(3);
+			}
+			else if(centerError > 100){
+				LOG.write(LOG_HIGH, "center", "predict wall error -> turn left");
+				turnRight(3);
+			}
+			else{
+				LOG.write(LOG_HIGH, "center", "predicted a wall error -> don't know which one");
+			}
 		}
-        LOG.write(LOG_LOW, "pid_speeds", "strafe: %d", strafeSpeed);
+		else{
+			LOG.write(LOG_LOW, "center", "\t\t\t\tcenter error: %f", centerError);
+			/// TODO remove break
+			//break;
+			LOG.write(LOG_LOW, "center", "center gain: %f", centerGain);
 
-        if (centerError < 0) {
-            LOG.write(LOG_LOW, "center", "Center error: %f, move right", centerError);
-            strafeRight(strafeSpeed);
-        }
-        else {
-            LOG.write(LOG_LOW, "center", "Center error: %f, move left", centerError);
-            strafeLeft(strafeSpeed);
-        }
+			if (fabs(centerError) < MAX_CENTER_ERROR) {
+				// we're close enough to centered, so stop adjusting
+				LOG.write(LOG_LOW, "center", "Center error: |%f| < %f, stop correcting.", centerError, MAX_CENTER_ERROR);
+				break;
+			}
+
+			int strafeSpeed = (int)fabs((centerGain));
+			
+			// cap our speed at 8
+			if (strafeSpeed > 10) {
+				//strafeSpeed = 10;
+			}
+			else if(strafeSpeed < 4) {
+				//strafeSpeed = 4;
+			}
+			LOG.write(LOG_LOW, "pid_speeds", "strafe: %d", strafeSpeed);
+
+			if (centerError < 0) {
+				LOG.write(LOG_LOW, "center", "Center error: %f, move right", centerError);
+				strafeRight(strafeSpeed);
+			}
+			else {
+				LOG.write(LOG_LOW, "center", "Center error: %f, move left", centerError);
+				strafeLeft(strafeSpeed);
+			}
+		}
     }
 
     _centerPID->flushPID();
@@ -493,7 +509,7 @@ void Robot::turnRight(int speed) {
 void Robot::strafeLeft(int speed) {
 	_speed=0;
     // we need about 5 commands to actually strafe sideways
-    for (int i = 0; i < 3+speed*2.5; i++) {
+    for (int i = 0; i < 5; i++) {
         _robotInterface->Move(RI_MOVE_LEFT, 10);
     }
 }
@@ -501,7 +517,7 @@ void Robot::strafeLeft(int speed) {
 /* Strafes the robot right at the given speed */
 void Robot::strafeRight(int speed) {
 	_speed=0;
-    for (int i = 0; i < 3+speed*2.5; i++) {
+    for (int i = 0; i < 5; i++) {
         _robotInterface->Move(RI_MOVE_RIGHT, 10);
     }
 }
