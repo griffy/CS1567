@@ -12,58 +12,53 @@
  * 
  * @date
  * 		created - 3/2/2012
- * 		modified - 3/25/2012
+ * 		modified - 3/26/2012
  **/
 
 #include "camera.h"
 #include "logger.h"
 #include "utilities.h"
-#include <robot_color.h>
-
-#define MAX_SLOPE 2.5
-#define MIN_SLOPE 0.01
-
-#define RIGHT_LEFT_SLOPE -0.35
-#define RIGHT_RIGHT_SLOPE -2.22
-#define RIGHT_MIDDLE_SLOPE -0.67
-
-#define LEFT_LEFT_SLOPE 2.6
-#define LEFT_RIGHT_SLOPE 0.55
-#define LEFT_MIDDLE_SLOPE 0.7
-
-#define MAX_SLOPE_DIFFERENCE 0.5
-
-#define MAX_CAMERA_ERRORS 7
 
 Camera::Camera(RobotInterface *robotInterface) {
     _robotInterface = robotInterface;
-    _centerDistErrorFilter = new FIRFilter("filters/cam_center_dist_error.ffc");
-    _slopeErrorFilter = new FIRFilter("filters/cam_slope_error.ffc");
-    setQuality(RI_CAMERA_QUALITY_HIGH);
-    setResolution(RI_CAMERA_RES_320);
     _pinkThresholded = NULL;
     _yellowThresholded = NULL;
     _pinkSquares = NULL;
     _yellowSquares = NULL;
+    setQuality(CAMERA_QUALITY);
+    setResolution(CAMERA_RESOLUTION);
 
+    // create 3 windows that will be used to display
+    // what is happening during processing of images
     cvNamedWindow("Thresholded", CV_WINDOW_AUTOSIZE);
     cvNamedWindow("Biggest Squares Distances", CV_WINDOW_AUTOSIZE);
     cvNamedWindow("Slopes", CV_WINDOW_AUTOSIZE);
 
+    // we always want the head to be up when a camera is in use
     _robotInterface->Move(RI_HEAD_MIDDLE, 1);
 }
 
 Camera::~Camera() {
-    delete _centerDistErrorFilter;
-    delete _slopeErrorFilter;
-    delete _pinkThresholded;
-    delete _yellowThresholded;
-    delete _pinkSquares;
-    delete _yellowSquares;
+    if (_pinkThresholded != NULL)
+        cvReleaseImage(&_pinkThresholded);
+    if (_yellowThresholded != NULL)
+        cvReleaseImage(&_yellowThresholded);
+    if (_pinkSquares != NULL)
+        delete _pinkSquares;
+    if (_yellowSquares != NULL)
+        delete _yellowSquares;
     // TODO: close windows
+    // place the head back down since the camera is no longer being used
     _robotInterface->Move(RI_HEAD_DOWN, 1);
 }
 
+/**************************************
+ * Definition: Attempts to set the rovio's camera quality. If it fails,
+ *             the quality is not set and failure is logged.
+ * Parameters: The expected camera quality as an integer
+ *
+ * 
+ **************************************/
 void Camera::setQuality(int quality) {
     if (_robotInterface->CameraCfg(0x7F, 
                         RI_CAMERA_DEFAULT_CONTRAST, 
@@ -78,6 +73,13 @@ void Camera::setQuality(int quality) {
     }
 }
 
+/**************************************
+ * Definition: Attempts to set the rovio's camera resolution. If it fails,
+ *             the quality is not set and failure is logged.
+ * Parameters: The expected camera resolution as an integer
+ *
+ * 
+ **************************************/
 void Camera::setResolution(int resolution) {
     if (_robotInterface->CameraCfg(RI_CAMERA_DEFAULT_BRIGHTNESS, 
                         RI_CAMERA_DEFAULT_CONTRAST, 
@@ -92,6 +94,12 @@ void Camera::setResolution(int resolution) {
     }
 }
 
+/**************************************
+ * Definition: Draws an x over a square on an image
+ * Parameters: The image to have the newly-drawn x, the square
+ *             used for creating the x, and a scalar of color for the x
+ * 
+ **************************************/
 void Camera::drawX(IplImage *image, squares_t *square, CvScalar color) {
     if (square == NULL) {
         return;
@@ -117,7 +125,14 @@ void Camera::drawX(IplImage *image, squares_t *square, CvScalar color) {
     cvLine(image, pt1, pt2, color, 3, CV_AA, 0);
 }
 
+/**************************************
+ * Definition: Retrieves new images from the camera, thresholds them, 
+ *             processes them finding their squares, and updates the
+ *             3 open windows
+ * 
+ **************************************/
 void Camera::update() {
+    // release the old thresholded images
     if (_pinkThresholded != NULL) {
         cvReleaseImage(&_pinkThresholded);
     }
