@@ -49,12 +49,12 @@ int main(int argc, char *argv[]) {
 	robot->move(DIR_EAST, 5);
 	robot->turn(DIR_RIGHT, DEGREE_90);
 	robot->move(DIR_SOUTH, 3);
-	
+*/	
 // Sensor Testing Code
-/*
+
 	while(1) {
 		robot->updatePose();
-		robot->moveForward(4);
+/*		robot->moveForward(4);
 		robot->moveForward(4);
 		robot->moveForward(4);
 		robot->moveForward(4);
@@ -72,8 +72,8 @@ int main(int argc, char *argv[]) {
 		robot->moveForward(4);
 		robot->moveForward(4);
 		robot->moveForward(4);	
-	}
-*/
+*/	}
+
 
 // Project 1 Code
 /*

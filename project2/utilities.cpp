@@ -88,7 +88,7 @@ namespace Util {
 	}
 
     int capSpeed(int speed, int cap) {
-        return min(max(speed, 0), cap);
+        return Math::min(Math::max(speed, 0), cap);
     }
 
 };

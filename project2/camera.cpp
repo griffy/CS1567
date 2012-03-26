@@ -179,7 +179,7 @@ float Camera::centerError(int color) {
 	int numWallErrors = 0;
 	float wallSide = 10000;
 
-    for (int i = 0; i < MAX_CAMERA_ERRORS; i++) {
+    for (int i = 0; i < NUM_CAMERA_ERRORS; i++) {
         update();
 
         float slopeError = corridorSlopeError(color);
