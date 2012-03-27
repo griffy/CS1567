@@ -139,11 +139,11 @@ void Camera::update() {
     if (_yellowThresholded != NULL) {
         cvReleaseImage(&_yellowThresholded);
     }
-    /*
-    // FIXME: free squares memory properly
-    */
 
-    // get a red and pink thresholded and or them together
+    // TODO: free the old squares memory
+
+    // get a red and pink thresholded image and or them together to 
+    // have an improved pink thresholded image
     IplImage *redThresholded = getThresholdedImage(RED_LOW, RED_HIGH);
     while (redThresholded == NULL) {
         redThresholded = getThresholdedImage(RED_LOW, RED_HIGH);
@@ -154,46 +154,52 @@ void Camera::update() {
     }
     cvOr(_pinkThresholded, redThresholded, _pinkThresholded);
     
+    // get a yellow thresholded image
     _yellowThresholded = getThresholdedImage(YELLOW_LOW, YELLOW_HIGH);
     while (_yellowThresholded == NULL) {
         _yellowThresholded = getThresholdedImage(YELLOW_LOW, YELLOW_HIGH);
     }
+    // smooth both thresholded images to create more solid, blobby contours
     cvSmooth(_pinkThresholded, _pinkThresholded, CV_BLUR_NO_SCALE);
     cvSmooth(_yellowThresholded, _yellowThresholded, CV_BLUR_NO_SCALE);
 
-    cvShowImage("Thresholded", _pinkThresholded);
-
+    // find all squares of a given color in each thresholded image
     _pinkSquares = findSquaresOf(COLOR_PINK, DEFAULT_SQUARE_SIZE);
     _yellowSquares = findSquaresOf(COLOR_YELLOW, DEFAULT_SQUARE_SIZE);
 
-    // update the open windows instantly
+    // show the pink thresholded image so we can see what it sees
+    cvShowImage("Thresholded", _pinkThresholded);
+
+    // update all open windows
     cvWaitKey(10);
 }
 
+/**************************************
+ * Definition: Gives an error specifying how far away from the center
+ *             of the squares (corridor) the rovio is, using both
+ *             error of the slopes of seen squares and distance error
+ *             of the two largest squares
+ * Parameters: The color of the squares we're supposed to be looking at
+ *
+ * Returns:    The center error in the interval [-1, 1], where 0 is no error
+ *             A negative value is an indication to move right
+ *             A positive value is an indication to move left
+ **************************************/
 float Camera::centerError(int color) {
     int numGoodSlopeErrors = 0;
     int numGoodCenterDistErrors = 0;
     float totalGoodSlopeError = 0.0;
     float totalGoodCenterDistError = 0.0;
-	
-	int numWallErrors = 0;
-	float wallSide = 10000;
+    float avgSlopeError = 0.0;
+    float avgCenterDistError = 0.0;
 
-    for (int i = 0; i < MAX_CAMERA_ERRORS; i++) {
+    // calculate slope and center distance errors the specified number
+    // of times, ignoring -999's (which say they found nothing good)
+    for (int i = 0; i < NUM_CAMERA_ERRORS; i++) {
         update();
 
         float slopeError = corridorSlopeError(color);
         float centerDistError = centerDistanceError(color);
-
-		if (slopeError == -10){
-			//looking at left side (probably)
-			numWallErrors++;
-			wallSide--;
-		}
-		else if(slopeError == 10){
-			numWallErrors++;
-			wallSide++;
-		}
 
         if (slopeError != -999) {
             numGoodSlopeErrors++;
@@ -206,32 +212,108 @@ float Camera::centerError(int color) {
         }
     }
 
-    if(numWallErrors>2){
-		LOG.write(LOG_HIGH, "centerError", "might be looking at a wall... %f", wallSide);
-		return wallSide;
-	}
+    avgSlopeError = totalGoodSlopeError / (float)numGoodSlopeErrors;
+    avgCenterDistError = totalGoodCenterDistError / (float)numGoodCenterDistErrors;
 
-    LOG.write(LOG_LOW, "centerError", 
-              "avg slope error: %f", 
-              (numGoodSlopeErrors == 0) ? -999 : (totalGoodSlopeError / (float)numGoodSlopeErrors));
-    LOG.write(LOG_LOW, "centerError", 
-              "avg center dist error: %f", 
-              (numGoodCenterDistErrors == 0) ? -999 : (totalGoodCenterDistError / (float)numGoodCenterDistErrors));
+    LOG.write(LOG_LOW, "centerError", "avg slope error: %f", avgSlopeError);
+    LOG.write(LOG_LOW, "centerError", "avg center dist error: %f", avgCenterDistError);
 	
-	
-    if (numGoodSlopeErrors == 0) {
-        // we couldn't find any slopes, so default
-        // to using the center distance instead
-        printf("Couldn't find any slopes, default to using center distance...\n");
-        if (numGoodCenterDistErrors == 0) {
-            // we also couldn't find any squares.. oh snap
-			printf("Couldn't find center distance either... OH SNAP!!!!!\n");
-            return 0;
+    // if we have good center distance errors, let's use those
+	if (numGoodCenterDistErrors > 0) {
+        // but are they still not optimal?
+        if (avgCenterDistError > 0.25) {
+            // center distance error is probably no longer a good indicator
+            // of center error, so trust slope error now if we have it
+            if (numGoodSlopeErrors > 0) {
+                return avgSlopeError;
+            }
         }
-        return totalGoodCenterDistError / (float)numGoodCenterDistErrors;
+        return avgCenterDistError;
     }
 
-    return totalGoodSlopeError / (float)numGoodSlopeErrors;
+    // if we didn't have good center distance errors, let's
+    // use slope error if we have it
+    if (numGoodSlopeErrors > 0) {
+        return avgSlopeError;
+    }
+
+    // otherwise, we didn't have good errors for either!
+    return 0;
+}
+
+/**************************************
+ * Definition: Gives an error specifying the difference of the distance 
+ *             of the two largest squares from the center of the image
+ * Parameters: The color of the squares we're supposed to be looking at
+ *
+ * Returns:    An error in the interval [-1, 1], where 0 is no error
+ *             A negative value is an indication to move right
+ *             A positive value is an indication to move left
+ **************************************/
+float Camera::centerDistanceError(int color) {
+    int width;
+    switch (color) {
+    case COLOR_PINK:
+        width = _pinkThresholded->width;
+        break;
+    case COLOR_YELLOW:
+        width = _yellowThresholded->width;
+        break;
+    }
+
+    int center = width / 2;
+
+    squares_t *leftSquare = leftBiggestSquare(color);
+    squares_t *rightSquare = rightBiggestSquare(color);
+    
+    IplImage *bgr = getBGRImage();
+    if (bgr != NULL) {
+        drawX(bgr, leftSquare, RED);
+        drawX(bgr, rightSquare, GREEN);
+        CvPoint lineStart;
+        CvPoint lineEnd;
+        lineStart.x = center;
+        lineStart.y = 0;
+        lineEnd.x = center;
+        lineEnd.y = bgr->height;
+        cvLine(bgr, lineStart, lineEnd, BLUE, 3, CV_AA, 0);
+        cvShowImage("Biggest Squares Distances", bgr);
+        cvReleaseImage(&bgr);
+    }
+
+    // do we have two largest squares?
+    if (leftSquare != NULL && rightSquare != NULL) {
+        if (!onSamePlane(leftSquare, rightSquare)) {
+            // if they're not on the same plane,
+            // set the square with the smallest area to
+            // be the one too far back
+            if (leftSquare->area > rightSquare->area) {
+                return -0.25;
+            }
+            else {
+                return 0.25;
+            }
+        }
+    }
+
+    if (leftSquare == NULL && rightSquare == NULL) {
+        return -999;
+    } 
+    else if (leftSquare == NULL) {
+        // it seems to be out of view, so we set the error to 
+        // the max it could be
+        return -1;
+    } 
+    else if (rightSquare == NULL) {
+        return 1;
+    }
+
+    // otherwise, we have two squares, so find the difference
+    int leftError = center - leftSquare->center.x;
+    int rightError = center - rightSquare->center.x;
+
+    //Return difference in errors
+    return (float)(leftError + rightError) / (float)center;
 }
 
 /** ***************************************
@@ -471,76 +553,6 @@ regressionLine Camera::leastSquaresRegression(int color, int side) {
     }
 
     return result;
-}
-
-
-/* Returns an error in range [-1, 1] where 0 is no error */
-// negative means move right
-// positive means move left
-float Camera::centerDistanceError(int color) {
-    int width;
-    switch (color) {
-    case COLOR_PINK:
-        width = _pinkThresholded->width;
-        break;
-    case COLOR_YELLOW:
-        width = _yellowThresholded->width;
-        break;
-    }
-
-    int center = width / 2;
-
-    squares_t *leftSquare = leftBiggestSquare(color);
-    squares_t *rightSquare = rightBiggestSquare(color);
-    
-    IplImage *bgr = getBGRImage();
-    if (bgr != NULL) {
-        drawX(bgr, leftSquare, RED);
-        drawX(bgr, rightSquare, GREEN);
-        CvPoint lineStart;
-        CvPoint lineEnd;
-        lineStart.x = center;
-        lineStart.y = 0;
-        lineEnd.x = center;
-        lineEnd.y = bgr->height;
-        cvLine(bgr, lineStart, lineEnd, BLUE, 3, CV_AA, 0);
-        cvShowImage("Biggest Squares Distances", bgr);
-        cvReleaseImage(&bgr);
-    }
-
-    // do we have two largest squares?
-    if (leftSquare != NULL && rightSquare != NULL) {
-        if (!onSamePlane(leftSquare, rightSquare)) {
-            // if they're not on the same plane,
-            // set the square with the smallest area to
-            // be the one too far back
-            if (leftSquare->area > rightSquare->area) {
-                return -0.25;
-            }
-            else {
-                return 0.25;
-            }
-        }
-    }
-
-    if (leftSquare == NULL && rightSquare == NULL) {
-    	return -999;
-    } 
-    else if (leftSquare == NULL) {
-        // it seems to be out of view, so we set the error to 
-        // the max it could be
-        return -1;
-    } 
-    else if (rightSquare == NULL) {
-        return 1;
-    }
-
-    // otherwise, we have two squares, so find the difference
-    int leftError = center - leftSquare->center.x;
-    int rightError = center - rightSquare->center.x;
-
-    //Return difference in errors
-    return (float)(leftError + rightError) / (float)center;
 }
 
 /* Error is defined to be the distance of the square

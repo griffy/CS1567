@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <algorithm>
 
 namespace Util {
     /// Performs a matrix multiplication of two matrices, A and B,
@@ -88,7 +89,7 @@ namespace Util {
 	}
 
     int capSpeed(int speed, int cap) {
-        return min(max(speed, 0), cap);
+        return std::min(std::max(speed, 0), cap);
     }
 
 };
