@@ -1,3 +1,16 @@
+/**
+ * fir_filter.h
+ * 
+ * @brief 
+ *      This class is used for applying a FIR filter to arbitrary data
+ * 
+ * @author
+ *      Shawn Hanna
+ *      Tom Nason
+ *      Joel Griffith
+ * 
+ **/
+
 #ifndef CS1567_FIRFILTER_H
 #define CS1567_FIRFILTER_H
 
@@ -20,7 +33,6 @@ private:
     std::vector<float> _samples;
     unsigned int _nextSample;
 	
-    
     int _readTaps(std::string fileName);
 };
 

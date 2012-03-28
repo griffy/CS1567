@@ -155,13 +155,13 @@ const float NS_ROOM_ORIGINS_FROM_COL[4][2] = {{48.0,-97.0},
 											  {84.0, 191.0}, 
 											  {212.0, 102.0}};
 */
-/*
+
 // Bender - Project 2
 const float NS_ROOM_ORIGINS_FROM_COL[4][2] = {{36.0,-125.0}, 
 											  {-116.0,18.0}, 
 											  {62.0, 174.0}, 
 											  {193.0, 36.0}};
-*/
+
 /*
 // Johnny5 - Project 2
 const float NS_ROOM_ORIGINS_FROM_COL[4][2] = {{5.0, -104.0}, 
