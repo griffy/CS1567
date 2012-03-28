@@ -2,16 +2,14 @@
  * pose.cpp
  * 
  * @brief 
- * 		This class is used for keeping the robot's physical pose (x,y,theta) and performing calculations on it
+ * 		This class is used for keeping the robot's physical pose (x, y, theta) 
+ *      and performing calculations on it.
  * 
  * @author
  * 		Shawn Hanna
  * 		Tom Nason
  * 		Joel Griffith
- * 
- * @date
- * 		created - 2/2/2012
- * 		modified - 3/24/2012
+ *
  **/
 
 #include "pose.h"
@@ -30,20 +28,35 @@ Pose::Pose(float x, float y, float theta) {
 
 Pose::~Pose() {}
 
-/* Sets the difference between 2 poses in a given result pose */
-void Pose::difference(Pose* returnPose, Pose* pose1, Pose* pose2) {
+/**************************************
+ * Definition: Stores the difference between two poses in a third pose
+ *
+ * Parameters: pointers to two poses, along with a pointer to a result pose
+ **************************************/
+void Pose::difference(Pose* pose1, Pose* pose2, Pose* returnPose) {
     returnPose->setX(pose2->getX() - pose1->getX());
     returnPose->setY(pose2->getY() - pose1->getY());
     returnPose->setTotalTheta(pose2->getTotalTheta() - pose1->getTotalTheta());
 }
 
-/* Returns the distance (x/y) between 2 poses */
+/**************************************
+ * Definition: Returns the distance between two poses
+ *
+ * Parameters: pointers to two poses
+ *
+ * Returns:    distance as a float
+ **************************************/
 float Pose::distance(Pose* pose1, Pose* pose2) {
 	float xerr = pose2->getX() - pose1->getX();
 	float yerr = pose2->getY() - pose1->getY();
 	return sqrt(xerr*xerr + yerr*yerr);
 }
 
+/**************************************
+ * Definition: Resets the current pose according to parameters
+ *
+ * Parameters: a new x, y, theta, and number of rotations (int)
+ **************************************/
 void Pose::reset(float x, float y, float theta, int numRotations) {
 	setX(x);
 	setY(y);
@@ -51,67 +64,102 @@ void Pose::reset(float x, float y, float theta, int numRotations) {
 	setNumRotations(numRotations);
 }
 
+/**************************************
+ * Definition: Sets the current pose's x to the given x
+ *
+ * Parameters: x as a float
+ **************************************/
 void Pose::setX(float x) {
 	_x = x;
 }
 
+/**************************************
+ * Definition: Sets the current pose's y to the given y
+ *
+ * Parameters: y as a float
+ **************************************/
 void Pose::setY(float y) {
 	_y = y;
 }
 
-/* Sets theta, as well as total theta according to the number of rotations */
+/**************************************
+ * Definition: Sets the current pose's theta to the given theta,
+ *             also updating total theta in the process
+ *
+ * Parameters: theta as a float
+ **************************************/
 void Pose::setTheta(float theta) {
-	//_theta = fmod(theta, 2*PI);
 	_theta = Util::normalizeTheta(theta);
 	_totalTheta = _numRotations * 2*PI + _theta;
 }
 
-/* Adds the given number to the pre-existing number of stored rotations */
+/**************************************
+ * Definition: Updates the number of rotations by the given amount
+ *
+ * Parameters: number of rotations as an int, either positive or negative
+ **************************************/
 void Pose::modifyRotations(int num) {
 	setNumRotations(_numRotations + num);
 }
 
-/* Directly sets total theta, which in turn sets the number of rotations
- * as well as theta
- */
+/**************************************
+ * Definition: Directly sets total theta, in turn updating theta and
+ *             the number of rotations
+ *
+ * Parameters: total theta as a float
+ **************************************/
 void Pose::setTotalTheta(float totalTheta) {
 	_totalTheta = totalTheta;
-	_numRotations = (int) _totalTheta/(2*PI);
+	_numRotations = (int) _totalTheta / 2*PI;
 	_theta = Util::normalizeTheta(totalTheta);
-	/*
-	_theta = fmod(totalTheta, 2*PI);
-	if (_theta < 0) {
-		_theta += 2*PI;
-	}
-	*/
 }
 
+/**************************************
+ * Definition: Returns total theta
+ *
+ * Returns:    total theta as a float
+ **************************************/
 float Pose::getTotalTheta() {
 	return _totalTheta;
 }
 
-/* Sets the number of rotations, which track how many times theta has
- * passed over 2PI 
- */
+/**************************************
+ * Definition: Sets the number of rotations, which track how
+ *             many times theta has passed over 2PI
+ *
+ * Parameters: number of rotations as an int
+ **************************************/
 void Pose::setNumRotations(int rot) {
 	_numRotations = rot;
 	_totalTheta = _numRotations * 2*PI + _theta;
 }
 
+/**************************************
+ * Definition: Returns the number of rotations
+ *
+ * Returns:    number of rotations as an int
+ **************************************/
 int Pose::getNumRotations() {
 	return _numRotations;
 }
 
-/* Adds the deltas to the current pose, resulting in a new one */
+/**************************************
+ * Definition: Adds deltas to the current pose
+ *
+ * Parameters: delta x, delta y, and delta theta as floats
+ **************************************/
 void Pose::add(float deltaX, float deltaY, float deltaTheta) {
 	_x += deltaX;
 	_y += deltaY;
 	_theta += deltaTheta;
 }
 
-/* Sets a 3-element array to have x, y, and total theta to be used
- * by a Kalman filter
- */
+/**************************************
+ * Definition: Sets a 3-element array to have x, y, and total theta 
+ * to be used by a Kalman filter
+ *
+ * Parameters: pointer to an array
+ **************************************/
 void Pose::toArrayForKalman(float *arr) {
 	arr[0] = _x;
 	arr[1] = _y;
@@ -119,18 +167,39 @@ void Pose::toArrayForKalman(float *arr) {
 	arr[2] = totalTheta; // used fabs(totalTheta);
 }
 
+/**************************************
+ * Definition: Returns x
+ *
+ * Returns:    x as an int
+ **************************************/
 float Pose::getX() {
 	return _x;
 }
 
+/**************************************
+ * Definition: Returns y
+ *
+ * Returns:    y as an int
+ **************************************/
 float Pose::getY(){
 	return _y;
 }
 
+/**************************************
+ * Definition: Returns theta
+ *
+ * Returns:    theta as an int
+ **************************************/
 float Pose::getTheta(){
 	return _theta;
 }
 
+/**************************************
+ * Definition: Rotates x, y, and theta according to the
+ *             given angles
+ *
+ * Parameters: x angle, y angle, and theta angle as floats
+ **************************************/
 void Pose::rotateEach(float xAngle, float yAngle, float thetaAngle) {
 	float newX = getX() * cos(xAngle) - getY() * sin(xAngle);
 	float newY = getX() * sin(yAngle) + getY() * cos(yAngle);
@@ -140,6 +209,12 @@ void Pose::rotateEach(float xAngle, float yAngle, float thetaAngle) {
     setTheta(newTheta);
 }
 
+/**************************************
+ * Definition: Rotates x, y, and theta according to the
+ *             given angle
+ *
+ * Parameters: angle as a float
+ **************************************/
 void Pose::rotate(float angle) {
 	float newX = getX() * cos(angle) - getY() * sin(angle);
 	float newY = getX() * sin(angle) + getY() * cos(angle);
@@ -149,6 +224,11 @@ void Pose::rotate(float angle) {
     setTheta(newTheta);
 }
 
+/**************************************
+ * Definition: Scales x and y according to the scaling constants
+ *
+ * Parameters: x and y scaling floats
+ **************************************/
 void Pose::scale(float sx, float sy) {
 	float newX = getX() / sx;
 	float newY = getY() / sy;
@@ -156,6 +236,11 @@ void Pose::scale(float sx, float sy) {
     setY(newY);
 }
 
+/**************************************
+ * Definition: Translates x and y according to translation constants
+ *
+ * Parameters: x and y translation floats
+ **************************************/
 void Pose::translate(float tx, float ty) {
 	float newX = getX() + tx;
 	float newY = getY() + ty;

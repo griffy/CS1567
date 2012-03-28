@@ -1,3 +1,17 @@
+/**
+ * pose.h
+ * 
+ * @brief 
+ * 		This class is used for keeping the robot's physical pose (x, y, theta) 
+ *      and performing calculations on it.
+ * 
+ * @author
+ * 		Shawn Hanna
+ * 		Tom Nason
+ * 		Joel Griffith
+ *
+ **/
+
 #ifndef CS1567_POSE_H
 #define CS1567_POSE_H
 #include <math.h>
@@ -20,16 +34,13 @@ public:
 	float getTheta();
 	float getTotalTheta();
 	int getNumRotations();
-
     void add(float deltaX, float deltaY, float deltaTheta);
-	void difference(Pose* destination, Pose* pose1, Pose* pose2);
+	void difference(Pose* pose1, Pose* pose2, Pose* destination);
 	float distance(Pose* pose1, Pose* pose2);
-	
 	void rotateEach(float xAngle, float yAngle, float thetaAngle);
 	void rotate(float angle);
 	void scale(float sx, float sy);
 	void translate(float tx, float ty);
-
     void toArrayForKalman(float *arr);
 private:
 	float _x;
