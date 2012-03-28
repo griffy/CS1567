@@ -5,13 +5,10 @@
  * 		This namespace contains commonly used functions that can be used throughout the program
  * 
  * @author
- * 		Tom Nason
- * 		Joel Griffith
- * 		Shawn Hanna
+ *      Shawn Hanna
+ *      Tom Nason
+ *      Joel Griffith
  * 
- * @date
- * 		created - 2/2/2012
- * 		modified - 2/28/2012
  **/
 
 #include "utilities.h"
@@ -22,8 +19,14 @@
 #include <algorithm>
 
 namespace Util {
-    /// Performs a matrix multiplication of two matrices, A and B,
-    /// storing the result in a third matrix, C
+    /**************************************
+     * Definition: Performs a matrix multiplication of two matrices, A and B,
+     *             and stores the result in a third matrix, C
+     *
+     * Parameters: float pointer matrix A, length and height of A as ints
+     *             float pointer matrix B, length and height of B as ints
+     *             float pointer matrix C
+     **************************************/
     void matrixMult(float *mA, int lA, int hA, float *mB, int lB, int hB, float *mC) {
         if (hA != lB) {
             printf("Inner matrix dimensions do not match!\n");
@@ -33,15 +36,21 @@ namespace Util {
         for (int i = 0; i < lA; i++) {
             for (int j = 0; j < hB; j++) {
                 mC[j + (i*hB)] = 0;
-                for(int k = 0; k < lB; k++) {
+                for (int k = 0; k < lB; k++) {
                     mC[j+(i*hB)] += mA[(i*hB)+k] * mB[(k*hB)+j];
                 }
             }
         }
     }
 
-    /// Takes an error, possibly negative, and converts it to
-    /// the appropriate representation used internally by robot
+    /**************************************
+     * Definition: Takes a theta error, possibly negative, and
+     *             converts it to the appropriate representation [0, 2PI]
+     *
+     * Parameters: float specifying theta error
+     *
+     * Returns:    new float theta error
+     **************************************/
     float normalizeThetaError(float thetaError) {
         while (thetaError <= -PI) {
             thetaError += 2*PI;
@@ -52,9 +61,14 @@ namespace Util {
         return thetaError;
     }
 
-    /** Input: A number in range [-inf, inf] (usually [-pi, pi])
-     *  Returns: A number in range [0, 2pi]
-     */
+    /**************************************
+     * Definition: Takes a theta (usually [-pi, pi]) and 
+     *             normalizes it into range [0, 2PI]
+     *
+     * Parameters: float specifying theta
+     *
+     * Returns:    new float theta
+     **************************************/
     float normalizeTheta(float theta) {
         while (theta >= 2*PI) {
             theta -= 2*PI;
@@ -65,8 +79,14 @@ namespace Util {
         return theta;
     }
 
-    /// Returns the name, which is an integer, of the robot
-    /// according to its address
+    /**************************************
+     * Definition: Returns an integer referring to the name
+     *             of a robot based on its address
+     *
+     * Parameters: string with robot's address (ip or hostname)
+     *
+     * Returns:    int specifying robot's name
+     **************************************/
     int nameFrom(std::string address) {
         for (int i = 0; i < NUM_ROBOTS; i++) {
             if (ROBOTS[i] == address) {
@@ -80,16 +100,31 @@ namespace Util {
         }
     }
     
-    /// maps the value from the range leftMin/leftMax to rightMin/rightMax
-    float mapValue(float value, float leftMin, float leftMax, float rightMin, float rightMax){
+    /**************************************
+     * Definition: Maps a value from the first range to the second
+     *
+     * Parameters: float specifying the value to map, and the
+     *             left (range) min and max as floats, along with the 
+     *             right (range) min and max as floats.
+     *
+     * Returns:    mapped value as a float
+     **************************************/
+    float mapValue(float value, float leftMin, float leftMax, float rightMin, float rightMax) {
 		float leftSpan = leftMax - leftMin;
 		float rightSpan = rightMax - rightMin;
 		float valueScaled = (value - leftMin) / (leftSpan);
 		return rightMin + (valueScaled * rightSpan);
 	}
 
+    /**************************************
+     * Definition: Takes a robot speed and makes sure it falls in
+     *             range [0, cap]
+     *
+     * Parameters: ints specifying the speed and the cap
+     *
+     * Returns:    capped speed as an int
+     **************************************/
     int capSpeed(int speed, int cap) {
         return std::min(std::max(speed, 0), cap);
     }
-
 };

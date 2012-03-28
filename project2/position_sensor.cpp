@@ -17,7 +17,7 @@
 
 PositionSensor::PositionSensor(RobotInterface *robotInterface) {
 	_robotInterface = robotInterface;
-	_pose = new Pose(0, 0, 0);
+	_pose = new Pose(0.0, 0.0, 0.0);
 	_passed2PI = false;
 }
 

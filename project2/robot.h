@@ -1,3 +1,18 @@
+/**
+ * robot.h
+ * 
+ * @brief 
+ *      This class defines the rovio robot, and performs operations that the 
+ *      system can do, such as movement and requesting sensor updates.  
+ *      It also stores the sensor classes, vehicle position, and camera.
+ * 
+ * @author
+ *      Shawn Hanna
+ *      Tom Nason
+ *      Joel Griffith
+ * 
+ **/
+
 #ifndef CS1567_ROBOT_H
 #define CS1567_ROBOT_H
 
@@ -17,6 +32,11 @@
 
 #include <robot_if++.h>
 #include <string>
+
+#define GOOD_NS_STRENGTH 13222
+
+#define MAX_CAMERA_BRIGHTNESS (0x7F)
+#define CAMERA_FRAMERATE 5
 
 #define NUM_SPEEDS 11
 
@@ -66,39 +86,31 @@ class Robot {
 public:
     Robot(std::string address, int id);
     ~Robot();
-    // moves the number of cells in the given direction
     void move(int direction, int numCells);
     void turn(int direction, float radians);
     void moveToCell(float x, float y);
-    //moves to the given x/y coordinates, without stopping
     void moveTo(float x, float y);
     float moveToUntil(float x, float y, float thetaErrorLimit);
     void turnTo(float theta, float thetaErrorLimit);
     void turnCenter();
     void center();
-
     void setFailLimit(int limit);
     int getFailLimit();
     void setCameraResolution(int resolution, int quality);
 	void prefillData();
     void updatePose();
     void updateCamera();
-
     void moveForward(int speed);
     void turnLeft(int speed);
     void turnRight(int speed);
     void strafeLeft(int speed);
     void strafeRight(int speed);
     void stop();
-
     Pose* getPose();
-
-    // Self explanatory
     bool isThereABitchInMyWay();
 	int getStrength();
     int getRoom();
     int getBattery();
-
     void printBeginPhrase();
     void printSuccessPhrase();
     void printFailPhrase();
@@ -109,10 +121,9 @@ private:
     RobotInterface *_robotInterface;
     int _name;
 
-	// stores the most recent speed that the robot was told. set during both turns and moving straight instructions
 	int _speed;	
-	char _turnDirection;			// value of 1 means turning right, 0 means left
-	bool _movingForward;			// set if moving forward/stopped
+	char _turnDirection;
+	bool _movingForward;
 
     PID* _distancePID;
     PID* _thetaPID;

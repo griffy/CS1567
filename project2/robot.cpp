@@ -2,28 +2,21 @@
  * robot.cpp
  * 
  * @brief 
- * 		This class defines the rovio robot, and performs operations that the system can do, such as movement and 
- * 		requesting sensor updates.  It also stores the sensor classes and vehicle position
+ * 		This class defines the rovio robot, and performs operations that the 
+ *      system can do, such as movement and requesting sensor updates.  
+ *      It also stores the sensor classes, vehicle position, and camera.
  * 
  * @author
- * 		Tom Nason
- * 		Joel Griffith
- * 		Shawn Hanna
+ *      Shawn Hanna
+ *      Tom Nason
+ *      Joel Griffith
  * 
- * @date
- * 		created - 2/2/2012
- * 		modified - 3/24/2012
  **/
 
 #include "robot.h"
 #include "phrases.h"
 #include "logger.h"
 #include <math.h>
-
-#define GOOD_NS_STRENGTH 13222
-
-#define MAX_CAMERA_BRIGHTNESS (0x7F)
-#define CAMERA_FRAMERATE 5
 
 Robot::Robot(std::string address, int id) {
     // store the robot's name as an int to be used later
@@ -48,7 +41,7 @@ Robot::Robot(std::string address, int id) {
     _northStar = new NorthStar(_robotInterface);
     
     // initialize global pose
-    _pose = new Pose(0, 0, 0);
+    _pose = new Pose(0.0, 0.0, 0.0);
     // bind _pose to the kalman filter
     _kalmanFilter = new KalmanFilter(_pose);
     _kalmanFilter->setUncertainty(PROC_X_UNCERTAIN,
@@ -75,11 +68,10 @@ Robot::Robot(std::string address, int id) {
 
     printf("pid controllers initialized\n");
     
+    // fill our sensors with data
     prefillData();
-    // base the wheel encoder pose off north star to start (since we
-    // might start anywhere in the global system)
-    //_wheelEncoders->getPose()->setX(_northStar->getX());
-    //_wheelEncoders->getPose()->setY(_northStar->getY());
+    // base the wheel encoder pose off north star to start,
+    // since we might start anywhere in the global system)
     _wheelEncoders->resetPose(_northStar->getPose());
     // now update our pose again so our global pose isn't
     // some funky value
@@ -88,59 +80,23 @@ Robot::Robot(std::string address, int id) {
 
 Robot::~Robot() {
     delete _robotInterface;
-
     delete _camera;
-
     delete _wheelEncoders;
     delete _northStar;
-
     delete _pose;
-
     delete _kalmanFilter;
-
     delete _distancePID;
     delete _thetaPID;
     delete _centerPID;
+    delete _turnCenterPID;
 }
 
-/* Returns a reference to the Kalman pose */
-Pose* Robot::getPose() {
-    return _pose;
-}
-
-void Robot::prefillData() {
-    printf("prefilling data...\n");
-    for (int i = 0; i < MAX_FILTER_TAPS; i++){
-        updatePose();
-    }
-    printf("sufficient data collected\n");
-}
-
-void Robot::printBeginPhrase() {
-    printf(BEGIN_PHRASES[_name].c_str());
-    printf("\n");
-}
-
-void Robot::printSuccessPhrase() {
-    printf(SUCCESS_PHRASES[_name].c_str());
-    printf("\n");
-}
-
-void Robot::printFailPhrase() {
-    printf(FAIL_PHRASES[_name].c_str());
-    printf("\n");
-}
-
-/* Celebrates by moving head up and down */
-void Robot::rockOut() {
-    for (int i = 0; i < 1; i++) {
-        _robotInterface->Move(RI_HEAD_UP, 1);
-        sleep(1);
-        _robotInterface->Move(RI_HEAD_DOWN, 1);
-        sleep(1);
-    }
-}
-
+/**************************************
+ * Definition: Moves the robot in the specified direction
+ *             the specified number of cells (65x65 area)
+ *
+ * Parameters: ints specifying direction and number of cells
+ **************************************/
 void Robot::move(int direction, int numCells) {
     int cellsTraveled = 0;
 
@@ -169,10 +125,17 @@ void Robot::move(int direction, int numCells) {
         }
         moveToCell(goalX, goalY);
         cellsTraveled++;
-        LOG.write(LOG_LOW, "move", "MADE IT TO CELL %d\n\n\n", cellsTraveled);
+        LOG.write(LOG_LOW, "move", "Made it to cell %d", cellsTraveled);
     }
 }
 
+/**************************************
+ * Definition: Turns the robot in a relative direction
+ *             the specified number of radians
+ *
+ * Parameters: int specifying direction and a float
+ *             specifying radians (0..2PI)
+ **************************************/
 void Robot::turn(int direction, float radians) {
     float goalTheta;
 
@@ -186,11 +149,19 @@ void Robot::turn(int direction, float radians) {
     }
 }
 
-// Moves to a cell in the global coord system at the specified cm,
-// using both kalman and square detection for centering as it moves
+/**************************************
+ * Definition: Moves the robot to a cell in the global coord system located at
+ *             the specified x and y, centering as needed
+ *
+ * Parameters: floats specifying x and y in global system
+ **************************************/
 void Robot::moveToCell(float x, float y) {
+    LOG.write(LOG_LOW, "moveToCell", 
+              "moveToCell cur. location: %f, %f, %f", 
+              _pose->getX(), _pose->getY(), _pose->getTheta());
+
     printf("beginning move to cell at (%f, %f)\n", x, y);
-	printf("Current location: %f, %f, %f", _pose->getX(), _pose->getY(), _pose->getTheta());
+
     float thetaError;
     do {
         // move to the location until theta is off by too much
@@ -211,7 +182,12 @@ void Robot::moveToCell(float x, float y) {
     _wheelEncoders->resetPose(_pose);
 }
 
-// Moves to a location in the global coordinate system (in cm)
+/**************************************
+ * Definition: Moves the robot to the specified location in the global
+ *             coord system, disregarding cells
+ *
+ * Parameters: floats specifying x and y in global system
+ **************************************/
 void Robot::moveTo(float x, float y) {
     printf("beginning move\n");
 
@@ -233,9 +209,14 @@ void Robot::moveTo(float x, float y) {
     _wheelEncoders->resetPose(_pose);
 }
 
-// Moves to a location in the global coordinate system (in cm) 
-// until theta error limit exceeded
-// Returns: theta error
+/**************************************
+ * Definition: Attempts to move the robot to the specified location 
+ *             in the global coord system, disregarding cells. If
+ *             theta error is exceeded, the method returns theta error.
+ *
+ * Parameters: floats specifying x and y in global system, and 
+ *             a float specifying the theta error limit
+ **************************************/
 float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
     float yError;
     float xError;
@@ -308,6 +289,13 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
     return 0; // no error when we've finished
 }
 
+/**************************************
+ * Definition: Turns the robot as close to the specified theta
+ *             as possible. When theta is within the specified
+ *             theta error threshold, it returns.
+ *
+ * Parameters: floats specifying theta goal and theta error limit
+ **************************************/
 void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
     float theta;
     float thetaError;
@@ -375,10 +363,12 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
     printf("theta acceptable\n");
 }
 
+/**************************************
+ * Definition: Turns the robot until it is considered centered
+ *             between two squares in a corridor
+ **************************************/
 void Robot::turnCenter() {
     while (true) {
-        sleep(1);
-
         updateCamera();
 
         float turnCenterError = _camera->centerError(COLOR_PINK);
@@ -414,6 +404,10 @@ void Robot::turnCenter() {
     _turnCenterPID->flushPID();
 }
 
+/**************************************
+ * Definition: Strafes the robot until it is considered centered
+ *             between two squares in a corridor
+ **************************************/
 void Robot::center() {
     while (true) {
         updateCamera();
@@ -421,120 +415,47 @@ void Robot::center() {
         float centerError = _camera->centerError(COLOR_PINK);
         float centerGain = _centerPID->updatePID(centerError);
 		
-		if(centerError > 5){
-			if(centerError < 100){
-				//probably looking at left side, turn right
-				LOG.write(LOG_HIGH, "center", "predict wall error -> turn right");
-				turnLeft(3);
-			}
-			else if(centerError > 100){
-				LOG.write(LOG_HIGH, "center", "predict wall error -> turn left");
-				turnRight(3);
-			}
-			else{
-				LOG.write(LOG_HIGH, "center", "predicted a wall error -> don't know which one");
-			}
+		LOG.write(LOG_LOW, "center", "center error: %f", centerError);
+		LOG.write(LOG_LOW, "center", "center gain: %f", centerGain);
+
+		if (fabs(centerError) < MAX_CENTER_ERROR) {
+			// we're close enough to centered, so stop adjusting
+			LOG.write(LOG_LOW, "center", 
+                      "Center error: |%f| < %f, stop correcting.", 
+                      centerError, MAX_CENTER_ERROR);
+			break;
 		}
-		else{
-			LOG.write(LOG_LOW, "center", "\t\t\t\tcenter error: %f", centerError);
-			/// TODO remove break
-			//break;
-			LOG.write(LOG_LOW, "center", "center gain: %f", centerGain);
 
-			if (fabs(centerError) < MAX_CENTER_ERROR) {
-				// we're close enough to centered, so stop adjusting
-				LOG.write(LOG_LOW, "center", "Center error: |%f| < %f, stop correcting.", centerError, MAX_CENTER_ERROR);
-				break;
-			}
+		int strafeSpeed = (int)fabs((centerGain));
+        strafeSpeed = Util::capSpeed(strafeSpeed, 8);
+		
+		LOG.write(LOG_LOW, "pid_speeds", "strafe: %d", strafeSpeed);
 
-			int strafeSpeed = (int)fabs((centerGain));
-            strafeSpeed = Util::capSpeed(strafeSpeed, 8);
-			
-			LOG.write(LOG_LOW, "pid_speeds", "strafe: %d", strafeSpeed);
-
-			if (centerError < 0) {
-				LOG.write(LOG_LOW, "center", "Center error: %f, move right", centerError);
-				strafeRight(strafeSpeed);
-			}
-			else {
-				LOG.write(LOG_LOW, "center", "Center error: %f, move left", centerError);
-				strafeLeft(strafeSpeed);
-			}
+		if (centerError < 0) {
+			LOG.write(LOG_LOW, "center", "Center error: %f, move right", centerError);
+			strafeRight(strafeSpeed);
+		}
+		else {
+			LOG.write(LOG_LOW, "center", "Center error: %f, move left", centerError);
+			strafeLeft(strafeSpeed);
 		}
     }
 
     _centerPID->flushPID();
 }
 
-void Robot::moveForward(int speed) {
-	_movingForward=true;
-    _speed = speed;
-    _robotInterface->Move(RI_MOVE_FORWARD, speed);
-}
-
-/* Turns the robot left at the given speed, updating movement variables */
-void Robot::turnLeft(int speed) {
-	_turnDirection = 0;
-	_movingForward = false;
-	_speed = speed;
-    _robotInterface->Move(RI_TURN_LEFT, speed);
-}
-
-/* Turns the robot right at the given speed, updating movement variables */
-void Robot::turnRight(int speed) {
-	_turnDirection = 1;
-	_movingForward = false;
-	_speed = speed;
-    _robotInterface->Move(RI_TURN_RIGHT, speed);
-}
-
-/* Strafes the robot left at the given speed */
-void Robot::strafeLeft(int speed) {
-	_speed=0;
-    // we need about 5 commands to actually strafe sideways
-    for (int i = 0; i < 5; i++) {
-        _robotInterface->Move(RI_MOVE_LEFT, 10);
-    }
-}
-
-/* Strafes the robot right at the given speed */
-void Robot::strafeRight(int speed) {
-	_speed=0;
-    for (int i = 0; i < 5; i++) {
-        _robotInterface->Move(RI_MOVE_RIGHT, 10);
-    }
-}
-
-/* Stops the robot, updating movement variables */
-void Robot::stop() {
-	_movingForward = true;
-	_speed = 0;
-    _robotInterface->Move(RI_STOP, 0);
-}
-
-int Robot::getRoom() {
-    return _robotInterface->RoomID() - 2;
-}
-
-int Robot::getBattery() {
-    return _robotInterface->Battery();
-}
-
-int Robot::getStrength(){
-    return _robotInterface->NavStrengthRaw();
-}
-
-/* Returns true if something is blocking our robot */
-bool Robot::isThereABitchInMyWay() {
-    return _robotInterface->IR_Detected();
-}
-
+/**************************************
+ * Definition: Updates the robot's camera, reading in a new image.
+ **************************************/
 void Robot::updateCamera() {
     _camera->update();
 }
 
-// Updates the robot pose in terms of the global coordinate system
-// with the best estimate of its position (using kalman filter)
+/**************************************
+ * Definition: Updates the robot pose in terms of the global
+ *             coord system with the best estimate of its position
+ *             using a kalman filter
+ **************************************/
 void Robot::updatePose() {
     // update the robot interface
     _updateInterface();
@@ -543,31 +464,31 @@ void Robot::updatePose() {
     _wheelEncoders->updatePose(getRoom());
 
     if (_speed <= 0) {
-		_speed=0;
+        _speed=0;
         _kalmanFilter->setVelocity(0.0, 0.0, 0.0);
     }
     else {
-    	if (_movingForward) {
-			printf("Speed: %d\n", _speed);
-    		float speedX = SPEED_FORWARD[_speed];
-    		float speedY = SPEED_FORWARD[_speed];
+        if (_movingForward) {
+            printf("Speed: %d\n", _speed);
+            float speedX = SPEED_FORWARD[_speed];
+            float speedY = SPEED_FORWARD[_speed];
 
             LOG.write(LOG_MED, "update_predictions", 
                       "speed x (cm/s): %f \t speed y (cm/s): %f",
                       speedX,
                       speedY);
 
-    		_kalmanFilter->setVelocity(speedX, speedY, 0.0);
-    	}
-    	else {
+            _kalmanFilter->setVelocity(speedX, speedY, 0.0);
+        }
+        else {
             float speedTheta = SPEED_TURN[_turnDirection][_speed]; //Fetch turning speed in radians per second
 
             LOG.write(LOG_MED, "update_predictions", 
                       "speed theta (cm/s): %f", speedTheta);
 
             //_kalmanFilter->setVelocity(0.0, 0.0, 0.0);
-    		_kalmanFilter->setVelocity(0.0, 0.0, speedTheta);
-    	}
+            _kalmanFilter->setVelocity(0.0, 0.0, speedTheta);
+        }
     }
 
     // if we're in room 2, don't trust north star so much
@@ -587,9 +508,154 @@ void Robot::updatePose() {
                           _wheelEncoders->getPose());
 }
 
-// Attempts to update the robot
-// Returns: true if update succeeded
-//          false if update fail limit was reached
+/**************************************
+ * Definition: Returns a reference to the Kalman pose
+ *
+ * Returns:    a pointer to a pose
+ **************************************/
+Pose* Robot::getPose() {
+    return _pose;
+}
+
+/**************************************
+ * Definition: Fills sensor filters entirely
+ **************************************/
+void Robot::prefillData() {
+    printf("prefilling data...\n");
+    for (int i = 0; i < MAX_FILTER_TAPS; i++){
+        updatePose();
+    }
+    printf("sufficient data collected\n");
+}
+
+/**************************************
+ * Definition: Moves the robot forward, keeping track of movement.
+ *             (Wrapper around robot interface)
+ *
+ * Parameters: int specifying speed to move at
+ **************************************/
+void Robot::moveForward(int speed) {
+	_movingForward = true;
+    _speed = speed;
+    _robotInterface->Move(RI_MOVE_FORWARD, speed);
+}
+
+/**************************************
+ * Definition: Turns the robot left at the given speed.
+ *             (Wrapper around robot interface)
+ *
+ * Parameters: int specifying speed to turn at
+ **************************************/
+void Robot::turnLeft(int speed) {
+	_turnDirection = DIR_LEFT;
+	_movingForward = false;
+	_speed = speed;
+    _robotInterface->Move(RI_TURN_LEFT, speed);
+}
+
+/**************************************
+ * Definition: Turns the robot right at the given speed.
+ *             (Wrapper around robot interface)
+ *
+ * Parameters: int specifying speed to turn at
+ **************************************/
+void Robot::turnRight(int speed) {
+	_turnDirection = DIR_RIGHT;
+	_movingForward = false;
+	_speed = speed;
+    _robotInterface->Move(RI_TURN_RIGHT, speed);
+}
+
+/**************************************
+ * Definition: Strafes the robot left at the given speed.
+ *             (Wrapper around robot interface)
+ *
+ * Note:       Since strafing sideways is difficult, the
+ *             command is sent multiple times to scale with
+ *             the speed in order to avoid turning the robot.
+ *
+ * Parameters: int specifying speed to strafe at
+ **************************************/
+void Robot::strafeLeft(int speed) {
+	_speed = 10;
+    // we need about 5 commands to actually strafe sideways
+    for (int i = 0; i < 5; i++) {
+        _robotInterface->Move(RI_MOVE_LEFT, 10);
+    }
+}
+
+/**************************************
+ * Definition: Strafes the robot right at the given speed.
+ *             (Wrapper around robot interface)
+ *
+ * Note:       Since strafing sideways is difficult, the
+ *             command is sent multiple times to scale with
+ *             the speed in order to avoid turning the robot.
+ *
+ * Parameters: int specifying speed to strafe at
+ **************************************/
+void Robot::strafeRight(int speed) {
+	_speed = 10;
+    for (int i = 0; i < 5; i++) {
+        _robotInterface->Move(RI_MOVE_RIGHT, 10);
+    }
+}
+
+/**************************************
+ * Definition: Stops the robot from moving, updating movement variables.
+ *             (Wrapper around robot interface)
+ **************************************/
+void Robot::stop() {
+	_movingForward = true;
+	_speed = 0;
+    _robotInterface->Move(RI_STOP, 0);
+}
+
+/**************************************
+ * Definition: Returns the North Star room the robot is in
+ *
+ * Returns:    int specifying the room (starting at 0)
+ **************************************/
+int Robot::getRoom() {
+    return _robotInterface->RoomID() - 2;
+}
+
+/**************************************
+ * Definition: Returns the robot's battery level.
+ *             (Wrapper around robot interface)
+ *
+ * Returns:    int specifying battery level
+ **************************************/
+int Robot::getBattery() {
+    return _robotInterface->Battery();
+}
+
+/**************************************
+ * Definition: Returns the robot's battery level.
+ *             (Wrapper around robot interface)
+ *
+ * Returns:    int specifying battery level
+ **************************************/
+int Robot::getStrength(){
+    return _robotInterface->NavStrengthRaw();
+}
+
+/**************************************
+ * Definition: Returns the status of obstruction for the robot.
+ *             (Wrapper around robot interface)
+ *
+ * Returns:    bool specifying if the robot is blocked or not
+ **************************************/
+bool Robot::isThereABitchInMyWay() {
+    return _robotInterface->IR_Detected();
+}
+
+/**************************************
+ * Definition: Attempts to update the robot interface a certain
+ *             amount of times. Returns true on success.
+ *
+ * Returns:    bool specifying if we succeeded
+ **************************************/
 bool Robot::_updateInterface() {
     int failCount = 0;
     int failLimit = getFailLimit();
@@ -605,18 +671,68 @@ bool Robot::_updateInterface() {
     return true;
 }
 
-/* Sets the amount of times an attempt to update the robot's
- * interface can fail before we give up
- */
+/**************************************
+ * Definition: Sets the amount of times we can fail at
+ *             updating the robot interface before stopping.
+ *
+ * Parameters: int specifying the limit
+ **************************************/
 void Robot::setFailLimit(int limit) {
     _failLimit = limit;
 }
 
+/**************************************
+ * Definition: Returns the fail limit
+ *
+ * Returns:    int specifying the limit
+ **************************************/
 int Robot::getFailLimit() {
     return _failLimit;
 }
 
+/**************************************
+ * Definition: Sets the camera resolution and quality
+ *             (Wrapper around camera)
+ *
+ * Parameters: ints specifying resolution and quality
+ **************************************/
 void Robot::setCameraResolution(int resolution, int quality) {
     _camera->setResolution(resolution);
     _camera->setQuality(quality);
+}
+
+/**************************************
+ * Definition: Prints out the robot's beginning phrase
+ **************************************/
+void Robot::printBeginPhrase() {
+    printf(BEGIN_PHRASES[_name].c_str());
+    printf("\n");
+}
+
+/**************************************
+ * Definition: Prints out the robot's success phrase
+ **************************************/
+void Robot::printSuccessPhrase() {
+    printf(SUCCESS_PHRASES[_name].c_str());
+    printf("\n");
+}
+
+/**************************************
+ * Definition: Prints out the robot's failure phrase
+ **************************************/
+void Robot::printFailPhrase() {
+    printf(FAIL_PHRASES[_name].c_str());
+    printf("\n");
+}
+
+/**************************************
+ * Definition: Celebrates by moving the robot's head up and down
+ **************************************/
+void Robot::rockOut() {
+    for (int i = 0; i < 1; i++) {
+        _robotInterface->Move(RI_HEAD_UP, 1);
+        sleep(1);
+        _robotInterface->Move(RI_HEAD_DOWN, 1);
+        sleep(1);
+    }
 }

@@ -1,3 +1,16 @@
+/**
+ * utilities.h
+ * 
+ * @brief 
+ *      This namespace contains commonly used functions that can be used throughout the program
+ * 
+ * @author
+ *      Shawn Hanna
+ *      Tom Nason
+ *      Joel Griffith
+ * 
+ **/
+
 #ifndef CS1567_UTILITIES_H
 #define CS1567_UTILITIES_H
 
