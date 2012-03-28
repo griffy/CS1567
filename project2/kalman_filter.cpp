@@ -1,12 +1,25 @@
+/**
+ * kalman_filter.cpp
+ * 
+ * @brief 
+ * 		This class is used for applying a Kalman filter to two different poses
+ *      to update a "best" pose pointer passed in at the time of creation
+ * 
+ * @author
+ * 		Shawn Hanna
+ * 		Tom Nason
+ * 		Joel Griffith
+ * 
+ **/
+
 #include "kalman_filter.h"
 #include "constants.h"
 #include "logger.h"
 #include <stdio.h>
 
 KalmanFilter::KalmanFilter(Pose *initialPose) {
-    // make the current pose point to the initial pose
-    // such that any modifications made to the value
-    // will also update the reference outside this class
+	// store a reference to the given pose
+    // so we can update it each time we filter two poses
 	_pose = initialPose;
     // convert the pose to a 3-element array with x, y, and theta
 	float initialPoseArr[3];
@@ -29,36 +42,48 @@ KalmanFilter::KalmanFilter(Pose *initialPose) {
 
 KalmanFilter::~KalmanFilter() {}
 
+/**************************************
+ * Definition: Applies kalman filter to two poses (x, y, total theta) and 
+ *             updates the stored pose with the new filtered values
+ *
+ * Parameters: a North Star pose and a Wheel Encoders Pose
+ **************************************/
 void KalmanFilter::filter(Pose *nsPose, Pose *wePose) {
-    // convert the poses to 3-element arrays, where last
-    // is total theta
+    // convert the poses to 3-element arrays
 	float nsPoseArr[3];
 	float wePoseArr[3];
 	nsPose->toArrayForKalman(nsPoseArr);
 	wePose->toArrayForKalman(wePoseArr);
 
-	//Normalize thetas w.r.t each other
-	if(nsPoseArr[2] - wePoseArr[2] > PI) {
+	// Normalize thetas w.r.t each other
+	if (nsPoseArr[2] - wePoseArr[2] > PI) {
 		wePoseArr[2] += 2*PI;
-	} else if(nsPoseArr[2] - wePoseArr[2] < -PI) {
+	} 
+	else if (nsPoseArr[2] - wePoseArr[2] < -PI) {
 		wePoseArr[2] -= 2*PI;
 	}
 	
-	LOG.write(LOG_LOW, "kalman_input_totalTheta", "WE:%f NS:%f", wePoseArr[2], nsPoseArr[2]);	
-	// just use wheel encoder theta (not total for now)
-	//wePoseArr[2] = wePose->getTheta();
-	//nsPoseArr[2] = wePoseArr[2];
+	LOG.write(LOG_LOW, "kalmanFilter", 
+		      "Kalman filter input: WE total theta: %f NS total theta: %f", 
+		      wePoseArr[2], nsPoseArr[2]);
+
     // update the kalman filter with the new data
 	rovioKalmanFilter(&_kf, nsPoseArr, wePoseArr, _track);
-	LOG.write(LOG_MED, "kalman track", 
-              "%f,%f,%f", _track[0], _track[1], _track[2]);
-    // update the current pose to its new estimate
+
+	LOG.write(LOG_LOW, "kalmanFilter", 
+              "Kalman pose: %f,%f,%f", _track[0], _track[1], _track[2]);
+
+    // update the stored pose to its new estimate
     _pose->setX(_track[0]);
 	_pose->setY(_track[1]);
 	_pose->setTotalTheta(_track[2]);
 }
 
-/* Modifies the Kalman velocity estimate */
+/**************************************
+ * Definition: Updates the Kalman velocity estimate
+ *
+ * Parameters: x, y, and theta speeds as floats
+ **************************************/
 void KalmanFilter::setVelocity(float x, float y, float theta){
 	_velocity[0] = x;
 	_velocity[1] = y;
@@ -67,7 +92,13 @@ void KalmanFilter::setVelocity(float x, float y, float theta){
 	rovioKalmanFilterSetVelocity(&_kf, _velocity);
 }
 
-/* Sets the uncertainties of the various sensors and overall process */
+/**************************************
+ * Definition: Updates all the Kalman uncertainties
+ *
+ * Parameters: process x, y, theta uncertainties,
+ *             north star x, y, theta uncertainties,
+ *             and wheel encoders x, y, theta uncertainties as floats
+ **************************************/
 void KalmanFilter::setUncertainty(float procX, float procY, float procTheta, 
 						    float nsX, float nsY, float nsTheta, 
 						    float weX, float weY, float weTheta) {
@@ -84,7 +115,11 @@ void KalmanFilter::setUncertainty(float procX, float procY, float procTheta,
 	rovioKalmanFilterSetUncertainty(&_kf, _uncertainties);
 }
 
-/* Sets the process uncertainty */
+/**************************************
+ * Definition: Updates the Kalman process uncertainties
+ *
+ * Parameters: process x, y, theta uncertainties as floats
+ **************************************/
 void KalmanFilter::setProcUncertainty(float x, float y, float theta) {
 	_uncertainties[0] = x;
 	_uncertainties[1] = y;
@@ -93,7 +128,11 @@ void KalmanFilter::setProcUncertainty(float x, float y, float theta) {
 	rovioKalmanFilterSetUncertainty(&_kf, _uncertainties);
 }
 
-/* Sets the north star uncertainty */
+/**************************************
+ * Definition: Updates the Kalman north star uncertainties
+ *
+ * Parameters: north star x, y, theta uncertainties as floats
+ **************************************/
 void KalmanFilter::setNSUncertainty(float x, float y, float theta) {
 	_uncertainties[3] = x;
 	_uncertainties[4] = y;
@@ -102,7 +141,11 @@ void KalmanFilter::setNSUncertainty(float x, float y, float theta) {
 	rovioKalmanFilterSetUncertainty(&_kf, _uncertainties);
 }
 
-/* Sets the wheel encoder uncertainty */
+/**************************************
+ * Definition: Updates the Kalman wheel encoders uncertainties
+ *
+ * Parameters: wheel encoders x, y, theta uncertainties as floats
+ **************************************/
 void KalmanFilter::setWEUncertainty(float x, float y, float theta) {
 	_uncertainties[6] = x;
 	_uncertainties[7] = y;
