@@ -2,50 +2,56 @@
  * PID.cpp
  * 
  * @brief 
- * 		This class is a basic PID controller.  It creates, stores, and returns the value from the PID
+ * 		This class is a basic PID controller.  It creates, stores, 
+ *      and returns the value from the PID.
  * 
  * @author
- * 		Tom Nason
- * 		Joel Griffith
- * 		Shawn Hanna
+ *      Shawn Hanna
+ *      Tom Nason
+ *      Joel Griffith
  * 
- * @date
- * 		created - 2/12/2012
- * 		modified - 3/24/2012
  **/
 
 #include "PID.h"
 #include "logger.h"
 
-/** Constructor with arguments for the constants structure. 
- *  Defaults to having max/min value of +-1/20 for the iTerm
- */
 PID::PID(PIDConstants *newConstants) {
 	_constants.kp = newConstants->kp;
 	_constants.ki = newConstants->ki;
 	_constants.kd = newConstants->kd;
-	_maxValue = 1/20.0;
+	// default to a min and max for iterm
 	_minValue = -1/20.0;
+	_maxValue = 1/20.0;
+	// zero out integrator error
+	for (int i = 0; i < NUM_INTEGRATOR_VALUES; i++) {
+		_integratorValues[i] = 0.0;
+	}
 }
 
-/** Constructor with arguments for the constants structure, 
- *  and min/max values for the iTerm 
- */
-PID::PID(PIDConstants *newConstants, float max_value, float min_value) {
+PID::PID(PIDConstants *newConstants, float minValue, float maxValue) {
 	_constants.kp = newConstants->kp;
 	_constants.ki = newConstants->ki;
 	_constants.kd = newConstants->kd;
-	_maxValue = max_value;
-	_minValue = min_value;
+	_minValue = minValue;
+	_maxValue = maxValue;
+	// zero out integrator error
+	for (int i = 0; i < NUM_INTEGRATOR_VALUES; i++) {
+		_integratorValues[i] = 0.0;
+	}
 }
 
-/** Update the PID control with a new value **/
+/**************************************
+ * Definition: Updates the PID control with a new value and
+ *             returns the gain
+ *
+ * Parameters: a float error
+ *
+ * Returns:    a float specifying gain
+ **************************************/
 float PID::updatePID(float error) {
 	float prevError = lastError();
-	//add the error to the integrator list
+	// add the error to the integrator list
 	addErrorToIntegrator(error);
-
-	float pTerm, iTerm, dTerm;
 
 	/**
 	 * total term should = 1 at error = 10
@@ -58,25 +64,29 @@ float PID::updatePID(float error) {
 	 * then the value that we get should be maxValue for iTerm
 	 * suggested value: 0.5
 	 * 
-	 * dTerm shouldn't really do much, since the bot probably won't jump around too much and so the robot should not take too much of this into account
+	 * dTerm shouldn't really do much, since the bot probably won't jump around too much 
+	 * and so the robot should not take too much of this into account
 	 * suggested value = 0.05
 	 */
 
-	pTerm = _constants.kp * error;						//get proportional term of the PID control
-	iTerm = _constants.ki * currentIntegratorError();	//get integral term of the PID control
-	if (iTerm > _maxValue) {							//check that the integrator is not too high 
+	// get proportional term of the PID control
+	float pTerm = _constants.kp * error;						
+	// get integral term of the PID control
+	float iTerm = _constants.ki * currentIntegratorError();	
+	// check that the integrator is not too high 
+	if (iTerm > _maxValue) {							
 		iTerm = _maxValue;
     }
 	else if (iTerm < _minValue) {
 		iTerm = _minValue;
     }
 
-    // multiply by the change in error (this one minus the previous)
-	dTerm = _constants.kd * (error - prevError);
+    // get differential term by multiplying by the change in error 
+	float dTerm = _constants.kd * (error - prevError);
 
-    LOG.write(LOG_LOW, "pid terms", "pTerm = %f\n", pTerm);
-	LOG.write(LOG_LOW, "pid terms", "iTerm = %f\n", iTerm);
-	LOG.write(LOG_LOW, "pid terms", "dTerm = %f\n", dTerm);
+    LOG.write(LOG_LOW, "pid terms", "pTerm = %f", pTerm);
+	LOG.write(LOG_LOW, "pid terms", "iTerm = %f", iTerm);
+	LOG.write(LOG_LOW, "pid terms", "dTerm = %f", dTerm);
 
 	float gain = pTerm + iTerm + dTerm;
 	if (gain > 1.0) {
@@ -86,15 +96,21 @@ float PID::updatePID(float error) {
 	return gain;
 }
 
-/** useful when you have reached the destination, and just want to zero the error **/
+/**************************************
+ * Definition: Clears integrator by zeroing it out. Useful when you have
+ *             reached the destination and want to remove the error
+ **************************************/
 void PID::flushPID() {
 	for (int i = 0; i < NUM_INTEGRATOR_VALUES; i++) {
 		_integratorValues[i] = 0.0;
 	}
 }
 
-/** add an error to the list of the past few errors that you got
- **/
+/**************************************
+ * Definition: Adds an error to the fixed-size integrator list 
+ *
+ * Parameters: a float error
+ **************************************/
 void PID::addErrorToIntegrator(float error) {
 	for (int i = NUM_INTEGRATOR_VALUES-1; i > 0; i--) {
 		_integratorValues[i] = _integratorValues[i-1];
@@ -102,6 +118,11 @@ void PID::addErrorToIntegrator(float error) {
 	_integratorValues[0] = error;
 }
 
+/**************************************
+ * Definition: Returns the current integrator error (sum of errors)
+ *
+ * Returns:    a float error representing the sum of integrator errors
+ **************************************/
 float PID::currentIntegratorError() {
 	float error = 0.0;
 	for (int i = 0; i < NUM_INTEGRATOR_VALUES; i++) {
@@ -110,11 +131,20 @@ float PID::currentIntegratorError() {
 	return error;
 }
 
+/**************************************
+ * Definition: Returns the most recent error
+ *
+ * Returns:    a float error
+ **************************************/
 float PID::lastError() {
 	return _integratorValues[0];
 }
 
-/** sets the PID's constants to new values **/
+/**************************************
+ * Definition: Updates the PID's constants
+ *
+ * Parameters: a pointer to a PIDConstants struct
+ **************************************/
 void PID::setConstants(PIDConstants *newConstants) {
 	_constants.kp = newConstants->kp;
 	_constants.ki = newConstants->ki;

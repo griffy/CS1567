@@ -68,10 +68,10 @@ Robot::Robot(std::string address, int id) {
     PIDConstants centerPIDConstants = {PID_CENTER_KP, PID_CENTER_KI, PID_CENTER_KD};
     PIDConstants turnCenterPIDConstants = {PID_TURN_CENTER_KP, PID_TURN_CENTER_KI, PID_TURN_CENTER_KD};
 
-    _distancePID = new PID(&distancePIDConstants, MAX_DIST_GAIN, MIN_DIST_GAIN);
-    _thetaPID = new PID(&thetaPIDConstants, MAX_THETA_GAIN, MIN_THETA_GAIN);
-    _centerPID = new PID(&centerPIDConstants, MAX_CENTER_GAIN, MIN_CENTER_GAIN);
-    _turnCenterPID = new PID(&turnCenterPIDConstants, MAX_TURN_CENTER_GAIN, MIN_TURN_CENTER_GAIN);
+    _distancePID = new PID(&distancePIDConstants, MIN_DIST_GAIN, MAX_DIST_GAIN);
+    _thetaPID = new PID(&thetaPIDConstants, MIN_THETA_GAIN, MAX_THETA_GAIN);
+    _centerPID = new PID(&centerPIDConstants, MIN_CENTER_GAIN, MAX_CENTER_GAIN);
+    _turnCenterPID = new PID(&turnCenterPIDConstants, MIN_TURN_CENTER_GAIN, MAX_TURN_CENTER_GAIN);
 
     printf("pid controllers initialized\n");
     

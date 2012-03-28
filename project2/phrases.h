@@ -1,11 +1,21 @@
+/**
+ * phrases.h
+ * 
+ * @brief 
+ *      This file contains phrases, indexed according to robot number,
+ *      which may be said throughout the life of the program
+ *
+ * @author
+ *      Shawn Hanna
+ *      Tom Nason
+ *      Joel Griffith
+ *
+ **/
+
 #ifndef CS1567_PHRASES_H
 #define CS1567_PHRASES_H
 
 #include <string.h>
-
-/* Below are the phrases, indexed according to robot number, which
- * may be said throughout the life of the program
- */
 
 const std::string BEGIN_PHRASES[] = {
     "I swear on my mother's rechargable batteries",

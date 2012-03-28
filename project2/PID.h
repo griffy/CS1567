@@ -1,3 +1,17 @@
+/**
+ * PID.h
+ * 
+ * @brief 
+ * 		This class is a basic PID controller.  It creates, stores, 
+ *      and returns the value from the PID.
+ * 
+ * @author
+ *      Shawn Hanna
+ *      Tom Nason
+ *      Joel Griffith
+ * 
+ **/
+
 #ifndef CS1567_PID_H
 #define CS1567_PID_H
 
@@ -13,27 +27,19 @@ typedef struct {
 
 class PID {
 public:
-	PID(PIDConstants *constants, float max_value, float min_value);
 	PID(PIDConstants *constants);
-	
-	void flushPID();
-	
-	void setConstants(PIDConstants *newConstants);
-	
-	// gets the speed you want to travel at based on your current Pose and the destination Pose
+	PID(PIDConstants *constants, float minValue, float maxValue);
 	float updatePID(float error);
-
-	// adds the error to the list of previous values.
+	void flushPID();
 	void addErrorToIntegrator(float error);
-
-	float currentIntegratorError(); // most recent sum of the integratorValues
-
-	float lastError(); // returns the error at index 0
+	float currentIntegratorError();
+	float lastError();
+	void setConstants(PIDConstants *newConstants);
 private:
-	float _integratorValues[NUM_INTEGRATOR_VALUES]; //most recent errors (index 0 is the most recent)
+	float _integratorValues[NUM_INTEGRATOR_VALUES];
 	PIDConstants _constants;
-	float _maxValue;
 	float _minValue;
+	float _maxValue;
 };
 
 #endif
