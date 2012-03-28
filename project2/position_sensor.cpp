@@ -1,3 +1,17 @@
+/**
+ * position_sensor.cpp
+ * 
+ * @brief 
+ *      This is an abstract class intended to be inherited from
+ *      by a sensor class that keeps a global pose.
+ * 
+ * @author
+ *      Shawn Hanna
+ *      Tom Nason
+ *      Joel Griffith
+ *
+ **/
+
 #include "position_sensor.h"
 #include "constants.h"
 
@@ -11,6 +25,11 @@ PositionSensor::~PositionSensor() {
 	delete _pose;
 }
 
+/**************************************
+ * Definition: Sets the stored pose to the given one
+ *
+ * Parameters: a pose object
+ **************************************/
 void PositionSensor::resetPose(Pose *pose) {
 	_pose->setX(pose->getX());
 	_pose->setY(pose->getY());
@@ -18,27 +37,49 @@ void PositionSensor::resetPose(Pose *pose) {
 	_pose->setNumRotations(pose->getNumRotations());
 }
 
+/**************************************
+ * Definition: Returns the current x
+ *
+ * Returns:    x as a float
+ **************************************/
 float PositionSensor::getX() {
 	return getPose()->getX();
 }
 
+/**************************************
+ * Definition: Returns the current y
+ *
+ * Returns:    y as a float
+ **************************************/
 float PositionSensor::getY() {
 	return getPose()->getY();
 }
 
+/**************************************
+ * Definition: Returns the current theta
+ *
+ * Returns:    theta as a float
+ **************************************/
 float PositionSensor::getTheta() {
 	return getPose()->getTheta();
 }
 
+/**************************************
+ * Definition: Returns the current pose
+ *
+ * Returns:    a pointer to the stored pose
+ **************************************/
 Pose* PositionSensor::getPose() {
 	return _pose;
 }
 
-/* This method should be called by inherited class
-   after each update to keep
-   total theta in check by tracking how many rotations
-   passed 2PI the sensor has read 
-*/
+/**************************************
+ * Definition: Adjusts total theta by checking for
+ *             rotations (past 2PI) since the last update.
+ *
+ * Note:       this method should be called by inherited class
+ *             after each update to keep thetas in check
+ **************************************/
 void PositionSensor::_adjustTotalTheta(float theta) {
 	float lastTheta = getTheta();
 

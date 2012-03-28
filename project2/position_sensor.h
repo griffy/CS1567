@@ -1,3 +1,17 @@
+/**
+ * position_sensor.h
+ * 
+ * @brief 
+ * 		This is an abstract class intended to be inherited from
+ *      by a sensor class that keeps a global pose.
+ * 
+ * @author
+ * 		Shawn Hanna
+ * 		Tom Nason
+ * 		Joel Griffith
+ *
+ **/
+
 #ifndef CS1567_POSITIONSENSOR_H
 #define CS1567_POSITIONSENSOR_H
 
