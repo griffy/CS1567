@@ -36,7 +36,6 @@ public:
         return instance;
     }
     void setImportanceLevel(int importanceLevel);
-    // write is the same as printf except it adds a newline
     void write(int level, std::string filename, const char *formatString, ...);
     void printf(int level, std::string filename, const char *formatString, ...);
     void printfScreen(int level, std::string filename, const char *formatString, ...);
