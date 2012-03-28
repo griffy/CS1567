@@ -2,17 +2,14 @@
  * camera.cpp
  * 
  * @brief 
- * 		This class defines the rovio's camera. It has functions for accessing, storing, and processing the image
- * 		returned from the robot
- * 
+ *      This class defines the rovio's camera. It has functions for accessing, storing, 
+ *      and processing the images returned from the camera.
+ *
  * @author
- * 		Shawn Hanna
- * 		Tom Nason
- * 		Joel Griffith
- * 
- * @date
- * 		created - 3/2/2012
- * 		modified - 3/26/2012
+ *      Shawn Hanna
+ *      Tom Nason
+ *      Joel Griffith
+ *
  **/
 
 #include "camera.h"
@@ -55,16 +52,17 @@ Camera::~Camera() {
 /**************************************
  * Definition: Attempts to set the rovio's camera quality. If it fails,
  *             the quality is not set and failure is logged.
+ *
  * Parameters: The expected camera quality as an integer
  *
  * 
  **************************************/
 void Camera::setQuality(int quality) {
-    if (_robotInterface->CameraCfg(0x7F, 
-                        RI_CAMERA_DEFAULT_CONTRAST, 
-                        5, 
-                        _resolution, 
-                        quality)) {
+    if (_robotInterface->CameraCfg(RI_CAMERA_DEFAULT_BRIGHTNESS, 
+                                   RI_CAMERA_DEFAULT_CONTRAST, 
+                                   5, 
+                                   _resolution, 
+                                   quality)) {
         LOG.write(LOG_HIGH, "camera settings", 
                   "Failed to change the quality to %d", quality);
     }
@@ -76,16 +74,17 @@ void Camera::setQuality(int quality) {
 /**************************************
  * Definition: Attempts to set the rovio's camera resolution. If it fails,
  *             the quality is not set and failure is logged.
+ *
  * Parameters: The expected camera resolution as an integer
  *
  * 
  **************************************/
 void Camera::setResolution(int resolution) {
     if (_robotInterface->CameraCfg(RI_CAMERA_DEFAULT_BRIGHTNESS, 
-                        RI_CAMERA_DEFAULT_CONTRAST, 
-                        5, 
-                        resolution, 
-                        _quality)) {
+                                   RI_CAMERA_DEFAULT_CONTRAST, 
+                                   5, 
+                                   resolution, 
+                                   _quality)) {
         LOG.write(LOG_HIGH, "camera settings", 
                   "Failed to change the resolution to %d", resolution);
     }
@@ -96,12 +95,13 @@ void Camera::setResolution(int resolution) {
 
 /**************************************
  * Definition: Draws an x over a square on an image
+ *
  * Parameters: The image to have the newly-drawn x, the square
  *             used for creating the x, and a scalar of color for the x
  * 
  **************************************/
-void Camera::drawX(IplImage *image, squares_t *square, CvScalar color) {
-    if (square == NULL) {
+void Camera::markSquare(IplImage *image, squares_t *square, CvScalar color) {
+    if (square == NULL || image == NULL) {
         return;
     }
     
@@ -179,6 +179,7 @@ void Camera::update() {
  *             of the squares (corridor) the rovio is, using both
  *             error of the slopes of seen squares and distance error
  *             of the two largest squares
+ *
  * Parameters: The color of the squares we're supposed to be looking at
  *
  * Returns:    The center error in the interval [-1, 1], where 0 is no error
@@ -215,8 +216,8 @@ float Camera::centerError(int color) {
     avgSlopeError = totalGoodSlopeError / (float)numGoodSlopeErrors;
     avgCenterDistError = totalGoodCenterDistError / (float)numGoodCenterDistErrors;
 
-    LOG.write(LOG_LOW, "centerError", "avg slope error: %f", avgSlopeError);
-    LOG.write(LOG_LOW, "centerError", "avg center dist error: %f", avgCenterDistError);
+    LOG.write(LOG_LOW, "centerError", "Avg. slope error: %f", avgSlopeError);
+    LOG.write(LOG_LOW, "centerError", "Avg. center dist. error: %f", avgCenterDistError);
 	
     // if we have good center distance errors, let's use those
 	if (numGoodCenterDistErrors > 0) {
@@ -244,32 +245,30 @@ float Camera::centerError(int color) {
 /**************************************
  * Definition: Gives an error specifying the difference of the distance 
  *             of the two largest squares from the center of the image
+ *
  * Parameters: The color of the squares we're supposed to be looking at
  *
- * Returns:    An error in the interval [-1, 1], where 0 is no error
+ * Returns:    An error in the interval [-1, 1], where 0 is no error,
+ *             OR -999, which indicates a conclusion could not be reached
  *             A negative value is an indication to move right
  *             A positive value is an indication to move left
  **************************************/
 float Camera::centerDistanceError(int color) {
-    int width;
-    switch (color) {
-    case COLOR_PINK:
-        width = _pinkThresholded->width;
-        break;
-    case COLOR_YELLOW:
-        width = _yellowThresholded->width;
-        break;
-    }
-
+    // find the center of the camera's image
+    int width = thresholdedOf(color)->width;
     int center = width / 2;
 
-    squares_t *leftSquare = leftBiggestSquare(color);
-    squares_t *rightSquare = rightBiggestSquare(color);
+    // find the largest squares on the left and right sides
+    // of the image
+    squares_t *leftSquare = biggestSquare(color, SIDE_LEFT);
+    squares_t *rightSquare = biggestSquare(color, SIDE_RIGHT);
     
+    // mark the squares so we can see them
     IplImage *bgr = getBGRImage();
     if (bgr != NULL) {
-        drawX(bgr, leftSquare, RED);
-        drawX(bgr, rightSquare, GREEN);
+        markSquare(bgr, leftSquare, RED);
+        markSquare(bgr, rightSquare, GREEN);
+        // draw a line down the center of the image as well
         CvPoint lineStart;
         CvPoint lineEnd;
         lineStart.x = center;
@@ -285,26 +284,32 @@ float Camera::centerDistanceError(int color) {
     if (leftSquare != NULL && rightSquare != NULL) {
         if (!onSamePlane(leftSquare, rightSquare)) {
             // if they're not on the same plane,
-            // set the square with the smallest area to
-            // be the one too far back
+            // we're probably just too far over on the
+            // side of the larger square
             if (leftSquare->area > rightSquare->area) {
+                // we should move right slightly to 
+                // unobstruct the right square
                 return -0.25;
             }
             else {
+                // we should move left slightly
                 return 0.25;
             }
         }
     }
 
     if (leftSquare == NULL && rightSquare == NULL) {
+        // we couldn't find any squares
         return -999;
     } 
     else if (leftSquare == NULL) {
-        // it seems to be out of view, so we set the error to 
-        // the max it could be
+        // the left seems to be out of view, so we're
+        // probably too far left. we should move right 
         return -1;
     } 
     else if (rightSquare == NULL) {
+        // the right seems to be out of view, so we're
+        // probably too far right. we should move left
         return 1;
     }
 
@@ -312,28 +317,37 @@ float Camera::centerDistanceError(int color) {
     int leftError = center - leftSquare->center.x;
     int rightError = center - rightSquare->center.x;
 
-    //Return difference in errors
+    // return the difference in errors in range [-1, 1]
     return (float)(leftError + rightError) / (float)center;
 }
 
-/** ***************************************
- * Corridor Slope Error Function 
- * Parameters: color flag corresponding to square color of interest
- * Returns: integer corresponding to difference in slope of flags on the corridor walls
+/**************************************
+ * Definition: Takes the perceived squares and performs a linear regression 
+ *             on their locations of each side, and returns an error that is
+ *             the difference in slopes of each side.
  *
- * This function takes the image data (square locations) and performs a linear regression on the square locations,
- * in order to define a measure of centered-ness in the corridor based on perceived slope of the corridor walls.
- * ****************************************/
+ * Parameters: The color of the squares we're supposed to be looking at
+ *
+ * Returns:    An error in the interval [-1, 1], where 0 is no error,
+ *             OR -999, which indicates a conclusion could not be reached
+ *             A negative value is an indication to move right
+ *             A positive value is an indication to move left
+ **************************************/
 float Camera::corridorSlopeError(int color) {
-    int error = 0;
-	float scalar=.3;
-
+    // find a line of regression for each side of the image
     regressionLine leftSide = leastSquaresRegression(color, SIDE_LEFT);
     regressionLine rightSide = leastSquaresRegression(color, SIDE_RIGHT);
 	
-	LOG.write(LOG_HIGH, "leftRegLine", "%f\n", leftSide.slope);
-	LOG.write(LOG_HIGH, "rightRegLine", "%f\n", rightSide.slope);
+    LOG.write(LOG_LOW, "slopeError", 
+              "Left squares found: %d", leftSide.numSquares);
+    LOG.write(LOG_LOW, "slopeError", 
+              "Right squares found: %d", rightSide.numSquares);
+    LOG.write(LOG_LOW, "slopeError", 
+              "Left equation: y = %f*x + %f", leftSide.slope, leftSide.intercept);
+    LOG.write(LOG_LOW, "slopeError", 
+              "Right equation: y = %f*x + %f", rightSide.slope, rightSide.intercept);
 
+    // draw the lines of regression so we can see them
     IplImage *bgr = getBGRImage();
     if (bgr != NULL) {
         CvPoint leftStart;
@@ -354,238 +368,163 @@ float Camera::corridorSlopeError(int color) {
         cvReleaseImage(&bgr);
     }
 
-    //For now, to debug/make meaningful observations about line fits
-    LOG.printfScreen(LOG_HIGH, "regression", "Linear regression performed. Left squares found: %d\n", leftSide.numSquares);
-    LOG.printfScreen(LOG_HIGH, "regression", "Linear regression performed. Right squares found: %d\n", rightSide.numSquares);
-
-    LOG.printfScreen(LOG_HIGH, "regression", "Left equation: Y = %f*X + %f\n", leftSide.slope, leftSide.intercept);
-    LOG.printfScreen(LOG_HIGH, "regression", "Right equation: Y = %f*X + %f\n", rightSide.slope, rightSide.intercept);
-
-	bool hasSlopeRight = false;
-    bool hasSlopeLeft = false;
-
-    if(leftSide.numSquares >= 2 && rightSide.numSquares >= 2) { //if lines are found on both sides...
-		//do something to define error relative to the differences of the slopes
+    // did we have enough squares on each side to find a line?
+    if (leftSide.numSquares >= 2 && rightSide.numSquares >= 2) { 
+        bool hasSlopeRight = false;
+        bool hasSlopeLeft = false;
 
         // sanity-check the slopes to make sure we have good ones to go off of
-		if(rightSide.slope > RIGHT_RIGHT_SLOPE && rightSide.slope < RIGHT_LEFT_SLOPE && rightSide.slope != -0.500000 && rightSide.slope != 0.500000) {
-			//seems like a good slope
+		if (rightSide.slope > RIGHT_RIGHT_SLOPE && rightSide.slope < RIGHT_LEFT_SLOPE && 
+            rightSide.slope != -0.500000 && rightSide.slope != 0.500000) {
+			// seems like a good slope!
 			hasSlopeRight = true;
-			LOG.write(LOG_HIGH, "rightRegression", "%f\n", rightSide.slope);
 		}
-		if(leftSide.slope < LEFT_LEFT_SLOPE && leftSide.slope > LEFT_RIGHT_SLOPE && leftSide.slope != -0.500000 && leftSide.slope != 0.500000) {
-			//seems like a good slope
+
+		if (leftSide.slope < LEFT_LEFT_SLOPE && leftSide.slope > LEFT_RIGHT_SLOPE && 
+            leftSide.slope != -0.500000 && leftSide.slope != 0.500000) {
+			// seems like a good slope!
 			hasSlopeLeft = true;
-			LOG.write(LOG_HIGH, "leftRegression", "%f\n", leftSide.slope);
 		}
 		
-		if(rightSide.slope > 0){
-			//probably looking at the 'left side' wall
-			return -10;
-		}
-		
-		if(leftSide.slope < 0){
-			//probably looking at the 'right side' wall
-			return 10;
-		}
-		
-		float difference = leftSide.slope + rightSide.slope;
 		if (hasSlopeLeft && hasSlopeRight) {
-			if(difference > MAX_SLOPE_DIFFERENCE) {
+            float difference = leftSide.slope + rightSide.slope;
+
+			if (difference > MAX_SLOPE_DIFFERENCE) {
+                // the difference is large enough that we can say
+                // the error is at its max, so we should move right
 				return -1;
-			} else if (difference < -MAX_SLOPE_DIFFERENCE) {
+			} 
+            else if (difference < -MAX_SLOPE_DIFFERENCE) {
+                // we should move left
 				return 1;
-			} else {
-				return -difference/MAX_SLOPE;
+			} 
+            else {
+                // return the error in the range [-1, 1]
+				return -difference / MAX_SLOPE;
 			}
 		}
 
-		if( hasSlopeLeft && !hasSlopeRight ){
-			//no right slope, so interpolate based on left
-			LOG.write(LOG_LOW, "corridorSlopeError", "only left slope, interpolating\n");
-			//float leftTranslate = Util::mapValue(leftSide.slope, LEFT_LEFT_SLOPE, LEFT_RIGHT_SLOPE, -1, 1);
-			float leftTranslate = leftSide.slope - LEFT_MIDDLE_SLOPE;
-            LOG.write(LOG_LOW, "corridorSlopeError", "left translate: %f\n", leftTranslate);
+		if (hasSlopeLeft && !hasSlopeRight) {
+			// no right slope, so interpolate based on left
+            float leftTranslate = leftSide.slope - LEFT_MIDDLE_SLOPE;
+			LOG.write(LOG_LOW, "slopeError", 
+                      "only left slope, left translate: %f", leftTranslate);
 			return leftTranslate;
-            // used to return -1
 		}
 		
-		if( !hasSlopeLeft && hasSlopeRight ){
-			//no right slope, so interpolate based on left
-            LOG.write(LOG_LOW, "corridorSlopeError", "only right slope, interpolating\n");
-			//float rightTranslate  = Util::mapValue(rightSide.slope, RIGHT_LEFT_SLOPE, RIGHT_RIGHT_SLOPE, -1, 1);
+		if (!hasSlopeLeft && hasSlopeRight) {
+			// no left slope, so interpolate based on right
 			float rightTranslate= -(rightSide.slope - RIGHT_MIDDLE_SLOPE);
-            LOG.write(LOG_LOW, "corridorSlopeError", "right translate: %f\n", rightTranslate);
-			return rightTranslate;
-            // used to return 1
-		}
-		
-		if (!hasSlopeLeft && !hasSlopeRight){
-            LOG.write(LOG_LOW, "corridorSlopeError", "no slopes!\n");
-			return -999.0;
+            LOG.write(LOG_LOW, "slopeError", 
+                      "only right slope, right translate: %f", rightTranslate);
+            return rightTranslate;
 		}
 	}
     // we didn't have enough squares to be useful
+    LOG.write(LOG_LOW, "slopeError", "no slopes!");
     return -999.0;
 }
 
-
-/***********************
-*Least Squares Regression, generic function
-*Full of debugging code, not mathematically correct
-*Left side always works, right side appears to have transient problems, math according to Shawn is inconsistent as well
-*Let's take a look at this once we have things running better
-*
-************************/
+/**************************************
+ * Definition: Performs a linear regression on the squares of 
+ *             the specified side
+ *
+ * Algorithm Ref: http://mathworld.wolfram.com/LeastSquaresFitting.html
+ *
+ * Parameters: The color of the squares we're supposed to be looking at,
+ *             and the side of the image to find squares on
+ *
+ * Returns:    A regressionLine struct representing the 
+ *             calculated line of best fit
+ **************************************/
 regressionLine Camera::leastSquaresRegression(int color, int side) {
-    
-    IplImage *thresholded;
-    squares_t *squares;
-
-    int width;
-    int squareCount = 0;
-    float xAvg = 0;
-    float yAvg = 0;
-    float xSqSum = 0;
-    float xySum = 0;
-    
     regressionLine result;
 
-    switch (color) {
-    case COLOR_PINK:
-        thresholded = _pinkThresholded;
-        squares = _pinkSquares;
-        break;
-    case COLOR_YELLOW:
-        thresholded = _yellowThresholded;
-        squares = _yellowSquares;
-        break;
-    }
+    int width = thresholdedOf(color)->width;
+    int center = width / 2;
 
-    int center = thresholded->width / 2;
+    LOG.write(LOG_LOW, "regression", "image center: %d", center);
 
-    LOG.printfScreen(LOG_HIGH, "regression","center: %d\n",center);
+    result.numSquares = squareCount(color, side);
     
-    squares_t *curSquare = squares;
-    while (curSquare != NULL) {
-	switch (side) {
-	    case SIDE_LEFT:	
-        	if (curSquare->center.x < center) {	
-			LOG.printfScreen(LOG_HIGH, "regression","Left square: x: %d y:%d area: %d\n",curSquare->center.x, curSquare->center.y, curSquare->area);
-			squareCount++;
-		}
-		break;
-	    case SIDE_RIGHT:
-		if (curSquare->center.x > center) {
-			squareCount++;
-			LOG.printfScreen(LOG_HIGH, "regression","Right square: x: %d y:%d area: %d\n",curSquare->center.x, curSquare->center.y, curSquare->area);
-		}
-		break;
-	    }
-        curSquare = curSquare->next;
-    }
+    // do we have enough squares to find a line?
+    if (result.numSquares >= 2) {
+        float xSum = 0.0;
+        float ySum = 0.0;
+        float xSqSum = 0.0;
+        float xySum = 0.0;
 
-    result.numSquares = squareCount;
-    
-    if(squareCount >= 2) { 
-
-        //Linear regression algorithm
-        //Ref: http://mathworld.wolfram.com/LeastSquaresFitting.html
-        curSquare = squares;
+        squares_t *curSquare = squaresOf(color);
         while (curSquare != NULL) {
-	    switch (side) {
+	        switch (side) {
 	        case SIDE_LEFT:	
         	    if (curSquare->center.x < center) {
-	    		xAvg += curSquare->center.x;
-	    		yAvg += curSquare->center.y;
-	    		xSqSum += curSquare->center.x * curSquare->center.x;
-	    		xySum += curSquare->center.x * curSquare->center.y;
-		    } 
-		    break;
+                    xSum += curSquare->center.x;
+                    ySum += curSquare->center.y;
+	    		    xSqSum += curSquare->center.x * curSquare->center.x;
+	    		    xySum += curSquare->center.x * curSquare->center.y;
+		        }
+		        break;
 	        case SIDE_RIGHT:
-		    if (curSquare->center.x > center) {
-	    		xAvg += curSquare->center.x;
-	    		yAvg += curSquare->center.y;
-	    		xSqSum += curSquare->center.x * curSquare->center.x;
-	    		xySum += curSquare->center.x * curSquare->center.y;
-		    } 
-		    break;
-	    }
-	    curSquare = curSquare->next;
+		        if (curSquare->center.x > center) {
+	    		    xSum += curSquare->center.x;
+	    		    ySum += curSquare->center.y;
+	    		    xSqSum += curSquare->center.x * curSquare->center.x;
+	    		    xySum += curSquare->center.x * curSquare->center.y;
+		        } 
+		        break;
+	        }
+	        curSquare = curSquare->next;
         }   
 
-        xAvg /= result.numSquares;
-        yAvg /= result.numSquares;
+        float xAvg = xSum / result.numSquares;
+        float yAvg = ySum / result.numSquares;
 
-	/*float ssxx = 0;
-	float ssyy = 0;
-	float ssxy = 0;
-        curSquare = squares;
-        while (curSquare != NULL) {
-	    switch (side) {
-	        case SIDE_LEFT:	
-        	    if (curSquare->center.x < center) {
-	    		ssxx += (curSquare->center.x - xAvg) * (curSquare->center.x - xAvg);
-			ssyy += (curSquare->center.y - yAvg) * (curSquare->center.y - yAvg);
-			ssxy += (curSquare->center.x - xAvg) * (curSquare->center.y - yAvg);
-		    } 
-		    break;
-	        case SIDE_RIGHT:
-		    if (curSquare->center.x > center) {
-	    		ssxx += (curSquare->center.x - xAvg) * (curSquare->center.x - xAvg);
-			ssyy += (curSquare->center.y - yAvg) * (curSquare->center.y - yAvg);
-			ssxy += (curSquare->center.x - xAvg) * (curSquare->center.y - yAvg);
-		    } 
-		    break;
-	    }
-	    curSquare = curSquare->next;
-	}
-
-	
-    	LOG.printfScreen(LOG_HIGH, "regression", "%d Equation: Y = %f*X + %f\n", side, ssxy/ssxx, (yAvg-((ssxy/ssxx)*xAvg)));
-	*/
-        result.intercept = (((yAvg * xSqSum) - (xAvg * xySum) ) / (xSqSum - (result.numSquares * xAvg * xAvg)));
-        result.slope = ((xySum - (result.numSquares * xAvg * yAvg)) / (xSqSum - (result.numSquares * xAvg * xAvg)));
+        result.intercept = ((yAvg * xSqSum) - (xAvg * xySum)) / 
+                           (xSqSum - (result.numSquares * xAvg * xAvg));
+        result.slope = (xySum - (result.numSquares * xAvg * yAvg)) / 
+                       (xSqSum - (result.numSquares * xAvg * xAvg));
     
-    } else { //We don't perform an extrapolation if there aren't enough squares
-        result.intercept = -999; //Some sort of error flag value, though we can also just check the numSquares value
+    } else {
+        // there aren't enough squares, so we error out the intercept and slope
+        result.intercept = -999;
 		result.slope = -999;
     }
 
     return result;
 }
 
-/* Error is defined to be the distance of the square
-   from the center of the camera
- */
-
+/**************************************
+ * Definition: Checks if two squares are on the same plane
+ *
+ * Parameters: A left and right square
+ *
+ * Returns:    true or false
+ **************************************/
 bool Camera::onSamePlane(squares_t *leftSquare, squares_t *rightSquare) {
     float slope = (float)(leftSquare->center.y - rightSquare->center.y) / 
                   (float)(leftSquare->center.x - rightSquare->center.x);
     return (fabs(slope) <= MAX_PLANE_SLOPE);
 }
 
-squares_t* Camera::leftBiggestSquare(int color) {
-    IplImage *thresholded;
-    squares_t *squares;
-
-    switch (color) {
-    case COLOR_PINK:
-        thresholded = _pinkThresholded;
-        squares = _pinkSquares;
-        break;
-    case COLOR_YELLOW:
-        thresholded = _yellowThresholded;
-        squares = _yellowSquares;
-        break;
-    }
-
-    int center = thresholded->width / 2;
-
-    squares_t *curSquare = squares;
+/**************************************
+ * Definition: Finds the biggest square of the specified color
+ *             on the specified side of the image
+ *
+ * Parameters: the color to threshold by and the side of the image
+ *
+ * Returns:    the biggest square
+ **************************************/
+squares_t* Camera::biggestSquare(int color, int side) {
     squares_t *largestSquare = NULL;
+
+    int width = thresholdedOf(color)->width;
+    int center = width / 2;
+
+    squares_t *curSquare = squaresOf(color);
     while (curSquare != NULL) {
-        if (curSquare->center.x < center) {
+        if ((side == SIDE_LEFT && curSquare->center.x < center) ||
+            (side == SIDE_RIGHT && curSquare->center.x > center)) {
             if (largestSquare == NULL) {
                 largestSquare = curSquare;
             }
@@ -601,45 +540,93 @@ squares_t* Camera::leftBiggestSquare(int color) {
     return largestSquare;
 }
 
-squares_t* Camera::rightBiggestSquare(int color) {
-    IplImage *thresholded;
-    squares_t *squares;
+/**************************************
+ * Definition: Counts the number of squares of the specified color
+ *             on the specified side of the image there are
+ *
+ * Parameters: the color to threshold by and the side of the image
+ *
+ * Returns:    an int with the count
+ **************************************/
+int Camera::squareCount(int color, int side) {
+    int squareCount = 0;
 
-    switch (color) {
-    case COLOR_PINK:
-        thresholded = _pinkThresholded;
-        squares = _pinkSquares;
-        break;
-    case COLOR_YELLOW:
-        thresholded = _yellowThresholded;
-        squares = _yellowSquares;
-        break;
-    }
+    int width = thresholdedOf(color)->width;
+    int center = width / 2;
 
-    int center = thresholded->width / 2;
-    
-    squares_t *curSquare = squares;
-    squares_t *largestSquare = NULL;
+    // iterate through the squares and count how many there are
+    // on the specified side of the image
+    squares_t *curSquare = squaresOf(color);
     while (curSquare != NULL) {
-        if (curSquare->center.x > center) {
-            if (largestSquare == NULL) {
-                largestSquare = curSquare;
+        switch (side) {
+        case SIDE_LEFT: 
+            if (curSquare->center.x < center) { 
+                LOG.write(LOG_LOW, "squareCount",
+                          "Left square - x: %d y: %d area: %d",
+                          curSquare->center.x, curSquare->center.y, curSquare->area);
+                squareCount++;
             }
-            else {
-                if (curSquare->area > largestSquare->area) {
-                    largestSquare = curSquare;
-                }
+            break;
+        case SIDE_RIGHT:
+            if (curSquare->center.x > center) {
+                LOG.write(LOG_HIGH, "squareCount",
+                          "Right square - x: %d y: %d area: %d", 
+                          curSquare->center.x, curSquare->center.y, curSquare->area);
+                squareCount++;
             }
+            break;
         }
         curSquare = curSquare->next;
     }
 
-    return largestSquare;
+    return squareCount;
 }
 
-// Finds squares of a given color in the passed image
+/**************************************
+ * Definition: Returns the stored thresholded image of the given color
+ *
+ * Parameters: the color to threshold by
+ *
+ * Returns:    the thresholded IplImage
+ **************************************/
+IplImage* Camera::thresholdedOf(int color) {
+    IplImage *thresholded = NULL;
+    switch (color) {
+    case COLOR_PINK:
+        thresholded = _pinkThresholded;
+    case COLOR_YELLOW:
+        thresholded = _yellowThresholded;
+    }
+    return thresholded;
+}
+
+/**************************************
+ * Definition: Returns the stored squares of the given color
+ *
+ * Parameters: the color to threshold by
+ *
+ * Returns:    a squares_t linked list
+ **************************************/
+squares_t* Camera::squaresOf(int color) {
+    squares_t *squares = NULL;
+    switch (color) {
+    case COLOR_PINK:
+        squares = _pinkSquares;
+    case COLOR_YELLOW:
+        squares = _yellowSquares;
+    }
+    return squares;
+}
+
+/**************************************
+ * Definition: Finds squares of the given color and given minimum size
+ *
+ * Parameters: the color to threshold by and the minimum area for a square
+ *
+ * Returns:    a squares_t linked list
+ **************************************/
 squares_t* Camera::findSquaresOf(int color, int areaThreshold) {
-    squares_t *squares;
+    squares_t *squares = NULL;
     switch (color) {
     case COLOR_PINK:
         squares = findSquares(_pinkThresholded, areaThreshold);
@@ -651,8 +638,15 @@ squares_t* Camera::findSquaresOf(int color, int areaThreshold) {
     return squares;
 }
 
-
-
+/**************************************
+ * Definition: Finds squares in an image with the given minimum size
+ *
+ * (Taken from the API and modified slightly)
+ *
+ * Parameters: the image to find squares in and the minimum area for a square
+ *
+ * Returns:    a squares_t linked list
+ **************************************/
 squares_t* Camera::findSquares(IplImage *img, int areaThreshold) {
     CvSeq* contours;
     CvMemStorage *storage;
@@ -693,25 +687,31 @@ squares_t* Camera::findSquares(IplImage *img, int areaThreshold) {
         
     // Find the contours and store them all as a list
     // was CV_RETR_EXTERNAL
-    cvFindContours(canny, storage, &contours, sizeof(CvContour), CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE, cvPoint(0,0));
+    cvFindContours(canny, storage, &contours, sizeof(CvContour), 
+                   CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE, cvPoint(0,0));
             
     // Test each contour to find squares
-    while(contours) {
+    while (contours) {
         // Approximate a contour with accuracy proportional to the contour perimeter
-        result = cvApproxPoly(contours, sizeof(CvContour), storage, CV_POLY_APPROX_DP, cvContourPerimeter(contours)*0.1, 0 );
-                // Square contours should have
+        result = cvApproxPoly(contours, sizeof(CvContour), storage, 
+                              CV_POLY_APPROX_DP, cvContourPerimeter(contours)*0.1, 0 );
+        // Square contours should have
         //  * 4 vertices after approximation
         //  * Relatively large area (to filter out noisy contours)
         //  * Ne convex.
         // Note: absolute value of an area is used because
         // area may be positive or negative - in accordance with the
         // contour orientation
-        if(result->total == 4 && fabs(cvContourArea(result,CV_WHOLE_SEQ,0)) > areaThreshold && cvCheckContourConvexity(result)) {
+        if (result->total == 4 && 
+            fabs(cvContourArea(result,CV_WHOLE_SEQ,0)) > areaThreshold && 
+            cvCheckContourConvexity(result)) {
             s=0;
             for(i=0; i<5; i++) {
                             // Find the minimum angle between joint edges (maximum of cosine)
                 if(i >= 2) {
-                    t = fabs(ri_angle((CvPoint*)cvGetSeqElem(result, i),(CvPoint*)cvGetSeqElem(result, i-2),(CvPoint*)cvGetSeqElem( result, i-1 )));
+                    t = fabs(ri_angle((CvPoint*)cvGetSeqElem(result, i),
+                                      (CvPoint*)cvGetSeqElem(result, i-2),
+                                      (CvPoint*)cvGetSeqElem( result, i-1 )));
                     s = s > t ? s : t;
                 }
             }
@@ -777,6 +777,11 @@ squares_t* Camera::findSquares(IplImage *img, int areaThreshold) {
     return sq_head;
 }
 
+/**************************************
+ * Definition: Grabs a new HSV image from the camera
+ *
+ * Returns:    an IplImage in HSV format
+ **************************************/
 IplImage* Camera::getHSVImage() {
     // get an image (bgr) from the camera
     IplImage *bgr = getBGRImage();
@@ -793,14 +798,18 @@ IplImage* Camera::getHSVImage() {
     return hsv;
 }
 
+/**************************************
+ * Definition: Grabs a new thresholded image from the camera
+ *
+ * Parameters: low and high scalars specifying the threshold color range
+ *
+ * Returns:    a thresholded IplImage
+ **************************************/
 IplImage* Camera::getThresholdedImage(CvScalar low, CvScalar high) {
     IplImage *hsv = getHSVImage();
     if (hsv == NULL) {
         return NULL;
     }
-
-    // smooth the image to make colors more uniform
-    //cvSmooth(hsv, hsv, CV_BLUR_NO_SCALE);
 
     IplImage *thresholded = cvCreateImage(cvGetSize(hsv), IPL_DEPTH_8U, 1);
     // pick out only the color specified by its ranges
@@ -811,6 +820,11 @@ IplImage* Camera::getThresholdedImage(CvScalar low, CvScalar high) {
     return thresholded;
 }
 
+/**************************************
+ * Definition: Grabs a new BGR image from the camera
+ *
+ * Returns:    an IplImage in BGR format
+ **************************************/
 IplImage* Camera::getBGRImage() {
     CvSize size;
     switch (_resolution) {

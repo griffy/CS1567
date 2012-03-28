@@ -9,10 +9,7 @@
  * 		Shawn Hanna
  * 		Tom Nason
  * 		Joel Griffith
- * 
- * @date
- * 		created - 3/2/2012
- * 		modified - 3/26/2012
+ *
  **/
 
 #ifndef CS1567_CAMERA_H
@@ -98,20 +95,22 @@ public:
 	~Camera();
 	void setQuality(int quality);
 	void setResolution(int resolution);
+	void markSquare(IplImage *image, squares_t *square, CvScalar color);
 	void update();
 	float centerError(int color);
+	float centerDistanceError(int color);
 	float corridorSlopeError(int color);
     regressionLine leastSquaresRegression(int color, int side);	
-	float centerDistanceError(int color);
 	bool onSamePlane(squares_t *leftSquare, squares_t *rightSquare);
-	squares_t* leftBiggestSquare(int color);
-	squares_t* rightBiggestSquare(int color);
+	squares_t* biggestSquare(int color, int side);
+	int squareCount(int color, int side);
+	IplImage* thresholdedOf(int color);
+	squares_t* squaresOf(int color);
 	squares_t* findSquaresOf(int color, int areaThreshold);
 	squares_t* findSquares(IplImage *img, int areaThreshold);
 	IplImage* getHSVImage();
 	IplImage* getBGRImage();
 	IplImage* getThresholdedImage(CvScalar low, CvScalar high);
-	void drawX(IplImage *image, squares_t *square, CvScalar color);
 private:
 	RobotInterface *_robotInterface;
 	int _quality;
