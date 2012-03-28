@@ -35,15 +35,26 @@ int main(int argc, char *argv[]) {
 
 	Robot *robot = new Robot(argv[1], 0);
 
+//	robot->center();
+/* Camera Testing Code
+	while (true) {
+		robot->updateCamera();
+		robot->_camera->centerError(COLOR_PINK);
+		cvWaitKey(0);
+	}
+*/
+
+// Project 2 Code
+/*	robot->move(DIR_EAST, 5);
 	robot->move(DIR_EAST, 5);
 	robot->turn(DIR_RIGHT, DEGREE_90);
 	robot->move(DIR_SOUTH, 3);
-	
+*/	
 // Sensor Testing Code
-/*
+
 	while(1) {
 		robot->updatePose();
-		robot->moveForward(4);
+/*		robot->moveForward(4);
 		robot->moveForward(4);
 		robot->moveForward(4);
 		robot->moveForward(4);
@@ -61,8 +72,8 @@ int main(int argc, char *argv[]) {
 		robot->moveForward(4);
 		robot->moveForward(4);
 		robot->moveForward(4);	
-	}
-*/
+*/	}
+
 
 // Project 1 Code
 /*

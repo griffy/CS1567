@@ -92,7 +92,7 @@
 const float NS_ROOM_SCALE[4][2] =      {{58.1, 52.3},		//Bender data - Project 2, slightly weighted towards hallway values
 					{58.8, 47.5},
 					{59.6, 36.7}, //Room 4 = DONT CARE, if we start using, find parameters
-					{53.6, 71.7}}; 
+					{53.6, 71.7}}; //(53.6, 71.7) calculated 
 //Notes regarding room scale values: 	Rooms 2 and 3 Y values vary greatly depending on robot orientation within the corridor (moving via strafe or straight)
 //						Larger when straight, smaller when strafe
 //					Room 5 y varies similarly
@@ -143,7 +143,7 @@ const float COL_OFFSET[2] = {193.0, 234.0};
 //Gort, project 2
 //const float NS_ROOM_ORIGINS_FROM_COL[4][2] = {{48.0,-97.0}, {-95.0,32.0}, {84.0, 191.0}, {212.0, 102.0}};
 //Bender, project 2
-const float NS_ROOM_ORIGINS_FROM_COL[4][2] = {{36.0,-125.0}, {-116.0,18.0}, {62.0, 174.0}, {193.0, 61.0}};
+const float NS_ROOM_ORIGINS_FROM_COL[4][2] = {{36.0,-125.0}, {-116.0,18.0}, {62.0, 174.0}, {193.0, 61.0}}; //61 is old NS5Y value, 36 is better
 // Johnny5, project 2
 //const float NS_ROOM_ORIGINS_FROM_COL[4][2] = {{5.0, -104.0}, {-144.0, 25.0}, {32.0, 200.0}, {195.0, 32.0}};
 

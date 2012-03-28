@@ -191,8 +191,6 @@ float Camera::centerError(int color) {
     int numGoodCenterDistErrors = 0;
     float totalGoodSlopeError = 0.0;
     float totalGoodCenterDistError = 0.0;
-    float avgSlopeError = 0.0;
-    float avgCenterDistError = 0.0;
 
     // calculate slope and center distance errors the specified number
     // of times, ignoring -999's (which say they found nothing good)
@@ -213,8 +211,8 @@ float Camera::centerError(int color) {
         }
     }
 
-    avgSlopeError = totalGoodSlopeError / (float)numGoodSlopeErrors;
-    avgCenterDistError = totalGoodCenterDistError / (float)numGoodCenterDistErrors;
+    float avgSlopeError = totalGoodSlopeError / (float)numGoodSlopeErrors;
+    float avgCenterDistError = totalGoodCenterDistError / (float)numGoodCenterDistErrors;
 
     LOG.write(LOG_LOW, "centerError", "Avg. slope error: %f", avgSlopeError);
     LOG.write(LOG_LOW, "centerError", "Avg. center dist. error: %f", avgCenterDistError);

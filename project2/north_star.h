@@ -14,6 +14,8 @@ private:
 	FIRFilter *_filterY;
 	FIRFilter *_filterTheta;
 	int _lastRoom;
+	std::vector<float> _oldX;
+	std::vector<float> _oldY;
 
 	float _getFilteredX();
 	float _getFilteredY();

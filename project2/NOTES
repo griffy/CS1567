@@ -1,19 +1,1 @@
-Room transitions display characterstic jumps in y-values. 
-	Not what was throwing off our robot at the beginning, but it can't be helping. 
 
-TODO (for me):
-	Take a closer look at NorthStar data, see if there's any possible reason that a room change (looks like any room change) would cause a very incorrect value to propagate through the filter (as it appears to be doing)
-		If there is an actual 'bug' to deal with, woohoo, find it and fix it.		
-	
-	Measure out scaling data for NorthStar for Bender (etc...) and check room 'borders' to make transitions a bit more smooth
-		If there isn't a bug above, hopefully doing this will help us.
-		
-	Otherwise, if room transitions are still inexplicably bad, we may want to wait and collect a few data points upon room change (it appears to fix itself, leading me to believe that its more of a bug than a legitimate deviation
-
-Other things to be done?
-	Better error parameterization of center() 
-		Robot seems to get stuck often and only start moving when no squares are seen for a few frames in a row
-
-	Addition of turning into center(), addition of camera into turnTo()?
-
-Shoot me an email if you want any of the data I had about the room transitions. 
