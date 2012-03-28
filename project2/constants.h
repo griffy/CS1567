@@ -9,9 +9,6 @@
  * 		Joel Griffith
  * 		Shawn Hanna
  * 
- * @date
- * 		created - 2/2/2012
- * 		modified - 3/24/2012
  **/
 
 #ifndef CS1567_CONSTANTS_H
@@ -32,18 +29,19 @@
 #define MAX_UPDATE_FAILS 5 // max allowable fails to update robot interface
 
 // Kalman uncertainties
+// process uncertainties
 #define PROC_X_UNCERTAIN 0.25
 #define PROC_Y_UNCERTAIN 0.25
 #define PROC_THETA_UNCERTAIN 0.25
 
+// north star uncertainties
 #define NS_X_UNCERTAIN 0.15
 #define NS_Y_UNCERTAIN 0.25
 #define NS_THETA_UNCERTAIN 0.05
 
+// wheel encoder uncertainties
 #define WE_X_UNCERTAIN 0.05
 #define WE_Y_UNCERTAIN 0.05
-// wheel encoder theta is about as uncertain
-// as north star x and y
 #define WE_THETA_UNCERTAIN 0.15
 
 // PID gains min and max
@@ -74,8 +72,8 @@
 #define MAX_DIST_ERROR 25.0 // in cm
 #define MAX_THETA_ERROR DEGREE_30
 
-// acceptable threshold for being in the center of squares
-#define MAX_CENTER_ERROR 0.2
+// acceptable threshold for being in the center of squares (out of 1)
+#define MAX_CENTER_ERROR 0.20
 #define MAX_TURN_CENTER_ERROR 0.20
 
 // the largest filter size (used for prefilling data)
@@ -88,22 +86,30 @@
 
 #define WE_SCALE 4.0 // (avg) ticks per cm
 
-// the average ticks per cm in x and y per room
-const float NS_ROOM_SCALE[4][2] =      {{58.1, 52.3},		//Bender data - Project 2, slightly weighted towards hallway values
-					{58.8, 47.5},
-					{59.6, 36.7}, //Room 4 = DONT CARE, if we start using, find parameters
-					{53.6, 71.7}}; //(53.6, 71.7) calculated 
-//Notes regarding room scale values: 	Rooms 2 and 3 Y values vary greatly depending on robot orientation within the corridor (moving via strafe or straight)
-//						Larger when straight, smaller when strafe
-//					Room 5 y varies similarly
-//					Room 2 may be dodgy at end of corridor (X and Y)
-//	High quality values: NS2x, NS5x, (lesser so) NS3x, NS5y
+/* north star transformation constants */
 
-//                 				   {{49.2, 37.1}, 
-//                 				    {45.4, 57.6}, 
-//				                    {59.6, 36.7}, 
-//			                	    {37.4, 53.5}};  //Rosie Data - Project 1
-			   
+// Notes regarding room scale values:
+//   Rooms 2 and 3 Y values vary greatly depending on robot orientation within 
+//   the corridor (moving via strafe or straight)
+//	 
+//   Larger when straight, smaller when strafe
+//	 Room 5 y varies similarly
+//	 Room 2 may be dodgy at end of corridor (X and Y)
+//	 High quality values: NS2x, NS5x, (lesser so) NS3x, NS5y
+
+// the average ticks per cm in x and y per room
+// Bender data - Project 2, slightly weighted towards hallway values
+const float NS_ROOM_SCALE[4][2] = {{58.1, 52.3},		
+								   {58.8, 47.5},
+								   {59.6, 36.7},
+								   {53.6, 71.7}};
+/*
+// Rosie data - Project 1
+const float NS_ROOM_SCALE[4][2] = {{49.2, 37.1}, 
+                 				   {45.4, 57.6}, 
+				                   {59.6, 36.7}, 
+			                	   {37.4, 53.5}};
+*/
 
 // ROTATION is angle relative to room 2's base where 0 degrees is parallel to far wall
 // Theta increases counter-clockwise     |
@@ -123,31 +129,48 @@ const float NS_ROOM_SCALE[4][2] =      {{58.1, 52.3},		//Bender data - Project 2
 //     origin                            |
 //_______________________________________|
 
-const float NS_ROOM_ROTATION[4] = {0.1, 1.5708, 0.0, 1.6005}; //Bender, project 2
-				//{0.0, 1.5708, 0.0, 1.6005}; //Rosie data, radians, correct!
-				//1.127
+// Bender data - Project 2
+const float NS_ROOM_ROTATION[4] = {0.1, 1.5708, 0.0, 1.6005}; 
+/*
+// Rosie data - Project 1
+const float NS_ROOM_ROTATION[4] = {0.0, 1.5708, 0.0, 1.6005};
+*/
+
 // the distance of column top-right corner from base 0
 const float COL_OFFSET[2] = {193.0, 234.0};
 
 // the distances of ns origins from column corner (labeled with a * in above map)
-//Rosie, project 1
-//const float NS_ROOM_ORIGINS_FROM_COL[4][2] = {{18.0, -124.0},
-//										      {-147.0, 8.0},
-//										      {41.0, 168.0},
-//										      {196.0, 30.0}};
+// Note: Don't trust room 4 for Gort or Bender
+/*
+// Rosie data - Project 1
+const float NS_ROOM_ORIGINS_FROM_COL[4][2] = {{18.0, -124.0},
+										      {-147.0, 8.0},
+										      {41.0, 168.0},
+										      {196.0, 30.0}};
+*/
+/*
+// Gort data - Project 2
+const float NS_ROOM_ORIGINS_FROM_COL[4][2] = {{48.0,-97.0}, 
+											  {-95.0,32.0}, 
+											  {84.0, 191.0}, 
+											  {212.0, 102.0}};
+*/
+/*
+// Bender - Project 2
+const float NS_ROOM_ORIGINS_FROM_COL[4][2] = {{36.0,-125.0}, 
+											  {-116.0,18.0}, 
+											  {62.0, 174.0}, 
+											  {193.0, 36.0}};
+*/
+/*
+// Johnny5 - Project 2
+const float NS_ROOM_ORIGINS_FROM_COL[4][2] = {{5.0, -104.0}, 
+											  {-144.0, 25.0}, 
+											  {32.0, 200.0}, 
+											  {195.0, 32.0}};
+*/
 
-//Extra map data for project 2
-//
-//DON'T TRUST ROOM 4 for Gort or Bender
-//
-//Gort, project 2
-//const float NS_ROOM_ORIGINS_FROM_COL[4][2] = {{48.0,-97.0}, {-95.0,32.0}, {84.0, 191.0}, {212.0, 102.0}};
-//Bender, project 2
-const float NS_ROOM_ORIGINS_FROM_COL[4][2] = {{36.0,-125.0}, {-116.0,18.0}, {62.0, 174.0}, {193.0, 61.0}}; //61 is old NS5Y value, 36 is better
-// Johnny5, project 2
-//const float NS_ROOM_ORIGINS_FROM_COL[4][2] = {{5.0, -104.0}, {-144.0, 25.0}, {32.0, 200.0}, {195.0, 32.0}};
-
-const float THETA_SHIFT[4] = {1.5708, -1.5708, 1.5708, -1.5708}; //Value necessary to push the theta = 0 onto the x-axis rather than the y
-
+// Value necessary to push the theta = 0 onto the x-axis rather than the y					  
+const float THETA_SHIFT[4] = {1.5708, -1.5708, 1.5708, -1.5708}; 
 
 #endif
