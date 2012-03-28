@@ -53,9 +53,6 @@ void WheelEncoders::updatePose(int room) {
 	float y = getY() + _getDeltaY();
 	float theta = Util::normalizeTheta(getTheta() + _getDeltaTheta());
 
-	// account for rotations
-	_adjustTotalTheta(theta);
-
 	_pose->setX(x);
 	_pose->setY(y);
 	_pose->setTheta(theta);

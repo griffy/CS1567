@@ -60,7 +60,7 @@ void NorthStar::updatePose(int room) {
 		Pose *tempPose = new Pose(0.0, 0.0, 0.0);
 		// adjust old filtered values according to new room
 		for (int i = 0; i <= order; i++) {
-			tempPose->reset(_oldX[i], _oldY[i], 0.0, 0);
+			tempPose->reset(_oldX[i], _oldY[i], 0.0);
 			
 			tempPose->translate(-COL_OFFSET[0] - NS_ROOM_ORIGINS_FROM_COL[room][0], 
 							    -COL_OFFSET[1] - NS_ROOM_ORIGINS_FROM_COL[room][1]);
@@ -109,9 +109,6 @@ void NorthStar::updatePose(int room) {
 	float tx = COL_OFFSET[0] + NS_ROOM_ORIGINS_FROM_COL[room][0];
 	float ty = COL_OFFSET[1] + NS_ROOM_ORIGINS_FROM_COL[room][1];
 	estimate->translate(tx, ty);
-
-	// account for any rotations
-	_adjustTotalTheta(estimate->getTheta());
 
 	// update our pose with new global coords
 	_pose->setX(estimate->getX());

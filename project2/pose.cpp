@@ -20,10 +20,6 @@ Pose::Pose(float x, float y, float theta) {
 	_x = x;
 	_y = y;
 	_theta = theta;
-    // total theta is tracked as well so that it can be used in the
-    // kalman filter without returning a weird average for theta
-	_totalTheta = theta;
-	_numRotations = 0;
 }
 
 Pose::~Pose() {}
@@ -36,7 +32,7 @@ Pose::~Pose() {}
 void Pose::difference(Pose* pose1, Pose* pose2, Pose* returnPose) {
     returnPose->setX(pose2->getX() - pose1->getX());
     returnPose->setY(pose2->getY() - pose1->getY());
-    returnPose->setTotalTheta(pose2->getTotalTheta() - pose1->getTotalTheta());
+    returnPose->setTheta(pose2->getTheta() - pose1->getTheta());
 }
 
 /**************************************
@@ -55,13 +51,12 @@ float Pose::distance(Pose* pose1, Pose* pose2) {
 /**************************************
  * Definition: Resets the current pose according to parameters
  *
- * Parameters: a new x, y, theta, and number of rotations (int)
+ * Parameters: a new x, y, and theta
  **************************************/
-void Pose::reset(float x, float y, float theta, int numRotations) {
+void Pose::reset(float x, float y, float theta) {
 	setX(x);
 	setY(y);
 	setTheta(theta);
-	setNumRotations(numRotations);
 }
 
 /**************************************
@@ -83,64 +78,12 @@ void Pose::setY(float y) {
 }
 
 /**************************************
- * Definition: Sets the current pose's theta to the given theta,
- *             also updating total theta in the process
+ * Definition: Sets the current pose's theta to the given theta
  *
  * Parameters: theta as a float
  **************************************/
 void Pose::setTheta(float theta) {
 	_theta = Util::normalizeTheta(theta);
-	_totalTheta = _numRotations * 2*PI + _theta;
-}
-
-/**************************************
- * Definition: Updates the number of rotations by the given amount
- *
- * Parameters: number of rotations as an int, either positive or negative
- **************************************/
-void Pose::modifyRotations(int num) {
-	setNumRotations(_numRotations + num);
-}
-
-/**************************************
- * Definition: Directly sets total theta, in turn updating theta and
- *             the number of rotations
- *
- * Parameters: total theta as a float
- **************************************/
-void Pose::setTotalTheta(float totalTheta) {
-	_totalTheta = totalTheta;
-	_numRotations = (int) _totalTheta / 2*PI;
-	_theta = Util::normalizeTheta(totalTheta);
-}
-
-/**************************************
- * Definition: Returns total theta
- *
- * Returns:    total theta as a float
- **************************************/
-float Pose::getTotalTheta() {
-	return _totalTheta;
-}
-
-/**************************************
- * Definition: Sets the number of rotations, which track how
- *             many times theta has passed over 2PI
- *
- * Parameters: number of rotations as an int
- **************************************/
-void Pose::setNumRotations(int rot) {
-	_numRotations = rot;
-	_totalTheta = _numRotations * 2*PI + _theta;
-}
-
-/**************************************
- * Definition: Returns the number of rotations
- *
- * Returns:    number of rotations as an int
- **************************************/
-int Pose::getNumRotations() {
-	return _numRotations;
 }
 
 /**************************************
@@ -155,16 +98,14 @@ void Pose::add(float deltaX, float deltaY, float deltaTheta) {
 }
 
 /**************************************
- * Definition: Sets a 3-element array to have x, y, and total theta 
- * to be used by a Kalman filter
+ * Definition: Sets a 3-element array to have x, y, and theta 
  *
  * Parameters: pointer to an array
  **************************************/
-void Pose::toArrayForKalman(float *arr) {
+void Pose::toArray(float *arr) {
 	arr[0] = _x;
 	arr[1] = _y;
-	float totalTheta = getTotalTheta();
-	arr[2] = totalTheta; // used fabs(totalTheta);
+	arr[2] = _theta;
 }
 
 /**************************************

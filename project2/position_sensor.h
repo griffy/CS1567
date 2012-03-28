@@ -31,9 +31,6 @@ public:
 protected:
 	RobotInterface *_robotInterface;
 	Pose *_pose;
-	void _adjustTotalTheta(float theta);
-private:
-	bool _passed2PI;
 };
 
 #endif

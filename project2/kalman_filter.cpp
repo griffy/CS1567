@@ -13,6 +13,7 @@
  **/
 
 #include "kalman_filter.h"
+#include "utilities.h"
 #include "constants.h"
 #include "logger.h"
 #include <stdio.h>
@@ -23,7 +24,7 @@ KalmanFilter::KalmanFilter(Pose *initialPose) {
 	_pose = initialPose;
     // convert the pose to a 3-element array with x, y, and theta
 	float initialPoseArr[3];
-	initialPose->toArrayForKalman(initialPoseArr);
+	initialPose->toArray(initialPoseArr);
     // create a zero'd velocity array for x, y, and theta
 	_velocity[0] = 0;
 	_velocity[1] = 0;
@@ -43,7 +44,7 @@ KalmanFilter::KalmanFilter(Pose *initialPose) {
 KalmanFilter::~KalmanFilter() {}
 
 /**************************************
- * Definition: Applies kalman filter to two poses (x, y, total theta) and 
+ * Definition: Applies kalman filter to two poses (x, y, theta) and 
  *             updates the stored pose with the new filtered values
  *
  * Parameters: a North Star pose and a Wheel Encoders Pose
@@ -52,23 +53,25 @@ void KalmanFilter::filter(Pose *nsPose, Pose *wePose) {
     // convert the poses to 3-element arrays
 	float nsPoseArr[3];
 	float wePoseArr[3];
-	nsPose->toArrayForKalman(nsPoseArr);
-	wePose->toArrayForKalman(wePoseArr);
-
-	// Normalize thetas w.r.t each other
-	if (nsPoseArr[2] - wePoseArr[2] > PI) {
-		wePoseArr[2] += 2*PI;
-	} 
-	else if (nsPoseArr[2] - wePoseArr[2] < -PI) {
-		wePoseArr[2] -= 2*PI;
-	}
+	nsPose->toArray(nsPoseArr);
+	wePose->toArray(wePoseArr);
 	
 	LOG.write(LOG_LOW, "kalmanFilter", 
-		      "Kalman filter input: WE total theta: %f NS total theta: %f", 
+		      "Kalman filter input: WE theta: %f NS theta: %f", 
 		      wePoseArr[2], nsPoseArr[2]);
+
+	// store the sin of the thetas so they'll match up even if
+	// they're not the same value (ie, 0 == 2PI)
+	nsPoseArr[2] = sin(nsPoseArr[2]);
+	wePoseArr[2] = sin(wePoseArr[2]);
 
     // update the kalman filter with the new data
 	rovioKalmanFilter(&_kf, nsPoseArr, wePoseArr, _track);
+
+	// use inverse sin on kalman to get back a theta,
+	// which is in range -pi/2 to pi/2. finally, normalize it
+	// back into 0, 2PI range
+	_track[2] = Util::normalizeTheta(asin(_track[2]));
 
 	LOG.write(LOG_LOW, "kalmanFilter", 
               "Kalman pose: %f,%f,%f", _track[0], _track[1], _track[2]);
@@ -76,7 +79,7 @@ void KalmanFilter::filter(Pose *nsPose, Pose *wePose) {
     // update the stored pose to its new estimate
     _pose->setX(_track[0]);
 	_pose->setY(_track[1]);
-	_pose->setTotalTheta(_track[2]);
+	_pose->setTheta(_track[2]);
 }
 
 /**************************************

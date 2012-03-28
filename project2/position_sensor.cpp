@@ -18,7 +18,6 @@
 PositionSensor::PositionSensor(RobotInterface *robotInterface) {
 	_robotInterface = robotInterface;
 	_pose = new Pose(0.0, 0.0, 0.0);
-	_passed2PI = false;
 }
 
 PositionSensor::~PositionSensor() {
@@ -34,7 +33,6 @@ void PositionSensor::resetPose(Pose *pose) {
 	_pose->setX(pose->getX());
 	_pose->setY(pose->getY());
 	_pose->setTheta(pose->getTheta());
-	_pose->setNumRotations(pose->getNumRotations());
 }
 
 /**************************************
@@ -71,31 +69,4 @@ float PositionSensor::getTheta() {
  **************************************/
 Pose* PositionSensor::getPose() {
 	return _pose;
-}
-
-/**************************************
- * Definition: Adjusts total theta by checking for
- *             rotations (past 2PI) since the last update.
- *
- * Note:       this method should be called by inherited class
- *             after each update to keep thetas in check
- **************************************/
-void PositionSensor::_adjustTotalTheta(float theta) {
-	float lastTheta = getTheta();
-
-    if ((lastTheta > (3/2.0)*PI && theta < PI/2.0) || 
-        (lastTheta < PI/2.0 && theta > (3/2.0)*PI)) {
-        _passed2PI = !_passed2PI;
-    }
-    
-    if (_passed2PI) {
-    	if (lastTheta > PI && theta < PI) {
-        	_pose->modifyRotations(1);
-        	_passed2PI = false;
-    	}
-    	else if (lastTheta < PI && theta > PI) {
-    		_pose->modifyRotations(-1);
-    		_passed2PI = false;
-    	}
-    }
 }
