@@ -2,17 +2,17 @@
  * wheel_encoders.cpp
  * 
  * @brief 
- * 		This class performs all functions for the wheel encoder sensors (except for when to update the data)
- * 		It stores the raw and filtered data, and contains functions for converting the data into global coordinates
+ * 		This class inherits from the position sensor class.
+ *      It performs all functions for the wheel encoders
+ *      (except for when to update the data). It keeps a pose, stores 
+ *      the raw and filtered wheel encoder data, and contains functions for converting 
+ *      the data into global coordinates to be stored back in the pose.
  * 
  * @author
- * 		Joel Griffith
  * 		Shawn Hanna
  * 		Tom Nason
- * 
- * @date
- * 		created - 2/2/2012
- * 		modified - 3/24/2012
+ * 		Joel Griffith
+ *
  **/
 
 #include "wheel_encoders.h"
@@ -34,32 +34,38 @@ WheelEncoders::~WheelEncoders() {
 }
 
 /************************************************
-* Definition: - Translates incremental wheel encoder data to global coordinate system and updates robot pose
+* Definition: Translates incremental wheel encoder data to 
+*             global coordinate system and updates robot pose
+*
+* Note:       Requires the interface be updated prior to calling 
 *
 * Parameters: room - Integer corresponding to robot's NorthStar room
-*
-* Notes: Requires the interface be updated prior to calling 
 ************************************************/
 void WheelEncoders::updatePose(int room) {
-	LOG.printfScreen(LOG_LOW, "WE pose update", "x: %f deltaX: %f y: %f deltaY: %f\n", getX(), _getDeltaX(), getY(), _getDeltaY());
+	LOG.write(LOG_LOW, "WE_positions_raw", 
+		      "we update (raw): left: %f right: %f rear: %f", 
+		      _getFilteredDeltaLeft(), _getFilteredDeltaRight(), _getFilteredDeltaRear());
+	LOG.write(LOG_LOW, "wheelEncodersUpdate", 
+		      "we update: x: %f deltaX: %f y: %f deltaY: %f", 
+		      getX(), _getDeltaX(), getY(), _getDeltaY());
+
 	float x = getX() + _getDeltaX();
 	float y = getY() + _getDeltaY();
 	float theta = Util::normalizeTheta(getTheta() + _getDeltaTheta());
 
+	// account for rotations
 	_adjustTotalTheta(theta);
 
-	LOG.printfFile(LOG_LOW, "WE_positions_clean", "%f, %f, %f, %f, %f, %f\n", getX(), _getDeltaX(), getY(), _getDeltaY(), getTheta(), _getDeltaTheta());
-	
-	LOG.printfFile(LOG_LOW, "WE_positions_raw", "%f, %f, %f\n", _getFilteredDeltaLeft(), _getFilteredDeltaRight(), _getFilteredDeltaRear());
 	_pose->setX(x);
 	_pose->setY(y);
 	_pose->setTheta(theta);
 }
 
 /************************************************
- * Definition: - Translates wheel encoder motion from robot axis into the corresponding change in X in the global coordinate system  
+ * Definition: Translates wheel encoder motion from robot axis 
+ *             into the corresponding change in X in the global coordinate system  
  *
- * Returns: rotatedDeltaX -  delta x in terms of global coordinate system 
+ * Returns:    delta x in terms of global coordinate system 
  ***********************************************/
 float WheelEncoders::_getDeltaX() {
 	float scaledDeltaX = _getRobotDeltaY() / WE_SCALE;
@@ -68,9 +74,10 @@ float WheelEncoders::_getDeltaX() {
 }
 
 /************************************************
- * Definition: - Translates wheel encoder motion from robot axis into the corresponding change in Y in the global coordinate system  
+ * Definition: Translates wheel encoder motion from robot axis 
+ *             into the corresponding change in Y in the global coordinate system  
  *
- * Returns: rotatedDeltaY -  delta y in terms of global coordinate system 
+ * Returns:    delta y in terms of global coordinate system 
  ***********************************************/
 float WheelEncoders::_getDeltaY() {
 	float scaledDeltaY = _getRobotDeltaY() / WE_SCALE;
@@ -79,9 +86,10 @@ float WheelEncoders::_getDeltaY() {
 }
 
 /************************************************
- * Definition: - Translates wheel encoder motion from robot axis into the corresponding change in theta in the global coordinate system  
+ * Definition: Translates wheel encoder motion from robot axis 
+ *             into the corresponding change in theta in the global coordinate system  
  *
- * Returns: rotatedDeltaTheta -  delta theta in terms of global coordinate system 
+ * Returns:    delta theta in terms of global coordinate system 
  ***********************************************/
 float WheelEncoders::_getDeltaTheta() {
 	float rearRobotDeltaX = _getFilteredDeltaRear();
@@ -90,9 +98,9 @@ float WheelEncoders::_getDeltaTheta() {
 }
 
 /************************************************
- * Definition: - Translates wheel encoder ticks into the robot coordinate system  
+ * Definition: Translates wheel encoder ticks into the robot coordinate system  
  *
- * Returns: avgRobotDeltaY - Change in Y position in robot coordinate system
+ * Returns:    delta y in robot coordinate system
  ***********************************************/
 float WheelEncoders::_getRobotDeltaY() {
     float leftRobotDeltaY = -_getFilteredDeltaLeft() * cos(DEGREE_150);
@@ -102,31 +110,29 @@ float WheelEncoders::_getRobotDeltaY() {
 }
 
 /************************************************
- * Definition: - Translates wheel encoder ticks into the robot coordinate system  
+ * Definition: Returns filtered wheel encoder ticks for left wheel
  *
- * Returns: Filtered wheel encoder (delta) ticks for the left wheel
+ * Returns:    delta left ticks
  ***********************************************/
 float WheelEncoders::_getFilteredDeltaLeft() {
     int left = _robotInterface->getWheelEncoder(RI_WHEEL_LEFT);
     return _filterLeft->filter((float) left);
 }
 
-// Returns: filtered wheel encoder (delta) ticks for the right wheel
 /************************************************
- * Definition: - Translates wheel encoder ticks into the robot coordinate system  
+ * Definition: Returns filtered wheel encoder ticks for right wheel
  *
- * Returns: avgRobotDeltaY - Change in Y position in robot coordinate system
+ * Returns:    delta right ticks
  ***********************************************/
 float WheelEncoders::_getFilteredDeltaRight() {
     int right = _robotInterface->getWheelEncoder(RI_WHEEL_RIGHT);
     return _filterRight->filter((float) right);
 }
 
-// Returns: filtered wheel encoder (delta) ticks for the rear wheel
 /************************************************
- * Definition: - Translates wheel encoder ticks into the robot coordinate system  
+ * Definition: Returns filtered wheel encoder ticks for rear wheel
  *
- * Returns: avgRobotDeltaY - Change in Y position in robot coordinate system
+ * Returns:    delta rear ticks
  ***********************************************/
 float WheelEncoders::_getFilteredDeltaRear() {
     int rear = _robotInterface->getWheelEncoder(RI_WHEEL_REAR);

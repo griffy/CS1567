@@ -1,3 +1,20 @@
+/**
+ * north_star.h
+ * 
+ * @brief 
+ * 		This class inherits from the position sensor class.
+ *      It performs all functions for the north star sensors 
+ *      (except for when to update the data). It keeps a pose, stores 
+ *      the raw and filtered north star data, and contains functions for converting 
+ *      the data into global coordinates to be stored back in the pose.
+ * 
+ * @author
+ * 		Shawn Hanna
+ * 		Tom Nason
+ * 		Joel Griffith
+ *
+ **/
+
 #ifndef CS1567_NORTHSTAR_H
 #define CS1567_NORTHSTAR_H
 
