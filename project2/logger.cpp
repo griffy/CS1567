@@ -1,10 +1,27 @@
+/**
+ * logger.cpp
+ * 
+ * @brief 
+ *      This class defines the project logger. It is a singleton that can be
+ *      accessed via the LOG macro to intelligently write to files and screen
+ *      according to importance level.
+ *
+ * @author
+ *      Shawn Hanna
+ *      Tom Nason
+ *      Joel Griffith
+ *
+ **/
+
 #include "logger.h"
 #include <cstdio>
 #include <cstdlib>
 #include <sys/stat.h>
 #include <errno.h>
 
-/* Creates a new logger with a default importance of low */
+/**************************************
+ * Definition: Creates a new logger with a default importance of low
+ **************************************/
 Logger::Logger()
 : _files(), _importanceLevel(LOG_LOW) {}
 
@@ -15,28 +32,24 @@ Logger::~Logger() {
         fclose(iter->second);
     }
 }
-
-/* Sets the importance level of the logger to some new value.
- * Importance works as follows:
- * 
- * A logger, when set to some importance level, will perform
- * writes if the thing being written has an importance level
- * at the same level as the logger or above.
+/**************************************
+ * Definition: Sets the importance level of the logger to some new value.
  *
- * For example, setting the logger to have an importance level
- * of 1 will result in all messages of importance >= 1 being
- * written, to file or screen or both depending on the method.
- */
+ * Parameters: an integer specifying importance level
+ *           
+ *             The logger will only write messages to file and screen
+ *             that are of the same or higher importance as its threshold
+ **************************************/
 void Logger::setImportanceLevel(int importanceLevel) {
     _importanceLevel = importanceLevel;
 }
 
-/* Writes output to file and screen, adding a newline, and flushes 
+/**************************************
+ * Definition: Writes output to file and screen, adds a new line, and flushes
  *
- * Methods like write and printf that print to both file and screen
- * will automatically flush, since it is assumed that real-time data
- * is most important
- */
+ * Parameters: an int importance level, string containing a filename,
+ *             a format string, and the format string's parameters
+ **************************************/
 void Logger::write(int level, std::string filename, const char *formatString, ...) {
     // get a reference to the variable amount of args passed in
     va_list listPointer;
@@ -54,7 +67,12 @@ void Logger::write(int level, std::string filename, const char *formatString, ..
     va_end(listPointer);
 }
 
-/* Writes output to file and screen and flushes */
+/**************************************
+ * Definition: Writes output to file and screen and flushes
+ *
+ * Parameters: an int importance level, string containing a filename,
+ *             a format string, and the format string's parameters
+ **************************************/
 void Logger::printf(int level, std::string filename, const char *formatString, ...) { 
     // get a reference to the variable amount of args passed in
     va_list listPointer;
@@ -69,7 +87,12 @@ void Logger::printf(int level, std::string filename, const char *formatString, .
     va_end(listPointer);
 }
 
-/* Prints a string to file, but does not flush (for efficiency) */
+/**************************************
+ * Definition: Writes output to file, but does not flush for efficiency
+ *
+ * Parameters: an int importance level, string containing a filename,
+ *             a format string, and the format string's parameters
+ **************************************/
 void Logger::printfFile(int level, std::string filename, const char *formatString, ...) { 
     // get a reference to the variable amount of args passed in
     va_list listPointer;
@@ -81,8 +104,12 @@ void Logger::printfFile(int level, std::string filename, const char *formatStrin
     va_end(listPointer);
 }
 
-/* Prints a string to console, flushing (since this is usually what
- * is desired) */
+/**************************************
+ * Definition: Writes output to screen and flushes
+ *
+ * Parameters: an int importance level, string containing a filename,
+ *             a format string, and the format string's parameters
+ **************************************/
 void Logger::printfScreen(int level, std::string filename, const char *formatString, ...) { 
     // get a reference to the variable amount of args passed in
     va_list listPointer;
@@ -94,6 +121,30 @@ void Logger::printfScreen(int level, std::string filename, const char *formatStr
 
     va_end(listPointer);
 }
+
+/**************************************
+ * Definition: Flushes to the specified file, if it exists
+ *
+ * Parameters: a string containing a filename,
+ **************************************/
+void Logger::flushFile(std::string filename) {
+    FILE *file;
+    std::map<std::string, FILE*>::iterator iter = _files.find(filename);
+    if (iter != _files.end()) {
+        file = _files[filename];
+        fflush(file);
+    }
+}
+
+/**************************************
+ * Definition: Flushes to the screen for the given "filename" (read: key)
+ *
+ * Parameters: a string containing a filename,
+ **************************************/
+void Logger::flushScreen(std::string filename) {
+    fflush(stdout);
+}
+
 
 void Logger::_vprintf(int level, std::string filename, const char *formatString, va_list listPointer) {
     // we need a second copy of the pointer so we can both print to file
@@ -193,18 +244,3 @@ void Logger::_vprintfFile(int level, std::string filename, const char *formatStr
         vfprintf(file, formatString, listPointer);
     }
 }    
-
-/* Flushes to the specified file, if it exists */
-void Logger::flushFile(std::string filename) {
-    FILE *file;
-    std::map<std::string, FILE*>::iterator iter = _files.find(filename);
-    if (iter != _files.end()) {
-        file = _files[filename];
-        fflush(file);
-    }
-}
-
-/* Flushes to the screen for the given "filename" (read: key) */
-void Logger::flushScreen(std::string filename) {
-    fflush(stdout);
-}

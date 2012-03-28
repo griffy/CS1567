@@ -1,3 +1,18 @@
+/**
+ * logger.h
+ * 
+ * @brief 
+ *      This class defines the project logger. It is a singleton that can be
+ *      accessed via the LOG macro to intelligently write to files and screen
+ *      according to importance level.
+ *
+ * @author
+ *      Shawn Hanna
+ *      Tom Nason
+ *      Joel Griffith
+ *
+ **/
+
 #ifndef CS1567_LOGGER_H
 #define CS1567_LOGGER_H
 
@@ -28,7 +43,6 @@ public:
     void printfFile(int level, std::string filename, const char *formatString, ...);
     void flushFile(std::string filename);
     void flushScreen(std::string filename);
-
 private:
     Logger();
     ~Logger();
