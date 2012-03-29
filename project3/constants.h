@@ -129,8 +129,12 @@ const float NS_ROOM_SCALE[4][2] = {{49.2, 37.1},
 //     origin                            |
 //_______________________________________|
 
-// Bender data - Project 2
-const float NS_ROOM_ROTATION[4] = {0.1, 1.5708, 0.0, 1.6005}; 
+/*
+// Gort data - Project 3 (North star is broken, recollect)
+const float NS_ROOM_ROTATION[4] = {0.0, 1.6708, 0.15, 1.6005}; 
+*/
+// Bender data - Project 3
+const float NS_ROOM_ROTATION[4] = {0.0, 1.6708, 0.15, 1.6005}; 
 /*
 // Rosie data - Project 1
 const float NS_ROOM_ROTATION[4] = {0.0, 1.5708, 0.0, 1.6005};
