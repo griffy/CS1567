@@ -171,7 +171,7 @@ void Robot::moveToCell(float x, float y) {
             // if we're off in theta, turn to adjust 
             turnTo(goal, MAX_THETA_ERROR);
             // finally, center between squares as a sanity check
-            turnCenter();
+            //turnCenter();
         }
     } while (thetaError != 0);
 
@@ -357,10 +357,12 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
     printf("theta acceptable\n");
 }
 
+// Deprecated
 /**************************************
  * Definition: Turns the robot until it is considered centered
  *             between two squares in a corridor
  **************************************/
+ /*
 void Robot::turnCenter() {
     while (true) {
         updateCamera();
@@ -397,6 +399,7 @@ void Robot::turnCenter() {
 
     _turnCenterPID->flushPID();
 }
+*/
 
 /**************************************
  * Definition: Strafes the robot until it is considered centered
@@ -406,36 +409,66 @@ void Robot::center() {
     while (true) {
         updateCamera();
 
-        float centerError = _camera->centerError(COLOR_PINK);
-        float centerGain = _centerPID->updatePID(centerError);
-		
-		LOG.write(LOG_LOW, "center", "center error: %f", centerError);
-		LOG.write(LOG_LOW, "center", "center gain: %f", centerGain);
+        bool turn = false;
+        float centerError = _camera->centerError(COLOR_PINK, &turn);
+        if (turn) {
+            float centerGain = _turnCenterPID->updatePID(centerError);
+            LOG.write(LOG_LOW, "centerTurn", "center error: %f", centerError);
+            LOG.write(LOG_LOW, "centerTurn", "center gain: %f", centerGain);
 
-		if (fabs(centerError) < MAX_CENTER_ERROR) {
-			// we're close enough to centered, so stop adjusting
-			LOG.write(LOG_LOW, "center", 
-                      "Center error: |%f| < %f, stop correcting.", 
-                      centerError, MAX_CENTER_ERROR);
-			break;
-		}
+            if (fabs(centerError) < MAX_TURN_CENTER_ERROR) {
+                // we're close enough to centered, so stop adjusting
+                LOG.write(LOG_LOW, "centerTurn", 
+                          "Center error: |%f| < %f, stop correcting.", 
+                          centerError, MAX_TURN_CENTER_ERROR);
+                break;
+            }
 
-		int strafeSpeed = (int)fabs((centerGain));
-        strafeSpeed = Util::capSpeed(strafeSpeed, 8);
-		
-		LOG.write(LOG_LOW, "pid_speeds", "strafe: %d", strafeSpeed);
+            int turnSpeed = (int)fabs((centerGain));
+            turnSpeed = Util::capSpeed(turnSpeed, 6);
+            
+            LOG.write(LOG_LOW, "pid_speeds", "turn: %d", turnSpeed);
 
-		if (centerError < 0) {
-			LOG.write(LOG_LOW, "center", "Center error: %f, move right", centerError);
-			strafeRight(strafeSpeed);
-		}
-		else {
-			LOG.write(LOG_LOW, "center", "Center error: %f, move left", centerError);
-			strafeLeft(strafeSpeed);
-		}
+            if (centerError < 0) {
+                LOG.write(LOG_LOW, "centerTurn", "Center error: %f, move right", centerError);
+                turnRight(turnSpeed);
+            }
+            else {
+                LOG.write(LOG_LOW, "centerTurn", "Center error: %f, move left", centerError);
+                turnLeft(turnSpeed);
+            }
+        }
+        else {
+            float centerGain = _centerPID->updatePID(centerError);
+            LOG.write(LOG_LOW, "centerStrafe", "center error: %f", centerError);
+            LOG.write(LOG_LOW, "centerStrafe", "center gain: %f", centerGain);
+
+            if (fabs(centerError) < MAX_CENTER_ERROR) {
+                // we're close enough to centered, so stop adjusting
+                LOG.write(LOG_LOW, "centerStrafe", 
+                          "Center error: |%f| < %f, stop correcting.", 
+                          centerError, MAX_CENTER_ERROR);
+                break;
+            }
+
+            int strafeSpeed = (int)fabs((centerGain));
+            strafeSpeed = Util::capSpeed(strafeSpeed, 8);
+            
+            LOG.write(LOG_LOW, "pid_speeds", "strafe: %d", strafeSpeed);
+
+            if (centerError < 0) {
+                LOG.write(LOG_LOW, "centerStrafe", "Center error: %f, move right", centerError);
+                strafeRight(strafeSpeed);
+            }
+            else {
+                LOG.write(LOG_LOW, "centerStrafe", "Center error: %f, move left", centerError);
+                strafeLeft(strafeSpeed);
+            }
+        }
     }
 
     _centerPID->flushPID();
+    _turnCenterPID->flushPID();
 }
 
 /**************************************

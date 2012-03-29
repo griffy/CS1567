@@ -97,9 +97,9 @@ public:
 	void setResolution(int resolution);
 	void markSquare(IplImage *image, squares_t *square, CvScalar color);
 	void update();
-	float centerError(int color);
-	float centerDistanceError(int color);
-	float corridorSlopeError(int color);
+	float centerError(int color, bool *turn);
+	float centerDistanceError(int color, bool *turn);
+	float corridorSlopeError(int color, bool *turn);
     regressionLine leastSquaresRegression(int color, int side);	
 	bool onSamePlane(squares_t *leftSquare, squares_t *rightSquare);
 	squares_t* biggestSquare(int color, int side);

@@ -186,7 +186,10 @@ void Camera::update() {
  *             A negative value is an indication to move right
  *             A positive value is an indication to move left
  **************************************/
-float Camera::centerError(int color) {
+float Camera::centerError(int color, bool *turn) {
+    *turn = false;
+    int slopeTurnCount = 0;
+    int centerDistTurnCount = 0;
     int numGoodSlopeErrors = 0;
     int numGoodCenterDistErrors = 0;
     float totalGoodSlopeError = 0.0;
@@ -197,17 +200,26 @@ float Camera::centerError(int color) {
     for (int i = 0; i < NUM_CAMERA_ERRORS; i++) {
         update();
 
-        float slopeError = corridorSlopeError(color);
-        float centerDistError = centerDistanceError(color);
+        bool slopeTurn = false;
+        bool centerDistTurn = false;
+
+        float slopeError = corridorSlopeError(color, &slopeTurn);
+        float centerDistError = centerDistanceError(color, &centerDistTurn);
 
         if (slopeError != -999) {
             numGoodSlopeErrors++;
             totalGoodSlopeError += slopeError;
+            if (slopeTurn) {
+                slopeTurnCount++;
+            }
         }
 
         if (centerDistError != -999) {
             numGoodCenterDistErrors++;
             totalGoodCenterDistError += centerDistError;
+            if (centerDistTurn) {
+                centerDistTurnCount++;
+            }
         }
     }
 
@@ -224,8 +236,14 @@ float Camera::centerError(int color) {
             // center distance error is probably no longer a good indicator
             // of center error, so trust slope error now if we have it
             if (numGoodSlopeErrors > 0) {
+                if (slopeTurnCount > numGoodSlopeErrors / 2) {
+                    *turn = true;
+                }
                 return avgSlopeError;
             }
+        }
+        if (centerDistTurnCount > numGoodCenterDistErrors / 2) {
+            *turn = true;
         }
         return avgCenterDistError;
     }
@@ -233,6 +251,9 @@ float Camera::centerError(int color) {
     // if we didn't have good center distance errors, let's
     // use slope error if we have it
     if (numGoodSlopeErrors > 0) {
+        if (slopeTurnCount > numGoodSlopeErrors / 2) {
+            *turn = true;
+        }
         return avgSlopeError;
     }
 
@@ -251,7 +272,8 @@ float Camera::centerError(int color) {
  *             A negative value is an indication to move right
  *             A positive value is an indication to move left
  **************************************/
-float Camera::centerDistanceError(int color) {
+float Camera::centerDistanceError(int color, bool *turn) {
+    *turn = false;
     // find the center of the camera's image
     int width = thresholdedOf(color)->width;
     int center = width / 2;
@@ -287,28 +309,37 @@ float Camera::centerDistanceError(int color) {
             if (leftSquare->area > rightSquare->area) {
                 // we should move right slightly to 
                 // unobstruct the right square
+                *turn = true;
                 return -0.25;
             }
             else {
                 // we should move left slightly
+                *turn = true;
                 return 0.25;
+
             }
         }
     }
 
     if (leftSquare == NULL && rightSquare == NULL) {
         // we couldn't find any squares
-        return -999;
+        //return -999;
+        *turn = true;
+        return -1;
     } 
     else if (leftSquare == NULL) {
         // the left seems to be out of view, so we're
         // probably too far left. we should move right 
-        return -1;
+        //return -1;
+        *turn = true;
+        return 1;
     } 
     else if (rightSquare == NULL) {
         // the right seems to be out of view, so we're
         // probably too far right. we should move left
-        return 1;
+        //return 1;
+        *turn = true;
+        return -1;
     }
 
     // otherwise, we have two squares, so find the difference
@@ -331,7 +362,8 @@ float Camera::centerDistanceError(int color) {
  *             A negative value is an indication to move right
  *             A positive value is an indication to move left
  **************************************/
-float Camera::corridorSlopeError(int color) {
+float Camera::corridorSlopeError(int color, bool *turn) {
+    *turn = false;
     // find a line of regression for each side of the image
     regressionLine leftSide = leastSquaresRegression(color, SIDE_LEFT);
     regressionLine rightSide = leastSquaresRegression(color, SIDE_RIGHT);
@@ -390,10 +422,12 @@ float Camera::corridorSlopeError(int color) {
 			if (difference > MAX_SLOPE_DIFFERENCE) {
                 // the difference is large enough that we can say
                 // the error is at its max, so we should move right
+                *turn = true;
 				return -1;
 			} 
             else if (difference < -MAX_SLOPE_DIFFERENCE) {
                 // we should move left
+                *turn = true;
 				return 1;
 			} 
             else {
@@ -404,6 +438,7 @@ float Camera::corridorSlopeError(int color) {
 
 		if (hasSlopeLeft && !hasSlopeRight) {
 			// no right slope, so interpolate based on left
+            *turn = true;
             float leftTranslate = leftSide.slope - LEFT_MIDDLE_SLOPE;
 			LOG.write(LOG_LOW, "slopeError", 
                       "only left slope, left translate: %f", leftTranslate);
@@ -411,6 +446,7 @@ float Camera::corridorSlopeError(int color) {
 		}
 		
 		if (!hasSlopeLeft && hasSlopeRight) {
+            *turn = true;
 			// no left slope, so interpolate based on right
 			float rightTranslate= -(rightSide.slope - RIGHT_MIDDLE_SLOPE);
             LOG.write(LOG_LOW, "slopeError", 
