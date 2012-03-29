@@ -425,7 +425,7 @@ void Robot::center() {
             }
 
             int turnSpeed = (int)fabs((centerGain));
-            turnSpeed = Util::capSpeed(turnSpeed, 6);
+            turnSpeed = Util::capSpeed(turnSpeed, 5);
             
             LOG.write(LOG_LOW, "pid_speeds", "turn: %d", turnSpeed);
 

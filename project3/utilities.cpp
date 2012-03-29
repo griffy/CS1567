@@ -125,6 +125,6 @@ namespace Util {
      * Returns:    capped speed as an int
      **************************************/
     int capSpeed(int speed, int cap) {
-        return std::min(std::max(speed, 0), cap);
+        return std::min(std::max(speed, 1), cap);
     }
 };
