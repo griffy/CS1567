@@ -251,6 +251,8 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
 
         thetaDesired = atan2(yError, xError);
         thetaDesired = Util::normalizeTheta(thetaDesired);
+        // FIXME: remove
+        thetaDesired = 0.0;
 
         thetaError = thetaDesired - _pose->getTheta();
         thetaError = Util::normalizeThetaError(thetaError);
