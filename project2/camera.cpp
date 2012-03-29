@@ -592,8 +592,10 @@ IplImage* Camera::thresholdedOf(int color) {
     switch (color) {
     case COLOR_PINK:
         thresholded = _pinkThresholded;
+        break;
     case COLOR_YELLOW:
         thresholded = _yellowThresholded;
+        break;
     }
     return thresholded;
 }
@@ -610,8 +612,10 @@ squares_t* Camera::squaresOf(int color) {
     switch (color) {
     case COLOR_PINK:
         squares = _pinkSquares;
+        break;
     case COLOR_YELLOW:
         squares = _yellowSquares;
+        break;
     }
     return squares;
 }
