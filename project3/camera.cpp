@@ -229,6 +229,7 @@ float Camera::centerError(int color, bool *turn) {
     LOG.write(LOG_LOW, "centerError", "Avg. slope error: %f", avgSlopeError);
     LOG.write(LOG_LOW, "centerError", "Avg. center dist. error: %f", avgCenterDistError);
 	
+    /*
     // if we have good center distance errors, let's use those
 	if (numGoodCenterDistErrors > 0) {
         // but are they still not optimal?
@@ -258,6 +259,16 @@ float Camera::centerError(int color, bool *turn) {
     }
 
     // otherwise, we didn't have good errors for either!
+    return 0;
+    */
+
+    if (numGoodCenterDistErrors > 0) {
+        if (centerDistTurnCount > numGoodCenterDistErrors / 2) {
+            *turn = true;
+        }
+        return avgCenterDistError;
+    }
+
     return 0;
 }
 
