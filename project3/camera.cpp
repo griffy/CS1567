@@ -229,7 +229,6 @@ float Camera::centerError(int color, bool *turn) {
     LOG.write(LOG_LOW, "centerError", "Avg. slope error: %f", avgSlopeError);
     LOG.write(LOG_LOW, "centerError", "Avg. center dist. error: %f", avgCenterDistError);
 	
-    /*
     // if we have good center distance errors, let's use those
 	if (numGoodCenterDistErrors > 0) {
         // but are they still not optimal?
@@ -259,17 +258,8 @@ float Camera::centerError(int color, bool *turn) {
     }
 
     // otherwise, we didn't have good errors for either!
-    return 0;
-    */
-
-    if (numGoodCenterDistErrors > 0) {
-        if (centerDistTurnCount > numGoodCenterDistErrors / 2) {
-            *turn = true;
-        }
-        return avgCenterDistError;
-    }
-
-    return 0;
+    *turn = true;
+    return 1;
 }
 
 /**************************************
@@ -318,13 +308,13 @@ float Camera::centerDistanceError(int color, bool *turn) {
             // we're probably just too far over on the
             // side of the larger square
             if (leftSquare->area > rightSquare->area) {
-                // we should move right slightly to 
+                // we should turn right slightly to 
                 // unobstruct the right square
                 *turn = true;
                 return -0.25;
             }
             else {
-                // we should move left slightly
+                // we should turn left slightly
                 *turn = true;
                 return 0.25;
 
@@ -334,23 +324,17 @@ float Camera::centerDistanceError(int color, bool *turn) {
 
     if (leftSquare == NULL && rightSquare == NULL) {
         // we couldn't find any squares
-        //return -999;
-        *turn = true;
-        return -1;
+        return -999;
     } 
     else if (leftSquare == NULL) {
         // the left seems to be out of view, so we're
         // probably too far left. we should move right 
-        //return -1;
-        *turn = true;
-        return 1;
+        return -0.5;
     } 
     else if (rightSquare == NULL) {
         // the right seems to be out of view, so we're
         // probably too far right. we should move left
-        //return 1;
-        *turn = true;
-        return -1;
+        return 0.5;
     }
 
     // otherwise, we have two squares, so find the difference
@@ -358,6 +342,7 @@ float Camera::centerDistanceError(int color, bool *turn) {
     int rightError = center - rightSquare->center.x;
 
     // return the difference in errors in range [-1, 1]
+    *turn = true;
     return (float)(leftError + rightError) / (float)center;
 }
 
@@ -433,20 +418,19 @@ float Camera::corridorSlopeError(int color, bool *turn) {
 			if (difference > MAX_SLOPE_DIFFERENCE) {
                 // the difference is large enough that we can say
                 // the error is at its max, so we should move right
-                *turn = true;
 				return -1;
 			} 
             else if (difference < -MAX_SLOPE_DIFFERENCE) {
                 // we should move left
-                *turn = true;
 				return 1;
 			} 
             else {
                 // return the error in the range [-1, 1]
+                *turn = true;
 				return -difference / MAX_SLOPE;
 			}
 		}
-
+/*
 		if (hasSlopeLeft && !hasSlopeRight) {
 			// no right slope, so interpolate based on left
             *turn = true;
@@ -464,6 +448,7 @@ float Camera::corridorSlopeError(int color, bool *turn) {
                       "only right slope, right translate: %f", rightTranslate);
             return rightTranslate;
 		}
+*/
 	}
     // we didn't have enough squares to be useful
     LOG.write(LOG_LOW, "slopeError", "no slopes!");
