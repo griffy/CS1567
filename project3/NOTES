@@ -1,1 +1,1 @@
-
+We have to tune the precision with which the robot turns and strafes. It's too crazy right now to be useful. I think we need to look at the PID and our speed caps / number of times we send a move command.
