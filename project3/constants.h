@@ -64,17 +64,17 @@
 #define PID_CENTER_KP 0.03
 #define PID_CENTER_KI 0.0001
 #define PID_CENTER_KD 0.0001
-#define PID_TURN_CENTER_KP 0.03
-#define PID_TURN_CENTER_KI 0.0001
-#define PID_TURN_CENTER_KD 0.0001
+#define PID_TURN_CENTER_KP 0.65
+#define PID_TURN_CENTER_KI 0.001
+#define PID_TURN_CENTER_KD 0.001
 
 // acceptable proximities from base
 #define MAX_DIST_ERROR 25.0 // in cm
 #define MAX_THETA_ERROR DEGREE_30
 
 // acceptable threshold for being in the center of squares (out of 1)
-#define MAX_CENTER_ERROR 0.20
-#define MAX_TURN_CENTER_ERROR 0.20
+#define MAX_CENTER_ERROR 0.1
+#define MAX_TURN_CENTER_ERROR 0.1
 
 // the largest filter size (used for prefilling data)
 #define MAX_FILTER_TAPS 7
