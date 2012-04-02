@@ -9,7 +9,7 @@ Map::Map(RobotInterface *robotInterface) {
 
 Map::~Map() {}
 
-Map::update() {
+void Map::update() {
 	map_obj_t *map = _robotInterface->getMap(&_score1, &_score2);
 
 	// iterate through the linked list map
@@ -18,7 +18,7 @@ Map::update() {
 		int x = map->x;
 		int y = map->y;
 
-		cell[x][y]->update(map);
+		cells[x][y]->update(map);
 
 		map = map->next;
 	}
@@ -32,7 +32,7 @@ int Map::getTeam2Score() {
 	return _score2;
 }
 
-Map::_loadMap() {
+void Map::_loadMap() {
 	// load the map to start with and fill in our
 	// cell matrix
 	map_obj_t *map = _robotInterface->getMap(&_score1, &_score2);

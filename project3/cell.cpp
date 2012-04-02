@@ -93,7 +93,7 @@ void Cell::setReserved(bool reserved) {
 	_updateBlocked();
 }
 
-void Cell:_updateBlocked() {
+void Cell::_updateBlocked() {
 	setBlocked(false);
 	if (isPost() || isReserved() || isOccupied()) {
 		setBlocked(true);

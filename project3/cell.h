@@ -1,3 +1,5 @@
+#include <robot_if++.h>
+
 class Cell {
 public:
 	Cell(map_obj_t *mapObj);
