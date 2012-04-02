@@ -1,5 +1,7 @@
 #include <robot_if++.h>
 
+enum CellType { CORNER, HALL, T, INTERSECTION };
+
 class Cell {
 public:
 	Cell(map_obj_t *mapObj);
