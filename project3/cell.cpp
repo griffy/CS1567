@@ -46,6 +46,24 @@ void Cell::update(map_obj_t *mapObj) {
 	}
 }
 
+bool Cell::occupy(RobotInterface *robotInterface) {
+	if (!isOccupied()) {
+		if (robotInterface->updateMap(x, y) == RI_RESP_SUCCESS) {
+			return true;
+		}
+	}
+	return false;
+}
+
+bool Cell::reserve(RobotInterface *robotInterface) {
+	if (!isReserved()) {
+		if (robotInterface->reserveMap(x, y) == RI_RESP_SUCCESS) {
+			return true;
+		}
+	}
+	return false;
+}
+
 int Cell::getPoints() {
 	return _points;
 }

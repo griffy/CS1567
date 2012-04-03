@@ -32,6 +32,14 @@ int Map::getTeam2Score() {
 	return _score2;
 }
 
+bool Map::occupyCell(int x, int y) {
+	return cells[x][y]->occupy(_robotInterface);
+}
+
+bool Map::reserveCell(int x, int y) {
+	return cells[x][y]->reserve(_robotInterface);
+}
+
 void Map::_loadMap() {
 	// load the map to start with and fill in our
 	// cell matrix

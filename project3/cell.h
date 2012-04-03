@@ -7,6 +7,8 @@ public:
 	Cell(map_obj_t *mapObj);
 	~Cell();
 	void update(map_obj_t *mapObj);
+	bool occupy(RobotInterface *robotInterface);
+	bool reserve(RobotInterface *robotInterface);
 	int getPoints();
 	void setPoints(int points);
 	bool isBlocked();
