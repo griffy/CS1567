@@ -76,6 +76,15 @@ Robot::Robot(std::string address, int id) {
     // now update our pose again so our global pose isn't
     // some funky value
     updatePose();
+
+/*
+    // load the map once we've found our position in the global
+    // system, so we can know what cell we started at
+    int startingX = ((int)_pose->getX()) / CELL_SIZE;
+    int startingY = ((int)_pose->getY()) / CELL_SIZE;
+
+    _map = new Map(_robotInterface, startingX, startingY);
+*/
 }
 
 Robot::~Robot() {
