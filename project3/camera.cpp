@@ -27,9 +27,9 @@ Camera::Camera(RobotInterface *robotInterface) {
 
     // create 3 windows that will be used to display
     // what is happening during processing of images
-//    cvNamedWindow("Thresholded", CV_WINDOW_AUTOSIZE);
-//    cvNamedWindow("Biggest Squares Distances", CV_WINDOW_AUTOSIZE);
-//    cvNamedWindow("Slopes", CV_WINDOW_AUTOSIZE);
+    cvNamedWindow("Thresholded", CV_WINDOW_AUTOSIZE);
+    cvNamedWindow("Biggest Squares Distances", CV_WINDOW_AUTOSIZE);
+    cvNamedWindow("Slopes", CV_WINDOW_AUTOSIZE);
 
     // we always want the head to be up when a camera is in use
     _robotInterface->Move(RI_HEAD_MIDDLE, 1);
