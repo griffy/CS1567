@@ -27,9 +27,9 @@ Camera::Camera(RobotInterface *robotInterface) {
 
     // create 3 windows that will be used to display
     // what is happening during processing of images
-    cvNamedWindow("Thresholded", CV_WINDOW_AUTOSIZE);
-    cvNamedWindow("Biggest Squares Distances", CV_WINDOW_AUTOSIZE);
-    cvNamedWindow("Slopes", CV_WINDOW_AUTOSIZE);
+//    cvNamedWindow("Thresholded", CV_WINDOW_AUTOSIZE);
+//    cvNamedWindow("Biggest Squares Distances", CV_WINDOW_AUTOSIZE);
+//    cvNamedWindow("Slopes", CV_WINDOW_AUTOSIZE);
 
     // we always want the head to be up when a camera is in use
     _robotInterface->Move(RI_HEAD_MIDDLE, 1);
@@ -369,9 +369,9 @@ float Camera::corridorSlopeError(int color, bool *turn) {
     LOG.write(LOG_LOW, "slopeError", 
               "Right squares found: %d", rightSide.numSquares);
     LOG.write(LOG_LOW, "slopeError", 
-              "Left equation: y = %f*x + %f", leftSide.slope, leftSide.intercept);
+              "Left equation: y = %f*x + %f, r^2 = %f", leftSide.slope, leftSide.intercept, leftSide.rSquared);
     LOG.write(LOG_LOW, "slopeError", 
-              "Right equation: y = %f*x + %f", rightSide.slope, rightSide.intercept);
+              "Right equation: y = %f*x + %f, r^2 = %f", rightSide.slope, rightSide.intercept, rightSide.rSquared);
 
     // draw the lines of regression so we can see them
     IplImage *bgr = getBGRImage();
@@ -483,16 +483,18 @@ regressionLine Camera::leastSquaresRegression(int color, int side) {
         float ySum = 0.0;
         float xSqSum = 0.0;
         float xySum = 0.0;
+	float ySqSum = 0.0;
 
         squares_t *curSquare = squaresOf(color);
         while (curSquare != NULL) {
 	        switch (side) {
 	        case SIDE_LEFT:	
         	    if (curSquare->center.x < center) {
-                    xSum += curSquare->center.x;
-                    ySum += curSquare->center.y;
+                            xSum += curSquare->center.x;
+                            ySum += curSquare->center.y;
 	    		    xSqSum += curSquare->center.x * curSquare->center.x;
 	    		    xySum += curSquare->center.x * curSquare->center.y;
+			    ySqSum += curSquare->center.y * curSquare->center.y;
 		        }
 		        break;
 	        case SIDE_RIGHT:
@@ -501,6 +503,7 @@ regressionLine Camera::leastSquaresRegression(int color, int side) {
 	    		    ySum += curSquare->center.y;
 	    		    xSqSum += curSquare->center.x * curSquare->center.x;
 	    		    xySum += curSquare->center.x * curSquare->center.y;
+			    ySqSum += curSquare->center.y * curSquare->center.y;
 		        } 
 		        break;
 	        }
@@ -514,6 +517,7 @@ regressionLine Camera::leastSquaresRegression(int color, int side) {
                            (xSqSum - (result.numSquares * xAvg * xAvg));
         result.slope = (xySum - (result.numSquares * xAvg * yAvg)) / 
                        (xSqSum - (result.numSquares * xAvg * xAvg));
+	result.rSquared = ((xySum - (result.numSquares * xAvg * yAvg))*(xySum - (result.numSquares * xAvg * yAvg)) / ((xSqSum - (result.numSquares * xAvg * xAvg)) * (ySqSum - (result.numSquares * yAvg * yAvg))));
     
     } else {
         // there aren't enough squares, so we error out the intercept and slope
