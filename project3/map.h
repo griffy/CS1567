@@ -10,6 +10,7 @@ public:
 	int getTeam2Score();
 	bool occupyCell(int x, int y);
 	bool reserveCell(int x, int y);
+	void setOpenings(int x, int y);
 
 	Cell *cells[7][5];
 private:

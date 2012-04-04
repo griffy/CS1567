@@ -117,3 +117,7 @@ void Cell::_updateBlocked() {
 		setBlocked(true);
 	}
 }
+
+void Cell::addOpening(unsigned char direction){
+	_openings = _openings | direction;
+}
