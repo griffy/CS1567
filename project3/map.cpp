@@ -1,13 +1,21 @@
 #include "map.h"
 
-Map::Map(RobotInterface *robotInterface) {
+Map::Map(RobotInterface *robotInterface, int startingX, int startingY) {
 	_robotInterface = robotInterface;
 	_score1 = 0;
 	_score2 = 0;
 	_loadMap();
+	// we are the robot at this cell
+	_setRobotAt(startingX, startingY);
 }
 
-Map::~Map() {}
+Map::~Map() {
+	for (int x = 0; x < MAP_WIDTH; x++) {
+		for (int y = 0; y < MAP_HEIGHT; y++) {
+			delete cells[x][y];
+		}
+	}
+}
 
 void Map::update() {
 	map_obj_t *map = _robotInterface->getMap(&_score1, &_score2);
@@ -24,11 +32,11 @@ void Map::update() {
 	}
 }
 
-int Map::getTeam1Score() {
+int Map::getRobot1Score() {
 	return _score1;
 }
 
-int Map::getTeam2Score() {
+int Map::getRobot2Score() {
 	return _score2;
 }
 
@@ -38,6 +46,11 @@ bool Map::occupyCell(int x, int y) {
 
 bool Map::reserveCell(int x, int y) {
 	return cells[x][y]->reserve(_robotInterface);
+}
+
+void Map::_setRobotAt(int x, int y) {
+
+	cells[x][y]->setRobot();
 }
 
 void Map::_loadMap() {

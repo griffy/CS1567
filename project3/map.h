@@ -1,18 +1,25 @@
+#ifndef CS1567_MAP_H
+#define CS1567_MAP_H
+
 #include <robot_if++.h>
 #include "cell.h"
 
+#define MAP_WIDTH 7
+#define MAP_HEIGHT 5
+
 class Map {
 public:
-	Map(RobotInterface *robotInterface);
+	Map(RobotInterface *robotInterface, int startingX, int startingY);
 	~Map();
 	void update();
-	int getTeam1Score();
-	int getTeam2Score();
+	int getRobot1Score();
+	int getRobot2Score();
 	bool occupyCell(int x, int y);
 	bool reserveCell(int x, int y);
 
-	Cell *cells[7][5];
+	Cell *cells[MAP_WIDTH][MAP_HEIGHT];
 private:
+	void _setRobotAt(int x, int y);
 	void _loadMap();
 
 	RobotInterface *_robotInterface;
@@ -20,3 +27,5 @@ private:
 	int _score1;
 	int _score2;
 };
+
+#endif

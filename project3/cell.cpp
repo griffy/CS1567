@@ -4,22 +4,50 @@ Cell::Cell(map_obj_t *mapObj) {
 	x = mapObj->x;
 	y = mapObj->y;
 
-	setPoints(mapObj->points);
+	_type = mapObj->type;
 
+	setPoints(mapObj->points);
 	setOccupied(false);
-	if (mapObj->type == MAP_OBJ_ROBOT_1 ||
-		mapObj->type == MAP_OBJ_ROBOT_2) {
-		setOccupied(true);
-	}
 	setReserved(false);
-	if (mapObj->type == MAP_OBJ_RESERVE_1 ||
-		mapObj->type == MAP_OBJ_RESERVE_2) {
+	setPost(false);
+	switch (_type) {
+	case MAP_OBJ_EMPTY:
+		setPoints(0);
+		break;
+	case MAP_OBJ_ROBOT_1:
+	case MAP_OBJ_ROBOT_2:
+		setOccupied(true);
+		break;
+	case MAP_OBJ_RESERVE_1:
+	case MAP_OBJ_RESERVE_2:
 		setReserved(true);
+		break;
+	case MAP_OBJ_POST:
+		setPost(true);
+		break;
 	}
+
+	// we don't know what robot we are yet in the game
+	_robot = -1; 
 }
 
 Cell::~Cell() {}
 
+void Cell::setRobot() {
+	if (_type == MAP_OBJ_ROBOT_1) {
+		_robot = 1;
+	}
+	else {
+		_robot = 2;
+	}
+}
+
+/**************************************
+ * Definition: Updates the cell's attributes according
+ *             to the given map object
+ *
+ * Parameters: map_obj_t object at this cell's x and y
+ **************************************/
 void Cell::update(map_obj_t *mapObj) {
 	// TODO: check this to make sure it's correct
 	switch (mapObj->type) {
@@ -46,6 +74,14 @@ void Cell::update(map_obj_t *mapObj) {
 	}
 }
 
+/**************************************
+ * Definition: Attempts to occupy a cell in the game
+ *
+ * Parameters: a RobotInterface instance to communicate
+ *             with game server
+ *
+ * Returns:    returns true on success and false on failure
+ **************************************/
 bool Cell::occupy(RobotInterface *robotInterface) {
 	if (!isOccupied()) {
 		if (robotInterface->updateMap(x, y) == RI_RESP_SUCCESS) {
@@ -55,6 +91,14 @@ bool Cell::occupy(RobotInterface *robotInterface) {
 	return false;
 }
 
+/**************************************
+ * Definition: Attempts to reserve a cell in the game
+ *
+ * Parameters: a RobotInterface instance to communicate
+ *             with game server
+ *
+ * Returns:    returns true on success and false on failure
+ **************************************/
 bool Cell::reserve(RobotInterface *robotInterface) {
 	if (!isReserved()) {
 		if (robotInterface->reserveMap(x, y) == RI_RESP_SUCCESS) {
@@ -64,24 +108,47 @@ bool Cell::reserve(RobotInterface *robotInterface) {
 	return false;
 }
 
+/**************************************
+ * Definition: Returns the amount of points the cell is
+ *             currently worth
+ *
+ * Returns:    points as an integer
+ **************************************/
 int Cell::getPoints() {
 	return _points;
 }
 
+/**************************************
+ * Definition: Sets the new points value
+ *
+ * Parameters: the new integer points value
+ **************************************/
 void Cell::setPoints(int points) {
 	_points = points;
 }
 
-/* Definition: Catch-all method that says it's blocked if
-   			   the cell is a post, a robot is in it, or it is
-   			   reserved
- */
+/**************************************
+ * Definition: Determines if the cell is blocked.
+ *             A cell can be blocked by being:
+ *              - a post
+ *              - reserved (by other robot)
+ *              - occupied
+ *
+ * Returns:    returns true on success and false on failure
+ **************************************/
 bool Cell::isBlocked() {
-	return _blocked;
-}
-
-void Cell::setBlocked(bool blocked) {
-	_blocked = blocked;
+	if (isPost() || isOccupied()) {
+		if (isReserved()) {
+			if (_robot == 1 && _type == MAP_OBJ_RESERVE_1) {
+				return false;
+			}
+			else if (_robot == 2 && _type == MAP_OBJ_RESERVE_2) {
+				return false;
+			}
+		}
+		return true;
+	}
+	return false;
 }
 
 bool Cell::isPost() {
@@ -90,7 +157,6 @@ bool Cell::isPost() {
 
 void Cell::setPost(bool post) {
 	_post = post;
-	_updateBlocked();
 }
 
 bool Cell::isOccupied() {
@@ -99,7 +165,6 @@ bool Cell::isOccupied() {
 
 void Cell::setOccupied(bool occupied) {
 	_occupied = occupied;
-	_updateBlocked();
 }
 
 bool Cell::isReserved() {
@@ -108,12 +173,4 @@ bool Cell::isReserved() {
 
 void Cell::setReserved(bool reserved) {
 	_reserved = reserved;
-	_updateBlocked();
-}
-
-void Cell::_updateBlocked() {
-	setBlocked(false);
-	if (isPost() || isReserved() || isOccupied()) {
-		setBlocked(true);
-	}
 }

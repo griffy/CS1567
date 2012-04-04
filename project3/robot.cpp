@@ -580,6 +580,12 @@ void Robot::turnLeft(int speed) {
 	_movingForward = false;
 	_speed = speed;
     _robotInterface->Move(RI_TURN_LEFT, speed);
+    int sleepLength = 0; 
+    for (int i = speed; i > 0; i--) {
+        sleepLength += 1000*100; // 1/10th of a second
+    }
+    usleep(sleepLength);
+    _robotInterface->Move(RI_STOP, 0);
 }
 
 /**************************************
@@ -593,6 +599,12 @@ void Robot::turnRight(int speed) {
 	_movingForward = false;
 	_speed = speed;
     _robotInterface->Move(RI_TURN_RIGHT, speed);
+    int sleepLength = 0; 
+    for (int i = speed; i > 0; i--) {
+        sleepLength += 1000*100; // 1/10th of a second
+    }
+    usleep(sleepLength);
+    _robotInterface->Move(RI_STOP, 0);
 }
 
 /**************************************
