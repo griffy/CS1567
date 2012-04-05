@@ -23,7 +23,7 @@ public:
 	bool isReserved();
 	void setReserved(bool reserved);
 	
-	void addOpening(char dir);
+	void addOpening(unsigned char dir);
 
 	int x;
 	int y;
