@@ -113,15 +113,19 @@ void Robot::playGame() {
         // make sure these match up with proper cardinal
         // directions
         if (xDiff > 0) {
+            turn(DIR_WEST);
             move(DIR_WEST, 1);
         }
         else if (xDiff < 0) {
+            turn(DIR_EAST);
             move(DIR_EAST, 1);
         }
         else if (yDiff > 0) {
+            turn(DIR_EAST);
             move(DIR_NORTH, 1);
         }
         else if (yDiff < 0) {
+            turn(DIR_SOUTH);
             move(DIR_SOUTH, 1);
         }
     }
@@ -165,6 +169,23 @@ void Robot::move(int direction, int numCells) {
     }
 }
 
+void Robot::turn(int direction) {
+    switch (direction) {
+    case DIR_NORTH:
+        turnTo(DEGREE_90, MAX_THETA_ERROR);
+        break;
+    case DIR_SOUTH:
+        turnTo(DEGREE_270, MAX_THETA_ERROR);
+        break;
+    case DIR_EAST:
+        turnTo(DEGREE_0, MAX_THETA_ERROR);
+        break;
+    case DIR_WEST:
+        turnTo(DEGREE_180, MAX_THETA_ERROR);
+        break;
+    }
+}
+
 /**************************************
  * Definition: Turns the robot in a relative direction
  *             the specified number of radians
@@ -172,10 +193,10 @@ void Robot::move(int direction, int numCells) {
  * Parameters: int specifying direction and a float
  *             specifying radians (0..2PI)
  **************************************/
-void Robot::turn(int direction, float radians) {
+void Robot::turn(int relDirection, float radians) {
     float goalTheta;
 
-    if (direction == DIR_LEFT) {
+    if (relDirection == DIR_LEFT) {
         goalTheta = Util::normalizeTheta(_pose->getTheta()+radians);
         turnTo(goalTheta, MAX_THETA_ERROR);
     }
