@@ -465,6 +465,10 @@ void Robot::turnCenter() {
  *             between two squares in a corridor
  **************************************/
 void Robot::center() {
+
+    //Put robot head up for camera use
+    _robotInterface->Move(RI_HEAD_UP, 1);
+    
     while (true) {
         updateCamera();
 
@@ -525,6 +529,9 @@ void Robot::center() {
             }
         }
     }
+
+    //Put robot head down for NorthStar use
+    _robotInterface->Move(RI_HEAD_DOWN, 1);
 
     _centerPID->flushPID();
     _turnCenterPID->flushPID();
@@ -593,6 +600,8 @@ void Robot::updatePose() {
     // pass updated poses to kalman filter and update main pose
     _kalmanFilter->filter(_northStar->getPose(), 
                           _wheelEncoders->getPose());
+
+    LOG.write(LOG_LOW, "position_data", "Room:\t%d\tNS:\t%f\t%f\t%f\tWE:\t%f\t%f\t%f\tKalman:\t%f\t%f\t%f\t", getRoom(), _northStar->getX(), _northStar->getY(), _northStar->getTheta(), _wheelEncoders->getX(), _wheelEncoders->getY(), _wheelEncoders->getTheta(), _pose->getX(), _pose->getY(), _pose->getTheta());
 }
 
 /**************************************
