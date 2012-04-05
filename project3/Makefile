@@ -19,7 +19,7 @@ robot.o: robot.cpp robot.h
 
 map_strategy.o: map_strategy.cpp map_strategy.h
 	g++ $(CFLAGS) -c map_strategy.cpp
-	
+
 map.o: map.cpp map.h
 	g++ $(CFLAGS) -c map.cpp
 

@@ -1,4 +1,5 @@
 #include "map.h"
+#include "logger.h"
 
 Map::Map(RobotInterface *robotInterface, int startingX, int startingY) {
 	_robotInterface = robotInterface;
@@ -7,6 +8,9 @@ Map::Map(RobotInterface *robotInterface, int startingX, int startingY) {
 	_loadMap();
 	// we are the robot at this cell
 	_setRobotAt(startingX, startingY);
+	_curCell = cells[startingX][startingY];
+	LOG.write(LOG_LOW, "map", "starting cell: %d, %d",
+			  startingX, startingY);
 }
 
 Map::~Map() {
@@ -40,8 +44,16 @@ int Map::getRobot2Score() {
 	return _score2;
 }
 
+Cell* Map::getCurrentCell() {
+	return _curCell;
+}
+
 bool Map::occupyCell(int x, int y) {
-	return cells[x][y]->occupy(_robotInterface);
+	if (cells[x][y]->occupy(_robotInterface)) {
+		_curCell = cells[x][y];
+		return true;
+	}
+	return false;
 }
 
 bool Map::reserveCell(int x, int y) {

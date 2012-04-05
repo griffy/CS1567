@@ -88,6 +88,7 @@ class Robot {
 public:
     Robot(std::string address, int id);
     ~Robot();
+    void playGame();
     void move(int direction, int numCells);
     void turn(int direction, float radians);
     void moveToCell(float x, float y);

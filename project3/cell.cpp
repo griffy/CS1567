@@ -1,5 +1,9 @@
 #include "cell.h"
 
+
+// we don't know what robot we are yet in the game 
+int Cell::_robot = -1;
+
 Cell::Cell(map_obj_t *mapObj) {
 	x = mapObj->x;
 	y = mapObj->y;
@@ -26,9 +30,6 @@ Cell::Cell(map_obj_t *mapObj) {
 		setPost(true);
 		break;
 	}
-
-	// we don't know what robot we are yet in the game
-	_robot = -1; 
 }
 
 Cell::~Cell() {}
@@ -85,6 +86,7 @@ void Cell::update(map_obj_t *mapObj) {
 bool Cell::occupy(RobotInterface *robotInterface) {
 	if (!isOccupied()) {
 		if (robotInterface->updateMap(x, y) == RI_RESP_SUCCESS) {
+			setOccupied(true);
 			return true;
 		}
 	}
@@ -102,6 +104,7 @@ bool Cell::occupy(RobotInterface *robotInterface) {
 bool Cell::reserve(RobotInterface *robotInterface) {
 	if (!isReserved()) {
 		if (robotInterface->reserveMap(x, y) == RI_RESP_SUCCESS) {
+			setReserved(true);
 			return true;
 		}
 	}

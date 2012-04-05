@@ -14,6 +14,7 @@ public:
 	void update();
 	int getRobot1Score();
 	int getRobot2Score();
+	Cell* getCurrentCell();
 	bool occupyCell(int x, int y);
 	bool reserveCell(int x, int y);
 
@@ -26,6 +27,8 @@ private:
 
 	int _score1;
 	int _score2;
+
+	Cell *_curCell;
 };
 
 #endif

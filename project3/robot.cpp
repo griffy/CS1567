@@ -77,14 +77,13 @@ Robot::Robot(std::string address, int id) {
     // some funky value
     updatePose();
 
-/*
     // load the map once we've found our position in the global
     // system, so we can know what cell we started at
     int startingX = ((int)_pose->getX()) / CELL_SIZE;
     int startingY = ((int)_pose->getY()) / CELL_SIZE;
 
     _map = new Map(_robotInterface, startingX, startingY);
-*/
+    _mapStrategy = new MapStrategy(_map);
 }
 
 Robot::~Robot() {
@@ -98,6 +97,34 @@ Robot::~Robot() {
     delete _thetaPID;
     delete _centerPID;
     delete _turnCenterPID;
+    delete _map;
+    delete _mapStrategy;
+}
+
+void Robot::playGame() {
+    Cell *nextCell = _mapStrategy->nextCell();
+
+    while (nextCell != NULL) {
+        Cell *curCell = _map->getCurrentCell();
+        
+        int xDiff = nextCell->x - curCell->x;
+        int yDiff = nextCell->y - curCell->y;
+
+        // make sure these match up with proper cardinal
+        // directions
+        if (xDiff > 0) {
+            move(DIR_WEST, 1);
+        }
+        else if (xDiff < 0) {
+            move(DIR_EAST, 1);
+        }
+        else if (yDiff > 0) {
+            move(DIR_NORTH, 1);
+        }
+        else if (yDiff < 0) {
+            move(DIR_SOUTH, 1);
+        }
+    }
 }
 
 /**************************************
@@ -495,7 +522,8 @@ void Robot::updateCamera() {
  *             using a kalman filter
  **************************************/
 void Robot::updatePose() {
-    // update the robot interface
+    // update the robot interface so wheel encoder
+    // and north star have the same time-values
     _updateInterface();
     // update each pose estimate
     _northStar->updatePose(getRoom());
