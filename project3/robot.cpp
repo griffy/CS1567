@@ -142,7 +142,7 @@ void Robot::move(int direction, int numCells) {
 
     while (cellsTraveled < numCells) {
         // first attempt to center ourselves before moving (except not first)
-        center();
+        //center();
         // reset the wheel encoder totals
         _robotInterface->reset_state();
 		updatePose();
