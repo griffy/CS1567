@@ -121,7 +121,7 @@ void Robot::playGame() {
             move(DIR_EAST, 1);
         }
         else if (yDiff > 0) {
-            turn(DIR_EAST);
+            turn(DIR_NORTH);
             move(DIR_NORTH, 1);
         }
         else if (yDiff < 0) {
