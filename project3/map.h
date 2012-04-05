@@ -17,6 +17,7 @@ public:
 	Cell* getCurrentCell();
 	bool occupyCell(int x, int y);
 	bool reserveCell(int x, int y);
+	void setOpenings(int x, int y);
 
 	Cell *cells[MAP_WIDTH][MAP_HEIGHT];
 private:

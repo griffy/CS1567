@@ -177,3 +177,7 @@ bool Cell::isReserved() {
 void Cell::setReserved(bool reserved) {
 	_reserved = reserved;
 }
+
+void Cell::addOpening(unsigned char direction) {
+	_openings = _openings | direction;
+}
