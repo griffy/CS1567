@@ -34,6 +34,7 @@ void Map::update() {
 
 		map = map->next;
 	}
+	setOpenings(0,0);
 }
 
 int Map::getRobot1Score() {
@@ -81,3 +82,29 @@ void Map::_loadMap() {
 	}
 }
 
+void Map::setOpenings(int x, int y){
+	if(x+1 < MAX_WIDTH){
+		if(!cells[x+1][y]->isBlocked()){
+			setOpenings(x+1,y);
+			cells[x][y]->addOpening(1);
+		}
+	}
+	if(x-1 > 0){
+		if(!cells[x-1][y]->isBlocked()){
+			setOpenings(x-1,y);
+			cells[x][y]->addOpening(4);
+		}
+	}
+	if(y+1 < MAX_HEIGHT){
+		if(!cells[x][y+1]->isBlocked()){
+			setOpenings(x,y+1);
+			cells[x][y]->addOpening(2);
+		}
+	}
+	if(y-1 > 0){
+		if(!cells[x][y-1]->isBlocked()){
+			setOpenings(x,y-1);
+			cells[x][y]->addOpening(8);
+		}
+	}
+}

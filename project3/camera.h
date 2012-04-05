@@ -86,6 +86,7 @@
 typedef struct regLine {
 	float intercept;
 	float slope;
+	float rSquared;
 	int numSquares;
 } regressionLine;
 

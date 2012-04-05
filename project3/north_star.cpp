@@ -55,6 +55,9 @@ NorthStar::~NorthStar() {
 void NorthStar::updatePose(int room) {
 	// if we've changed rooms, prepare filters for this
 	if (_lastRoom != -1 && _lastRoom != room) {
+
+		LOG.write(LOG_MED, "NS_room_change", "Room change occurring.\n");
+
 		// assume X and Y fir filters are of the same order
 		int order = _filterX->getOrder(); 
 		Pose *tempPose = new Pose(0.0, 0.0, 0.0);
@@ -64,7 +67,7 @@ void NorthStar::updatePose(int room) {
 			
 			tempPose->translate(-COL_OFFSET[0] - NS_ROOM_ORIGINS_FROM_COL[room][0], 
 							    -COL_OFFSET[1] - NS_ROOM_ORIGINS_FROM_COL[room][1]);
-			tempPose->scale(NS_ROOM_SCALE[room][0], NS_ROOM_SCALE[room][1]);
+			tempPose->scale(1.0/NS_ROOM_SCALE[room][0], 1.0/NS_ROOM_SCALE[room][1]);
 			tempPose->rotate(-NS_ROOM_ROTATION[room]);
 		
 			_oldX[i] = tempPose->getX();

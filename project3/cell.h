@@ -22,6 +22,8 @@ public:
 	void setOccupied(bool occupied);
 	bool isReserved();
 	void setReserved(bool reserved);
+	
+	void addOpening(char dir);
 
 	int x;
 	int y;
@@ -35,6 +37,8 @@ private:
 	bool _post;
 	bool _occupied;
 	bool _reserved;
+
+	char _openings;
 
 	static int _robot;
 };
