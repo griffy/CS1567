@@ -287,17 +287,17 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
     do {
         updatePose();
 
-        LOG.write(LOG_LOW, "move_we_pose",
+        LOG.write(LOG_HIGH, "move_we_pose",
                   "x: %f \t y: %f \t theta: %f", 
                   _wheelEncoders->getPose()->getX(),
                   _wheelEncoders->getPose()->getY(),
                   _wheelEncoders->getPose()->getTheta());
-        LOG.write(LOG_LOW, "move_ns_pose",
+        LOG.write(LOG_HIGH, "move_ns_pose",
                   "x: %f \t y: %f \t theta: %f", 
                   _northStar->getPose()->getX(),
                   _northStar->getPose()->getY(),
                   _northStar->getPose()->getTheta()); 
-        LOG.write(LOG_LOW, "move_kalman_pose",
+        LOG.write(LOG_HIGH, "move_kalman_pose",
                   "x: %f \t y: %f \t theta: %f", 
                   _pose->getX(),
                   _pose->getY(),
@@ -309,7 +309,7 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
         thetaDesired = atan2(yError, xError);
         thetaDesired = Util::normalizeTheta(thetaDesired);
         // FIXME: remove
-        thetaDesired = 0.0;
+        //thetaDesired = 0.0;
 
         thetaError = thetaDesired - _pose->getTheta();
         thetaError = Util::normalizeThetaError(thetaError);

@@ -2,3 +2,8 @@ We have to tune the precision with which the robot turns and strafes. It's too c
 
 Wheel Encoder theta lags behind NS when spinning due to the FIR filters on the WE ticks. 
 	-Maybe handle the theta calculation separately and look at the raw deltas instead of the filtered values (still look at filtered values for X/Y, akin to NS)
+
+Change the window for cell goals
+	- Knowing which direction you're moving in and only care about how close you hit in THAT direction
+	- Much smaller window (~10)
+	- Perhaps don't even have an (x,y) goal, just a "cover this distance in X" goal

@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
 		return -1;
 	}
 
-    LOG.setImportanceLevel(LOG_LOW);
+    LOG.setImportanceLevel(LOG_HIGH);
 
 	Robot *robot = new Robot(argv[1], 0);
 
