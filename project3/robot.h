@@ -16,6 +16,8 @@
 #ifndef CS1567_ROBOT_H
 #define CS1567_ROBOT_H
 
+#include "map.h"
+#include "map_strategy.h"
 #include "pose.h"
 #include "camera.h"
 #include "wheel_encoders.h"
@@ -86,8 +88,10 @@ class Robot {
 public:
     Robot(std::string address, int id);
     ~Robot();
+    void playGame();
     void move(int direction, int numCells);
-    void turn(int direction, float radians);
+    void turn(int direction);
+    void turn(int relDirection, float radians);
     void moveToCell(float x, float y);
     void moveTo(float x, float y);
     float moveToUntil(float x, float y, float thetaErrorLimit);
@@ -140,6 +144,9 @@ private:
 
     KalmanFilter *_kalmanFilter;
 
+    Map *_map;
+    MapStrategy *_mapStrategy;
+    
     bool _updateInterface();
 };
 

@@ -16,6 +16,7 @@
 
 #define PI 3.14159265358979323846
 
+#define DEGREE_0 0.0
 #define DEGREE_20 0.34906585
 #define DEGREE_25 0.436332313
 #define DEGREE_30 0.523598776 // pi/6
@@ -23,6 +24,8 @@
 #define DEGREE_60 1.04719755 // pi/3
 #define DEGREE_90 1.57079633 // pi/2
 #define DEGREE_150 2.617993878 // 5pi/6
+#define DEGREE_180 3.14159265 // pi
+#define DEGREE_270 4.71238898 // 3pi/2
 
 #define ROBOT_DIAMETER 29 // cm
 

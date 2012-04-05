@@ -1,4 +1,4 @@
-OBJS=project.o robot.o map.o cell.o camera.o wheel_encoders.o north_star.o position_sensor.o pose.o fir_filter.o kalman_filter.o rovioKalmanFilter.o utilities.o logger.o PID.o
+OBJS=project.o robot.o map_strategy.o map.o cell.o camera.o wheel_encoders.o north_star.o position_sensor.o pose.o fir_filter.o kalman_filter.o rovioKalmanFilter.o utilities.o logger.o PID.o
 CFLAGS=-ggdb -g3
 LIB_FLAGS=-L. -lrobot_if
 CPP_LIB_FLAGS=$(LIB_FLAGS) -lrobot_if++
@@ -16,6 +16,9 @@ project.o: project.cpp
 
 robot.o: robot.cpp robot.h
 	g++ $(CFLAGS) -c robot.cpp
+
+map_strategy.o: map_strategy.cpp map_strategy.h
+	g++ $(CFLAGS) -c map_strategy.cpp
 
 map.o: map.cpp map.h
 	g++ $(CFLAGS) -c map.cpp

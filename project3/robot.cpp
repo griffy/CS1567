@@ -76,6 +76,14 @@ Robot::Robot(std::string address, int id) {
     // now update our pose again so our global pose isn't
     // some funky value
     updatePose();
+
+    // load the map once we've found our position in the global
+    // system, so we can know what cell we started at
+    int startingX = ((int)_pose->getX()) / CELL_SIZE;
+    int startingY = ((int)_pose->getY()) / CELL_SIZE;
+
+    _map = new Map(_robotInterface, startingX, startingY);
+    _mapStrategy = new MapStrategy(_map);
 }
 
 Robot::~Robot() {
@@ -89,6 +97,38 @@ Robot::~Robot() {
     delete _thetaPID;
     delete _centerPID;
     delete _turnCenterPID;
+    delete _map;
+    delete _mapStrategy;
+}
+
+void Robot::playGame() {
+    Cell *nextCell = _mapStrategy->nextCell();
+
+    while (nextCell != NULL) {
+        Cell *curCell = _map->getCurrentCell();
+        
+        int xDiff = nextCell->x - curCell->x;
+        int yDiff = nextCell->y - curCell->y;
+
+        // make sure these match up with proper cardinal
+        // directions
+        if (xDiff > 0) {
+            turn(DIR_WEST);
+            move(DIR_WEST, 1);
+        }
+        else if (xDiff < 0) {
+            turn(DIR_EAST);
+            move(DIR_EAST, 1);
+        }
+        else if (yDiff > 0) {
+            turn(DIR_NORTH);
+            move(DIR_NORTH, 1);
+        }
+        else if (yDiff < 0) {
+            turn(DIR_SOUTH);
+            move(DIR_SOUTH, 1);
+        }
+    }
 }
 
 /**************************************
@@ -129,6 +169,23 @@ void Robot::move(int direction, int numCells) {
     }
 }
 
+void Robot::turn(int direction) {
+    switch (direction) {
+    case DIR_NORTH:
+        turnTo(DEGREE_90, MAX_THETA_ERROR);
+        break;
+    case DIR_SOUTH:
+        turnTo(DEGREE_270, MAX_THETA_ERROR);
+        break;
+    case DIR_EAST:
+        turnTo(DEGREE_0, MAX_THETA_ERROR);
+        break;
+    case DIR_WEST:
+        turnTo(DEGREE_180, MAX_THETA_ERROR);
+        break;
+    }
+}
+
 /**************************************
  * Definition: Turns the robot in a relative direction
  *             the specified number of radians
@@ -136,10 +193,10 @@ void Robot::move(int direction, int numCells) {
  * Parameters: int specifying direction and a float
  *             specifying radians (0..2PI)
  **************************************/
-void Robot::turn(int direction, float radians) {
+void Robot::turn(int relDirection, float radians) {
     float goalTheta;
 
-    if (direction == DIR_LEFT) {
+    if (relDirection == DIR_LEFT) {
         goalTheta = Util::normalizeTheta(_pose->getTheta()+radians);
         turnTo(goalTheta, MAX_THETA_ERROR);
     }
@@ -486,7 +543,8 @@ void Robot::updateCamera() {
  *             using a kalman filter
  **************************************/
 void Robot::updatePose() {
-    // update the robot interface
+    // update the robot interface so wheel encoder
+    // and north star have the same time-values
     _updateInterface();
     // update each pose estimate
     _northStar->updatePose(getRoom());
@@ -580,6 +638,12 @@ void Robot::turnLeft(int speed) {
 	_movingForward = false;
 	_speed = speed;
     _robotInterface->Move(RI_TURN_LEFT, speed);
+    int sleepLength = 0; 
+    for (int i = speed; i > 0; i--) {
+        sleepLength += 1000*100; // 1/10th of a second
+    }
+    usleep(sleepLength);
+    _robotInterface->Move(RI_STOP, 0);
 }
 
 /**************************************
@@ -593,6 +657,12 @@ void Robot::turnRight(int speed) {
 	_movingForward = false;
 	_speed = speed;
     _robotInterface->Move(RI_TURN_RIGHT, speed);
+    int sleepLength = 0; 
+    for (int i = speed; i > 0; i--) {
+        sleepLength += 1000*100; // 1/10th of a second
+    }
+    usleep(sleepLength);
+    _robotInterface->Move(RI_STOP, 0);
 }
 
 /**************************************
