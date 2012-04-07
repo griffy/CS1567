@@ -3,7 +3,10 @@
 
 #include <robot_if++.h>
 
-enum CellType { CORNER, HALL, T, INTERSECTION };
+#define CELL_T 0
+#define CELL_CORNER 1
+#define CELL_HALL 2
+#define CELL_INTERSECTION 3
 
 class Cell {
 public:
@@ -28,8 +31,6 @@ public:
 	int x;
 	int y;
 private:
-	void _updateBlocked();
-
 	int _type;
 
 	int _points;
