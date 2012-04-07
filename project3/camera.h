@@ -35,8 +35,9 @@
 #define COLOR_YELLOW 1
 
 // constants for what side of an image to process
-#define SIDE_LEFT 0
-#define SIDE_RIGHT 1
+#define IMAGE_LEFT 0
+#define IMAGE_RIGHT 1
+#define IMAGE_ALL 2
 
 // smallest acceptable square to pick up in image processing
 #define DEFAULT_SQUARE_SIZE 50 // in pixels
@@ -66,13 +67,24 @@
 
 // more specific slope limits for lines of regression based on 
 // empirical data
+// TODO: Re-parameterize this?
 #define RIGHT_LEFT_SLOPE -0.35
 #define RIGHT_RIGHT_SLOPE -2.22
-#define RIGHT_MIDDLE_SLOPE -0.67
+#define RIGHT_MIDDLE_SLOPE -0.45
 
 #define LEFT_LEFT_SLOPE 2.6
 #define LEFT_RIGHT_SLOPE 0.55
-#define LEFT_MIDDLE_SLOPE 0.7
+#define LEFT_MIDDLE_SLOPE 0.45
+//Shawn's parameters - Project 2 Square locations
+/*
+ * #define RIGHT_LEFT_SLOPE -0.35
+ * #define RIGHT_RIGHT_SLOPE -2.22
+ * #define RIGHT_MIDDLE_SLOPE -0.67
+ *
+ * #define LEFT_LEFT_SLOPE 2.6
+ * #define LEFT_RIGHT_SLOPE 0.55
+ * #define LEFT_MIDDLE_SLOPE 0.7
+ */
 
 // the largest allowable difference between the slopes of two
 // lines of regression before deciding the slope error is at its max

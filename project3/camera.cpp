@@ -32,7 +32,7 @@ Camera::Camera(RobotInterface *robotInterface) {
     cvNamedWindow("Slopes", CV_WINDOW_AUTOSIZE);
 
     // we always want the head to be up when a camera is in use
-    _robotInterface->Move(RI_HEAD_MIDDLE, 1);
+    //_robotInterface->Move(RI_HEAD_MID, 1);
 }
 
 Camera::~Camera() {
@@ -281,8 +281,8 @@ float Camera::centerDistanceError(int color, bool *turn) {
 
     // find the largest squares on the left and right sides
     // of the image
-    squares_t *leftSquare = biggestSquare(color, SIDE_LEFT);
-    squares_t *rightSquare = biggestSquare(color, SIDE_RIGHT);
+    squares_t *leftSquare = biggestSquare(color, IMAGE_LEFT);
+    squares_t *rightSquare = biggestSquare(color, IMAGE_RIGHT);
     
     // mark the squares so we can see them
     IplImage *bgr = getBGRImage();
@@ -361,9 +361,10 @@ float Camera::centerDistanceError(int color, bool *turn) {
 float Camera::corridorSlopeError(int color, bool *turn) {
     *turn = false;
     // find a line of regression for each side of the image
-    regressionLine leftSide = leastSquaresRegression(color, SIDE_LEFT);
-    regressionLine rightSide = leastSquaresRegression(color, SIDE_RIGHT);
-	
+    regressionLine leftSide = leastSquaresRegression(color, IMAGE_LEFT);
+    regressionLine rightSide = leastSquaresRegression(color, IMAGE_RIGHT);
+    regressionLine wholeImage = leastSquaresRegression(color, IMAGE_ALL);
+
     LOG.write(LOG_LOW, "slopeError", 
               "Left squares found: %d", leftSide.numSquares);
     LOG.write(LOG_LOW, "slopeError", 
@@ -372,7 +373,9 @@ float Camera::corridorSlopeError(int color, bool *turn) {
               "Left equation: y = %f*x + %f, r^2 = %f", leftSide.slope, leftSide.intercept, leftSide.rSquared);
     LOG.write(LOG_LOW, "slopeError", 
               "Right equation: y = %f*x + %f, r^2 = %f", rightSide.slope, rightSide.intercept, rightSide.rSquared);
-
+    LOG.write(LOG_LOW, "slopeError", 
+              "Total equation: y = %f*x + %f, r^2 = %f", wholeImage.slope, wholeImage.intercept, wholeImage.rSquared);
+    
     // draw the lines of regression so we can see them
     IplImage *bgr = getBGRImage();
     if (bgr != NULL) {
@@ -488,7 +491,7 @@ regressionLine Camera::leastSquaresRegression(int color, int side) {
         squares_t *curSquare = squaresOf(color);
         while (curSquare != NULL) {
 	        switch (side) {
-	        case SIDE_LEFT:	
+	        case IMAGE_LEFT:	
         	    if (curSquare->center.x < center) {
                             xSum += curSquare->center.x;
                             ySum += curSquare->center.y;
@@ -497,7 +500,7 @@ regressionLine Camera::leastSquaresRegression(int color, int side) {
 			    ySqSum += curSquare->center.y * curSquare->center.y;
 		        }
 		        break;
-	        case SIDE_RIGHT:
+	        case IMAGE_RIGHT:
 		        if (curSquare->center.x > center) {
 	    		    xSum += curSquare->center.x;
 	    		    ySum += curSquare->center.y;
@@ -506,6 +509,13 @@ regressionLine Camera::leastSquaresRegression(int color, int side) {
 			    ySqSum += curSquare->center.y * curSquare->center.y;
 		        } 
 		        break;
+		case IMAGE_ALL:
+	    		xSum += curSquare->center.x;
+	    		ySum += curSquare->center.y;
+	    		xSqSum += curSquare->center.x * curSquare->center.x;
+	    		xySum += curSquare->center.x * curSquare->center.y;
+			ySqSum += curSquare->center.y * curSquare->center.y;
+			break;
 	        }
 	        curSquare = curSquare->next;
         }   
@@ -522,7 +532,8 @@ regressionLine Camera::leastSquaresRegression(int color, int side) {
     } else {
         // there aren't enough squares, so we error out the intercept and slope
         result.intercept = -999;
-		result.slope = -999;
+	result.slope = -999;
+	result.rSquared = 0;
     }
 
     return result;
@@ -557,8 +568,8 @@ squares_t* Camera::biggestSquare(int color, int side) {
 
     squares_t *curSquare = squaresOf(color);
     while (curSquare != NULL) {
-        if ((side == SIDE_LEFT && curSquare->center.x < center) ||
-            (side == SIDE_RIGHT && curSquare->center.x > center)) {
+        if ((side == IMAGE_LEFT && curSquare->center.x < center) ||
+            (side == IMAGE_RIGHT && curSquare->center.x > center)) {
             if (largestSquare == NULL) {
                 largestSquare = curSquare;
             }
@@ -593,7 +604,7 @@ int Camera::squareCount(int color, int side) {
     squares_t *curSquare = squaresOf(color);
     while (curSquare != NULL) {
         switch (side) {
-        case SIDE_LEFT: 
+        case IMAGE_LEFT: 
             if (curSquare->center.x < center) { 
                 LOG.write(LOG_LOW, "squareCount",
                           "Left square - x: %d y: %d area: %d",
@@ -601,7 +612,7 @@ int Camera::squareCount(int color, int side) {
                 squareCount++;
             }
             break;
-        case SIDE_RIGHT:
+        case IMAGE_RIGHT:
             if (curSquare->center.x > center) {
                 LOG.write(LOG_HIGH, "squareCount",
                           "Right square - x: %d y: %d area: %d", 
