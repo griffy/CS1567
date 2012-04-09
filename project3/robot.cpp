@@ -306,13 +306,31 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
         yError = y - _pose->getY();
         xError = x - _pose->getX();
 
-        thetaDesired = atan2(yError, xError);
-        thetaDesired = Util::normalizeTheta(thetaDesired);
+        switch (_heading) {
+        case DIR_NORTH:
+            thetaDesired = DEGREE_90;
+        case DIR_SOUTH:
+            thetaDesired = DEGREE_270;
+            distError = fabs(y - _pose->getY());
+            break;
+        case DIR_EAST:
+            thetaDesired = DEGREE_0;
+        case DIR_WEST:
+            thetaDesired = DEGREE_180;
+            distError = fabs(x - _pose->getX());
+            break;
+        }
 
         thetaError = thetaDesired - _pose->getTheta();
         thetaError = Util::normalizeThetaError(thetaError);
 
+/*      Old way
+
+        thetaDesired = atan2(yError, xError);
+        thetaDesired = Util::normalizeTheta(thetaDesired);
+
         distError = sqrt(yError*yError + xError*xError);
+*/
 
         LOG.write(LOG_MED, "move_error_estimates",
                   "x err: %f \t y err: %f \t distance err: %f \t "
@@ -357,7 +375,7 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
     float thetaGain;
  
     printf("adjusting theta\n");
-    do {	
+    do {
 	    updatePose();
 
         LOG.write(LOG_LOW, "turn_we_pose",
