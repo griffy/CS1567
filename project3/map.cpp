@@ -11,6 +11,8 @@ Map::Map(RobotInterface *robotInterface, int startingX, int startingY) {
 	_curCell = cells[startingX][startingY];
 	LOG.write(LOG_LOW, "map", "starting cell: %d, %d",
 			  startingX, startingY);
+        reserveCell(startingX, startingY);
+        occupyCell(startingX, startingY);
 }
 
 Map::~Map() {
@@ -34,7 +36,7 @@ void Map::update() {
 
 		map = map->next;
 	}
-	setOpenings(0,0, 128);
+	_adjustOpenings();
 }
 
 int Map::getRobot1Score() {
@@ -79,48 +81,64 @@ void Map::_loadMap() {
 		cells[x][y] = new Cell(map);
 		map = map->next;
 	}
-
-	setOpenings(0, 0, 128);
+	_adjustOpenings();
+        for (int x=0; x<MAP_WIDTH; x++){
+                for(int y=0; y<MAP_HEIGHT; y++){
+                  LOG.printfScreen(LOG_LOW, "openings", "%d", cells[x][y]->isBlocked());
+                }
+                LOG.printfScreen(LOG_LOW, "openings", "\n");
+        }
+        LOG.printfScreen(LOG_LOW, "openings", "\n");
+        LOG.printfScreen(LOG_LOW, "openings", "\n");
+        LOG.printfScreen(LOG_LOW, "openings", "\n");
+        LOG.printfScreen(LOG_LOW, "openings", "\n");
+        for (int x=0; x<MAP_WIDTH; x++){
+                for(int y=0; y<MAP_HEIGHT; y++){
+                  LOG.printfScreen(LOG_LOW, "openings", "%d", cells[x][y]->getOpenings());
+                }
+                LOG.printfScreen(LOG_LOW, "openings", "\n");
+        }
 }
 
-void Map::setOpenings(int x, int y, int cameFrom){
-	LOG.write(LOG_LOW, "map_openings", "Now setting: x: %d, y: %d\n", x, y);
-	cells[x][y]->addOpening(cameFrom);
-	
-	if(x+1 < MAP_WIDTH && cameFrom != 1){
-		if(!cells[x+1][y]->isBlocked()){
-			setOpenings(x+1,y,4);
-			cells[x][y]->addOpening(1);
-		}
-		else{
-			cells[x][y]->deleteOpening(1);
-		}
-	}
-	if(x-1 > 0 && cameFrom != 4){
-		if(!cells[x-1][y]->isBlocked()){
-			setOpenings(x-1,y, 1);
-			cells[x][y]->addOpening(4);
-		}
-		else{
-			cells[x][y]->deleteOpening(4);
-		}
-	}
-	if(y+1 < MAP_HEIGHT && cameFrom != 2){
-		if(!cells[x][y+1]->isBlocked()){
-			setOpenings(x,y+1, 8);
-			cells[x][y]->addOpening(2);
-		}
-		else{
-			cells[x][y]->deleteOpening(2);
-		}
-	}
-	if(y-1 > 0 && cameFrom != 8){
-		if(!cells[x][y-1]->isBlocked()){
-			setOpenings(x,y-1, 2);
-			cells[x][y]->addOpening(8);
-		}
-		else{
-			cells[x][y]->deleteOpening(8);
-		}
-	}
+void Map::_adjustOpenings(){
+  LOG.printfScreen(LOG_HIGH,"WTF", "YOU GAY\n");
+  for (int x=0; x<MAP_WIDTH; x++){
+    for(int y=0; y<MAP_HEIGHT; y++){
+      if(cells[x][y]->isBlocked())
+        continue;
+      
+      if(x+1<MAP_WIDTH){
+        if(!cells[x+1][y]->isBlocked()){
+          cells[x][y]->addOpening(RIGHT);
+        }
+        else {
+          cells[x][y]->deleteOpening(RIGHT);
+        }
+      }
+      if(x-1>0){
+        if(!cells[x-1][y]->isBlocked()){
+          cells[x][y]->addOpening(LEFT);
+        }
+        else{
+          cells[x][y]->deleteOpening(LEFT);
+        }
+      }
+      if(y+1>MAP_HEIGHT){
+        if(!cells[x][y+1]->isBlocked()){
+          cells[x][y]->addOpening(UP);
+        }
+        else{
+          cells[x][y]->deleteOpening(UP);
+        }
+      }
+      if(y-1>0){
+        if(!cells[x][y-1]->isBlocked()){
+          cells[x][y]->addOpening(DOWN);
+        }
+        else{
+          cells[x][y]->deleteOpening(DOWN);
+        }
+      }
+    }
+  }
 }

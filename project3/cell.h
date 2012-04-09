@@ -8,6 +8,11 @@
 #define CELL_HALL 2
 #define CELL_INTERSECTION 3
 
+#define RIGHT 1
+#define DOWN 2
+#define LEFT 4
+#define UP 8
+
 class Cell {
 public:
 	Cell(map_obj_t *mapObj);
@@ -28,6 +33,7 @@ public:
 	
 	void addOpening(unsigned char dir);
 	void deleteOpening(unsigned char direction);
+        int getOpenings();
 	
 	int x;
 	int y;

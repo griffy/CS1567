@@ -83,6 +83,9 @@ Robot::Robot(std::string address, int id) {
     // FIXME
     int startingX = ((int)_pose->getX()) / CELL_SIZE;
     int startingY = ((int)_pose->getY()) / CELL_SIZE;
+    
+    startingX = 0;
+    startingY = 0;
 
     _map = new Map(_robotInterface, startingX, startingY);
     _mapStrategy = new MapStrategy(_map);

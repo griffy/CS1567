@@ -184,3 +184,6 @@ void Cell::addOpening(unsigned char direction) {
 void Cell::deleteOpening(unsigned char direction) {
 	_openings = _openings & (!direction);
 }
+int Cell::getOpenings(){
+  return _openings;
+}

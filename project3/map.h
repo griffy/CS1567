@@ -17,12 +17,13 @@ public:
 	Cell* getCurrentCell();
 	bool occupyCell(int x, int y);
 	bool reserveCell(int x, int y);
-	void setOpenings(int x, int y, int cameFrom);
 
 	Cell *cells[MAP_WIDTH][MAP_HEIGHT];
 private:
 	void _setRobotAt(int x, int y);
 	void _loadMap();
+        
+        void _adjustOpenings();
 
 	RobotInterface *_robotInterface;
 
