@@ -77,9 +77,10 @@ void Map::_loadMap() {
 		int y = map->y;
 
 		cells[x][y] = new Cell(map);
-
 		map = map->next;
 	}
+
+	setOpenings(0, 0);
 }
 
 void Map::setOpenings(int x, int y){
@@ -88,11 +89,17 @@ void Map::setOpenings(int x, int y){
 			setOpenings(x+1,y);
 			cells[x][y]->addOpening(1);
 		}
+		else{
+			cells[x][y]->deleteOpening(1);
+		}
 	}
 	if(x-1 > 0){
 		if(!cells[x-1][y]->isBlocked()){
 			setOpenings(x-1,y);
 			cells[x][y]->addOpening(4);
+		}
+		else{
+			cells[x][y]->deleteOpening(4);
 		}
 	}
 	if(y+1 < MAP_HEIGHT){
@@ -100,11 +107,17 @@ void Map::setOpenings(int x, int y){
 			setOpenings(x,y+1);
 			cells[x][y]->addOpening(2);
 		}
+		else{
+			cells[x][y]->deleteOpening(2);
+		}
 	}
 	if(y-1 > 0){
 		if(!cells[x][y-1]->isBlocked()){
 			setOpenings(x,y-1);
 			cells[x][y]->addOpening(8);
+		}
+		else{
+			cells[x][y]->deleteOpening(8);
 		}
 	}
 }

@@ -181,3 +181,6 @@ void Cell::setReserved(bool reserved) {
 void Cell::addOpening(unsigned char direction) {
 	_openings = _openings | direction;
 }
+void Cell::deleteOpening(unsigned char direction) {
+	_openings = _openings & (!direction);
+}
