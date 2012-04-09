@@ -72,8 +72,8 @@
 #define PID_TURN_CENTER_KD 0.001
 
 // acceptable proximities from base
-#define MAX_DIST_ERROR 25.0 // in cm
-#define MAX_THETA_ERROR DEGREE_30
+#define MAX_DIST_ERROR 10.0 // in cm
+#define MAX_THETA_ERROR DEGREE_20
 
 // acceptable threshold for being in the center of squares (out of 1)
 #define MAX_CENTER_ERROR 0.1
@@ -160,27 +160,27 @@ const float NS_ROOM_ROTATION[6][4] = {
      1.6005},
 	// Bender
 	{0.0, 
-     1.5708, // was 1.6708, but changed to match theta shift. FIXME?
+     1.6708,
      0.15, 
      1.6005},
 	// Johnny5 (using Bender's)
 	{0.0, 
-     1.5708, 
+     1.6708, 
      0.15, 
      1.6005},
 	// Optimus (using Bender's)
 	{0.0, 
-     1.5708, 
+     1.6708, 
      0.15, 
      1.6005},
 	// WallE (using Bender's)
 	{0.0, 
-     1.5708, 
+     1.6708, 
      0.15, 
      1.6005},
     // Gort (using Bender's)
     {0.0,
-     1.5708,
+     1.6708,
      0.15,
      1.6005}
 };
