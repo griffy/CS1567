@@ -27,7 +27,8 @@ public:
 	void setReserved(bool reserved);
 	
 	void addOpening(unsigned char dir);
-
+	void deleteOpening(unsigned char direction);
+	
 	int x;
 	int y;
 private:
