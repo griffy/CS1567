@@ -33,12 +33,9 @@ int main(int argc, char *argv[]) {
 		robot->updateCamera();
 		robot->_camera->centerError(COLOR_PINK, &turn);
 	}*/
-
 	
 	robot->move(DIR_EAST, 5); // cells
-	robot->turn(DIR_RIGHT, DEGREE_90);
 	robot->move(DIR_SOUTH, 3);
-	
 
 	delete robot;
 

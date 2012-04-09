@@ -94,6 +94,12 @@
 // center error 
 #define NUM_CAMERA_ERRORS 7
 
+#define TAGS_BOTH_GE_TWO 0 // >= 2 tags on both sides
+#define TAGS_BOTH_ONE 1 // 1 tag on both sides
+#define TAGS_ONE_OR_NONE 2 // 1 or no tags
+#define TAGS_LESS_LEFT 3 // less tags on left than right
+#define TAGS_LESS_RIGHT 4 // less tags on right than left
+
 // define a line for regression calculations to utilize slope error
 typedef struct regLine {
 	float intercept;

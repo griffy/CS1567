@@ -26,6 +26,7 @@ Robot::Robot(std::string address, int id) {
     _turnDirection = 0;
     _movingForward = true;
     _speed = 0;
+    _heading = DIR_NORTH;
 
     setFailLimit(MAX_UPDATE_FAILS);
 
@@ -37,8 +38,8 @@ Robot::Robot(std::string address, int id) {
     _camera = new Camera(_robotInterface);
 
     // initialize position sensors
-    _wheelEncoders = new WheelEncoders(_robotInterface);
-    _northStar = new NorthStar(_robotInterface);
+    _wheelEncoders = new WheelEncoders(this);
+    _northStar = new NorthStar(this);
     
     // initialize global pose
     _pose = new Pose(0.0, 0.0, 0.0);
@@ -74,11 +75,12 @@ Robot::Robot(std::string address, int id) {
     // since we might start anywhere in the global system)
     _wheelEncoders->resetPose(_northStar->getPose());
     // now update our pose again so our global pose isn't
-    // some funky value
+    // some funky value (since it's based off we and ns)
     updatePose();
 
     // load the map once we've found our position in the global
     // system, so we can know what cell we started at
+    // FIXME
     int startingX = ((int)_pose->getX()) / CELL_SIZE;
     int startingY = ((int)_pose->getY()) / CELL_SIZE;
 
@@ -110,22 +112,18 @@ void Robot::playGame() {
         int xDiff = nextCell->x - curCell->x;
         int yDiff = nextCell->y - curCell->y;
 
-        // make sure these match up with proper cardinal
+        // TODO: make sure these match up with proper cardinal
         // directions
         if (xDiff > 0) {
-            turn(DIR_WEST);
             move(DIR_WEST, 1);
         }
         else if (xDiff < 0) {
-            turn(DIR_EAST);
             move(DIR_EAST, 1);
         }
         else if (yDiff > 0) {
-            turn(DIR_NORTH);
             move(DIR_NORTH, 1);
         }
         else if (yDiff < 0) {
-            turn(DIR_SOUTH);
             move(DIR_SOUTH, 1);
         }
     }
@@ -138,13 +136,15 @@ void Robot::playGame() {
  * Parameters: ints specifying direction and number of cells
  **************************************/
 void Robot::move(int direction, int numCells) {
-    int cellsTraveled = 0;
+    // make sure we're facing the right direction first
+    turn(direction);
 
+    _heading = direction;
+
+    int cellsTraveled = 0;
     while (cellsTraveled < numCells) {
         // first attempt to center ourselves before moving (except not first)
-        //center();
-        // reset the wheel encoder totals
-        _robotInterface->reset_state();
+        center();
 		updatePose();
         // based on the direction, move in the global coord system
         float goalX = _pose->getX();
@@ -163,7 +163,7 @@ void Robot::move(int direction, int numCells) {
             goalX -= CELL_SIZE;
             break;
         }
-        moveToCell(goalX, goalY);
+        moveTo(goalX, goalY); // was moveToCell
         cellsTraveled++;
         LOG.write(LOG_LOW, "move", "Made it to cell %d", cellsTraveled);
     }
@@ -228,7 +228,7 @@ void Robot::moveToCell(float x, float y) {
             // if we're off in theta, turn to adjust 
             turnTo(goal, MAX_THETA_ERROR);
             // finally, center between squares as a sanity check
-            //turnCenter();
+            // turnCenter();
         }
     } while (thetaError != 0);
 
@@ -308,8 +308,6 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
 
         thetaDesired = atan2(yError, xError);
         thetaDesired = Util::normalizeTheta(thetaDesired);
-        // FIXME: remove
-        //thetaDesired = 0.0;
 
         thetaError = thetaDesired - _pose->getTheta();
         thetaError = Util::normalizeThetaError(thetaError);
@@ -460,78 +458,132 @@ void Robot::turnCenter() {
 }
 */
 
+bool Robot::_centerTurn(float centerError) {
+    bool success;
+
+    float centerGain = _turnCenterPID->updatePID(centerError);
+    LOG.write(LOG_LOW, "centerTurn", "center error: %f", centerError);
+    LOG.write(LOG_LOW, "centerTurn", "center gain: %f", centerGain);
+
+    if (fabs(centerError) < MAX_TURN_CENTER_ERROR) {
+        success = true;
+        // we're close enough to centered, so stop adjusting
+        LOG.write(LOG_LOW, "centerTurn", 
+                  "Center error: |%f| < %f, stop correcting.", 
+                  centerError, MAX_TURN_CENTER_ERROR);
+    }
+    else {
+        success = false;
+
+        int turnSpeed = (int)fabs((centerGain));
+        turnSpeed = Util::capSpeed(turnSpeed, 8);
+        
+        LOG.write(LOG_LOW, "pid_speeds", "turn: %d", turnSpeed);
+
+        if (centerError < 0) {
+            LOG.write(LOG_LOW, "centerTurn", "Center error: %f, move right", centerError);
+            turnRight(turnSpeed);
+        }
+        else {
+            LOG.write(LOG_LOW, "centerTurn", "Center error: %f, move left", centerError);
+            turnLeft(turnSpeed);
+        }
+
+        // make sure we haven't turned beyond 45 degrees (our max adjustment)
+        updatePose();
+
+        float thetaHeading;
+        switch (_heading) {
+        case DIR_NORTH:
+            thetaHeading = DEGREE_90;
+            break;
+        case DIR_SOUTH:
+            thetaHeading = DEGREE_270;
+            break;
+        case DIR_EAST:
+            thetaHeading = DEGREE_0;
+            break;
+        case DIR_WEST:
+            thetaHeading = DEGREE_180;
+            break;
+        }
+
+        float theta = _pose->getTheta();
+        float thetaError = thetaHeading - theta;
+        thetaError = Util::normalizeThetaError(thetaError);
+        if (fabs(thetaError) > DEGREE_45) {
+            // if we turned beyond 45 degrees from our
+            // heading, this was a mistake. let's turn
+            // back just enough so we're 45 degrees from
+            // our heading.
+            float thetaGoal = Util::normalizeTheta(theta + (DEGREE_45 + thetaError));
+            turnTo(thetaGoal, MAX_THETA_ERROR);
+        }
+    }
+
+    return success;
+}
+
+bool Robot::_centerStrafe(float centerError) {
+    bool success;
+
+    float centerGain = _centerPID->updatePID(centerError);
+    LOG.write(LOG_LOW, "centerStrafe", "center error: %f", centerError);
+    LOG.write(LOG_LOW, "centerStrafe", "center gain: %f", centerGain);
+
+    if (fabs(centerError) < MAX_CENTER_ERROR) {
+        success = true;
+        // we're close enough to centered, so stop adjusting
+        LOG.write(LOG_LOW, "centerStrafe", 
+                  "Center error: |%f| < %f, stop correcting.", 
+                  centerError, MAX_CENTER_ERROR);
+    }
+    else {
+        success = false;
+
+        int strafeSpeed = (int)fabs((centerGain));
+        strafeSpeed = Util::capSpeed(strafeSpeed, 8);
+        
+        LOG.write(LOG_LOW, "pid_speeds", "strafe: %d", strafeSpeed);
+
+        if (centerError < 0) {
+            LOG.write(LOG_LOW, "centerStrafe", "Center error: %f, move right", centerError);
+            strafeRight(strafeSpeed);
+        }
+        else {
+            LOG.write(LOG_LOW, "centerStrafe", "Center error: %f, move left", centerError);
+            strafeLeft(strafeSpeed);
+        }
+
+        // we moved, so reset the wheel encoders to ignore
+        // this movement
+        _robotInterface->reset_state();
+    }
+
+    return success;
+}
+
 /**************************************
  * Definition: Strafes the robot until it is considered centered
  *             between two squares in a corridor
  **************************************/
 void Robot::center() {
-
-    //Put robot head up for camera use
-    _robotInterface->Move(RI_HEAD_UP, 1);
-    
     while (true) {
         updateCamera();
 
         bool turn = false;
         float centerError = _camera->centerError(COLOR_PINK, &turn);
         if (turn) {
-            float centerGain = _turnCenterPID->updatePID(centerError);
-            LOG.write(LOG_LOW, "centerTurn", "center error: %f", centerError);
-            LOG.write(LOG_LOW, "centerTurn", "center gain: %f", centerGain);
-
-            if (fabs(centerError) < MAX_TURN_CENTER_ERROR) {
-                // we're close enough to centered, so stop adjusting
-                LOG.write(LOG_LOW, "centerTurn", 
-                          "Center error: |%f| < %f, stop correcting.", 
-                          centerError, MAX_TURN_CENTER_ERROR);
+            if (_centerTurn(centerError)) {
                 break;
-            }
-
-            int turnSpeed = (int)fabs((centerGain));
-            turnSpeed = Util::capSpeed(turnSpeed, 8);
-            
-            LOG.write(LOG_LOW, "pid_speeds", "turn: %d", turnSpeed);
-
-            if (centerError < 0) {
-                LOG.write(LOG_LOW, "centerTurn", "Center error: %f, move right", centerError);
-                turnRight(turnSpeed);
-            }
-            else {
-                LOG.write(LOG_LOW, "centerTurn", "Center error: %f, move left", centerError);
-                turnLeft(turnSpeed);
             }
         }
         else {
-            float centerGain = _centerPID->updatePID(centerError);
-            LOG.write(LOG_LOW, "centerStrafe", "center error: %f", centerError);
-            LOG.write(LOG_LOW, "centerStrafe", "center gain: %f", centerGain);
-
-            if (fabs(centerError) < MAX_CENTER_ERROR) {
-                // we're close enough to centered, so stop adjusting
-                LOG.write(LOG_LOW, "centerStrafe", 
-                          "Center error: |%f| < %f, stop correcting.", 
-                          centerError, MAX_CENTER_ERROR);
+            if (_centerStrafe(centerError)) {
                 break;
-            }
-
-            int strafeSpeed = (int)fabs((centerGain));
-            strafeSpeed = Util::capSpeed(strafeSpeed, 8);
-            
-            LOG.write(LOG_LOW, "pid_speeds", "strafe: %d", strafeSpeed);
-
-            if (centerError < 0) {
-                LOG.write(LOG_LOW, "centerStrafe", "Center error: %f, move right", centerError);
-                strafeRight(strafeSpeed);
-            }
-            else {
-                LOG.write(LOG_LOW, "centerStrafe", "Center error: %f, move left", centerError);
-                strafeLeft(strafeSpeed);
             }
         }
     }
-
-    //Put robot head down for NorthStar use
-    _robotInterface->Move(RI_HEAD_DOWN, 1);
 
     _centerPID->flushPID();
     _turnCenterPID->flushPID();
@@ -541,7 +593,11 @@ void Robot::center() {
  * Definition: Updates the robot's camera, reading in a new image.
  **************************************/
 void Robot::updateCamera() {
+    //Put robot head up for camera use
+    _robotInterface->Move(RI_HEAD_MIDDLE, 1);
     _camera->update();
+    //Put robot head down for NorthStar use
+    _robotInterface->Move(RI_HEAD_DOWN, 1);
 }
 
 /**************************************
@@ -554,8 +610,8 @@ void Robot::updatePose() {
     // and north star have the same time-values
     _updateInterface();
     // update each pose estimate
-    _northStar->updatePose(getRoom());
-    _wheelEncoders->updatePose(getRoom());
+    _northStar->updatePose();
+    _wheelEncoders->updatePose();
 
     if (_speed <= 0) {
         _speed=0;
@@ -602,6 +658,14 @@ void Robot::updatePose() {
                           _wheelEncoders->getPose());
 
     LOG.write(LOG_LOW, "position_data", "Room:\t%d\tNS:\t%f\t%f\t%f\tWE:\t%f\t%f\t%f\tKalman:\t%f\t%f\t%f\t", getRoom(), _northStar->getX(), _northStar->getY(), _northStar->getTheta(), _wheelEncoders->getX(), _wheelEncoders->getY(), _wheelEncoders->getTheta(), _pose->getX(), _pose->getY(), _pose->getTheta());
+}
+
+RobotInterface* Robot::getInterface() {
+    return _robotInterface;
+}
+
+int Robot::getName() {
+    return _name;
 }
 
 /**************************************

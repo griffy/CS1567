@@ -19,9 +19,10 @@
 #include "constants.h"
 #include "logger.h"
 #include "utilities.h"
-
-NorthStar::NorthStar(RobotInterface *robotInterface)
-: PositionSensor(robotInterface), _oldX(), _oldY() {
+#include "robot.h"
+ 
+NorthStar::NorthStar(Robot *robot)
+: PositionSensor(robot), _oldX(), _oldY() {
 	_lastRoom = -1;
 
 	_filterX = new FIRFilter("filters/ns_x.ffc");
@@ -46,13 +47,11 @@ NorthStar::~NorthStar() {
  *             included here as well
  *
  * Note:       Requires the interface be updated prior to calling 
- *
- * Parameters: room - integer value corresponding to the NorthStar room 
- *             the robot currently resides in
- * 
- * 
  *************************************************/
-void NorthStar::updatePose(int room) {
+void NorthStar::updatePose() {
+	int room = _robot->getRoom();
+	int name = _robot->getName();
+
 	// if we've changed rooms, prepare filters for this
 	if (_lastRoom != -1 && _lastRoom != room) {
 
@@ -65,10 +64,10 @@ void NorthStar::updatePose(int room) {
 		for (int i = 0; i <= order; i++) {
 			tempPose->reset(_oldX[i], _oldY[i], 0.0);
 			
-			tempPose->translate(-COL_OFFSET[0] - NS_ROOM_ORIGINS_FROM_COL[room][0], 
-							    -COL_OFFSET[1] - NS_ROOM_ORIGINS_FROM_COL[room][1]);
-			tempPose->scale(1.0/NS_ROOM_SCALE[room][0], 1.0/NS_ROOM_SCALE[room][1]);
-			tempPose->rotate(-NS_ROOM_ROTATION[room]);
+			tempPose->translate(-COL_OFFSET[0] - NS_ROOM_ORIGINS_FROM_COL[name][room][0], 
+							    -COL_OFFSET[1] - NS_ROOM_ORIGINS_FROM_COL[name][room][1]);
+			tempPose->scale(1.0/NS_ROOM_SCALE[name][room][0], 1.0/NS_ROOM_SCALE[name][room][1]);
+			tempPose->rotate(-NS_ROOM_ROTATION[name][room]);
 		
 			_oldX[i] = tempPose->getX();
 			_oldY[i] = tempPose->getY();
@@ -76,7 +75,7 @@ void NorthStar::updatePose(int room) {
 		// use these updated values to seed the filters in preparation
 		_filterX->seed(&_oldX);
 		_filterY->seed(&_oldY);
-		_filterTheta->seed(_robotInterface->Theta());
+		_filterTheta->seed(_robot->getInterface()->Theta());
 	}
 
 	_lastRoom = room;
@@ -97,20 +96,20 @@ void NorthStar::updatePose(int room) {
 		// to correct for theta skew
 		float xFitAngle = 0.0000204488 * x - 0.0804;
 		float yFitAngle = 0.0000204488 * y - 0.0804;
-		estimate->rotateEach(xFitAngle, yFitAngle, NS_ROOM_ROTATION[room]);
+		estimate->rotateEach(xFitAngle, yFitAngle, NS_ROOM_ROTATION[name][room]);
 	}
 	else {
-		estimate->rotate(NS_ROOM_ROTATION[room]);
+		estimate->rotate(NS_ROOM_ROTATION[name][room]);
 	}
 
-	estimate->rotateEach(0, 0, THETA_SHIFT[room]);
+	estimate->rotateEach(0, 0, THETA_SHIFT[name][room]);
 
-	float sx = NS_ROOM_SCALE[room][0];
-	float sy = NS_ROOM_SCALE[room][1];
+	float sx = NS_ROOM_SCALE[name][room][0];
+	float sy = NS_ROOM_SCALE[name][room][1];
 	estimate->scale(sx, sy);
 
-	float tx = COL_OFFSET[0] + NS_ROOM_ORIGINS_FROM_COL[room][0];
-	float ty = COL_OFFSET[1] + NS_ROOM_ORIGINS_FROM_COL[room][1];
+	float tx = COL_OFFSET[0] + NS_ROOM_ORIGINS_FROM_COL[name][room][0];
+	float ty = COL_OFFSET[1] + NS_ROOM_ORIGINS_FROM_COL[name][room][1];
 	estimate->translate(tx, ty);
 
 	// update our pose with new global coords
@@ -136,7 +135,7 @@ void NorthStar::updatePose(int room) {
  * Returns: filtered float coordinate
  **************************************/
 float NorthStar::_getFilteredX() {
-    int x = _robotInterface->X();
+    int x = _robot->getInterface()->X();
     return _filterX->filter((float) x);
 }
 
@@ -146,7 +145,7 @@ float NorthStar::_getFilteredX() {
  * Returns: filtered float coordinate
  **************************************/
 float NorthStar::_getFilteredY() {
-    int y = _robotInterface->Y();
+    int y = _robot->getInterface()->Y();
     return _filterY->filter((float) y);
 }
 
@@ -156,6 +155,6 @@ float NorthStar::_getFilteredY() {
  * Returns: filtered float theta
  **************************************/
 float NorthStar::_getFilteredTheta() {
-    float theta = _robotInterface->Theta();
+    float theta = _robot->getInterface()->Theta();
     return _filterTheta->filter(theta);
 }

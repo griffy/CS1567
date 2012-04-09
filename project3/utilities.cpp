@@ -45,7 +45,7 @@ namespace Util {
 
     /**************************************
      * Definition: Takes a theta error, possibly negative, and
-     *             converts it to the appropriate representation [0, 2PI]
+     *             converts it to the appropriate representation [-pi, pi]
      *
      * Parameters: float specifying theta error
      *

@@ -23,9 +23,9 @@
 
 class NorthStar : public PositionSensor {
 public:
-	NorthStar(RobotInterface *robotInterface);
+	NorthStar(Robot *robot);
 	~NorthStar();
-	void updatePose(int room);
+	void updatePose();
 private:
 	FIRFilter *_filterX;
 	FIRFilter *_filterY;

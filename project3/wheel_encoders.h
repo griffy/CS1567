@@ -23,9 +23,9 @@
 
 class WheelEncoders : public PositionSensor {
 public:
-	WheelEncoders(RobotInterface *robotInterface);
+	WheelEncoders(Robot *robot);
 	~WheelEncoders();
-	void updatePose(int room);
+	void updatePose();
 private:
 	FIRFilter *_filterLeft;
 	FIRFilter *_filterRight;

@@ -19,9 +19,11 @@
 #include "constants.h"
 #include "utilities.h"
 #include "logger.h"
+#include <robot_if++.h>
+#include "robot.h"
 
-WheelEncoders::WheelEncoders(RobotInterface *robotInterface)
-: PositionSensor(robotInterface) {
+WheelEncoders::WheelEncoders(Robot *robot)
+: PositionSensor(robot) {
 	_filterLeft = new FIRFilter("filters/we.ffc");
 	_filterRight = new FIRFilter("filters/we.ffc");
 	_filterRear = new FIRFilter("filters/we.ffc");
@@ -38,10 +40,8 @@ WheelEncoders::~WheelEncoders() {
 *             global coordinate system and updates robot pose
 *
 * Note:       Requires the interface be updated prior to calling 
-*
-* Parameters: room - Integer corresponding to robot's NorthStar room
 ************************************************/
-void WheelEncoders::updatePose(int room) {
+void WheelEncoders::updatePose() {
 	LOG.write(LOG_LOW, "WE_positions_raw", 
 		      "we update (raw): left: %f right: %f rear: %f", 
 		      _getFilteredDeltaLeft(), _getFilteredDeltaRight(), _getFilteredDeltaRear());
@@ -112,7 +112,7 @@ float WheelEncoders::_getRobotDeltaY() {
  * Returns:    delta left ticks
  ***********************************************/
 float WheelEncoders::_getFilteredDeltaLeft() {
-    int left = _robotInterface->getWheelEncoder(RI_WHEEL_LEFT);
+    int left = _robot->getInterface()->getWheelEncoder(RI_WHEEL_LEFT);
     return _filterLeft->filter((float) left);
 }
 
@@ -122,7 +122,7 @@ float WheelEncoders::_getFilteredDeltaLeft() {
  * Returns:    delta right ticks
  ***********************************************/
 float WheelEncoders::_getFilteredDeltaRight() {
-    int right = _robotInterface->getWheelEncoder(RI_WHEEL_RIGHT);
+    int right = _robot->getInterface()->getWheelEncoder(RI_WHEEL_RIGHT);
     return _filterRight->filter((float) right);
 }
 
@@ -132,6 +132,6 @@ float WheelEncoders::_getFilteredDeltaRight() {
  * Returns:    delta rear ticks
  ***********************************************/
 float WheelEncoders::_getFilteredDeltaRear() {
-    int rear = _robotInterface->getWheelEncoder(RI_WHEEL_REAR);
+    int rear = _robot->getInterface()->getWheelEncoder(RI_WHEEL_REAR);
     return _filterRear->filter((float) rear);
 }

@@ -13,10 +13,11 @@
  **/
 
 #include "position_sensor.h"
+#include "robot.h"
 #include "constants.h"
 
-PositionSensor::PositionSensor(RobotInterface *robotInterface) {
-	_robotInterface = robotInterface;
+PositionSensor::PositionSensor(Robot *robot) {
+	_robot = robot;
 	_pose = new Pose(0.0, 0.0, 0.0);
 }
 

@@ -3,12 +3,6 @@
 
 #include "cell.h"
 
-#define TAGS_BOTH_GE_TWO 0 // >= 2 tags on both sides
-#define TAGS_BOTH_ONE 1 // 1 tag on both sides
-#define TAGS_ONE_OR_NONE 2 // 1 or no tags
-#define TAGS_LESS_LEFT 3 // less tags on left than right
-#define TAGS_LESS_RIGHT 4 // less tags on right than left
-
 #define STATE_TURN 0
 #define STATE_STRAFE 1
 #define STATE_STAND 2

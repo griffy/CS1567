@@ -16,20 +16,21 @@
 #define CS1567_POSITIONSENSOR_H
 
 #include "pose.h"
-#include <robot_if++.h>
+
+class Robot; // so we can avoid circular dependency
 
 class PositionSensor {
 public:
-	PositionSensor(RobotInterface *robotInterface);
+	PositionSensor(Robot *robot);
 	~PositionSensor();
-	virtual void updatePose(int room) = 0;
+	virtual void updatePose() = 0;
 	void resetPose(Pose *pose);
 	float getX();
 	float getY();
 	float getTheta();
 	Pose* getPose();
 protected:
-	RobotInterface *_robotInterface;
+	Robot *_robot;
 	Pose *_pose;
 };
 

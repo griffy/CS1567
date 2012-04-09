@@ -30,9 +30,6 @@ Camera::Camera(RobotInterface *robotInterface) {
     cvNamedWindow("Thresholded", CV_WINDOW_AUTOSIZE);
     cvNamedWindow("Biggest Squares Distances", CV_WINDOW_AUTOSIZE);
     cvNamedWindow("Slopes", CV_WINDOW_AUTOSIZE);
-
-    // we always want the head to be up when a camera is in use
-    //_robotInterface->Move(RI_HEAD_MID, 1);
 }
 
 Camera::~Camera() {

@@ -111,6 +111,8 @@ public:
     void strafeRight(int speed);
     void stop();
     Pose* getPose();
+    RobotInterface* getInterface();
+    int getName();
     bool isThereABitchInMyWay();
 	int getStrength();
     int getRoom();
@@ -122,12 +124,16 @@ public:
 
     Camera *_camera;
 private:
+    bool _centerTurn(float centerError);
+    bool _centerStrafe(float centerError);
+    
     RobotInterface *_robotInterface;
     int _name;
 
 	int _speed;	
 	char _turnDirection;
 	bool _movingForward;
+    int _heading;
 
     PID* _distancePID;
     PID* _thetaPID;
