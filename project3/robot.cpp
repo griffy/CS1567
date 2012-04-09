@@ -309,12 +309,16 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
         switch (_heading) {
         case DIR_NORTH:
             thetaDesired = DEGREE_90;
+            distError = fabs(y - _pose->getY());
+            break;
         case DIR_SOUTH:
             thetaDesired = DEGREE_270;
             distError = fabs(y - _pose->getY());
             break;
         case DIR_EAST:
             thetaDesired = DEGREE_0;
+            distError = fabs(x - _pose->getX());
+            break;
         case DIR_WEST:
             thetaDesired = DEGREE_180;
             distError = fabs(x - _pose->getX());
