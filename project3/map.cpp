@@ -34,7 +34,7 @@ void Map::update() {
 
 		map = map->next;
 	}
-	setOpenings(0,0);
+	setOpenings(0,0, 128);
 }
 
 int Map::getRobot1Score() {
@@ -80,40 +80,43 @@ void Map::_loadMap() {
 		map = map->next;
 	}
 
-	setOpenings(0, 0);
+	setOpenings(0, 0, 128);
 }
 
-void Map::setOpenings(int x, int y){
-	if(x+1 < MAP_WIDTH){
+void Map::setOpenings(int x, int y, int cameFrom){
+	LOG.write(LOG_LOW, "map_openings", "Now setting: x: %d, y: %d\n", x, y);
+	cells[x][y]->addOpening(cameFrom);
+	
+	if(x+1 < MAP_WIDTH && cameFrom != 1){
 		if(!cells[x+1][y]->isBlocked()){
-			setOpenings(x+1,y);
+			setOpenings(x+1,y,4);
 			cells[x][y]->addOpening(1);
 		}
 		else{
 			cells[x][y]->deleteOpening(1);
 		}
 	}
-	if(x-1 > 0){
+	if(x-1 > 0 && cameFrom != 4){
 		if(!cells[x-1][y]->isBlocked()){
-			setOpenings(x-1,y);
+			setOpenings(x-1,y, 1);
 			cells[x][y]->addOpening(4);
 		}
 		else{
 			cells[x][y]->deleteOpening(4);
 		}
 	}
-	if(y+1 < MAP_HEIGHT){
+	if(y+1 < MAP_HEIGHT && cameFrom != 2){
 		if(!cells[x][y+1]->isBlocked()){
-			setOpenings(x,y+1);
+			setOpenings(x,y+1, 8);
 			cells[x][y]->addOpening(2);
 		}
 		else{
 			cells[x][y]->deleteOpening(2);
 		}
 	}
-	if(y-1 > 0){
+	if(y-1 > 0 && cameFrom != 8){
 		if(!cells[x][y-1]->isBlocked()){
-			setOpenings(x,y-1);
+			setOpenings(x,y-1, 2);
 			cells[x][y]->addOpening(8);
 		}
 		else{
