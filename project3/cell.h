@@ -17,7 +17,7 @@ class Cell {
 public:
 	Cell(map_obj_t *mapObj);
 	~Cell();
-	void setRobot();
+	void claimRobot();
 	void update(map_obj_t *mapObj);
 	bool occupy(RobotInterface *robotInterface);
 	bool reserve(RobotInterface *robotInterface);
@@ -33,7 +33,7 @@ public:
 	
 	void addOpening(unsigned char dir);
 	void deleteOpening(unsigned char direction);
-        int getOpenings();
+    int getOpenings();
 	
 	int x;
 	int y;

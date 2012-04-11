@@ -34,11 +34,11 @@ Cell::Cell(map_obj_t *mapObj) {
 
 Cell::~Cell() {}
 
-void Cell::setRobot() {
+void Cell::claimRobot() {
 	if (_type == MAP_OBJ_ROBOT_1) {
 		_robot = 1;
 	}
-	else {
+	else if (_type == MAP_OBJ_ROBOT_2) {
 		_robot = 2;
 	}
 }
@@ -142,10 +142,8 @@ void Cell::setPoints(int points) {
 bool Cell::isBlocked() {
 	if (isPost() || isOccupied()) {
 		if (isReserved()) {
-			if (_robot == 1 && _type == MAP_OBJ_RESERVE_1) {
-				return false;
-			}
-			else if (_robot == 2 && _type == MAP_OBJ_RESERVE_2) {
+			if ((_robot == 1 && _type == MAP_OBJ_RESERVE_1) ||
+			    (_robot == 2 && _type == MAP_OBJ_RESERVE_2)) {
 				return false;
 			}
 		}
@@ -181,9 +179,11 @@ void Cell::setReserved(bool reserved) {
 void Cell::addOpening(unsigned char direction) {
 	_openings = _openings | direction;
 }
+
 void Cell::deleteOpening(unsigned char direction) {
 	_openings = _openings & (!direction);
 }
-int Cell::getOpenings(){
-  return _openings;
+
+int Cell::getOpenings() {
+	return _openings;
 }

@@ -17,7 +17,8 @@
 #include "phrases.h"
 #include "logger.h"
 #include <math.h>
-
+#include <unistd.h>
+ 
 Robot::Robot(std::string address, int id) {
     // store the robot's name as an int to be used later
     _name = Util::nameFrom(address);
@@ -595,6 +596,8 @@ bool Robot::_centerStrafe(float centerError) {
 void Robot::center() {
     while (true) {
         updateCamera();
+        // FIXME: should we update pose as well so 
+        // the turning is tracked?
 
         bool turn = false;
         float centerError = _camera->centerError(COLOR_PINK, &turn);
@@ -776,6 +779,7 @@ void Robot::turnRight(int speed) {
  * Parameters: int specifying speed to strafe at
  **************************************/
 void Robot::strafeLeft(int speed) {
+    // FIXME: these don't scale with the speed?
 	_speed = 10;
     // we need about 5 commands to actually strafe sideways
     for (int i = 0; i < 5; i++) {
@@ -794,6 +798,7 @@ void Robot::strafeLeft(int speed) {
  * Parameters: int specifying speed to strafe at
  **************************************/
 void Robot::strafeRight(int speed) {
+    // FIXME: these don't scale with the speed?
 	_speed = 10;
     for (int i = 0; i < 5; i++) {
         _robotInterface->Move(RI_MOVE_RIGHT, 10);

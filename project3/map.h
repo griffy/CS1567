@@ -20,10 +20,10 @@ public:
 
 	Cell *cells[MAP_WIDTH][MAP_HEIGHT];
 private:
-	void _setRobotAt(int x, int y);
+	void _claimRobotAt(int x, int y);
 	void _loadMap();
         
-        void _adjustOpenings();
+    void _adjustOpenings();
 
 	RobotInterface *_robotInterface;
 
