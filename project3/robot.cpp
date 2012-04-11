@@ -85,10 +85,17 @@ Robot::Robot(std::string address, int id) {
 
     // load the map once we've found our position in the global
     // system, so we can know what cell we started at
-    // FIXME
-    int startingX = ((int)_pose->getX()) / CELL_SIZE;
-    int startingY = ((int)_pose->getY()) / CELL_SIZE;
-
+    int startingX;
+    int startingY;
+    if (_pose->getX() > 150) {
+        startingX = 0;
+        startingY = 2;
+    }
+    else {
+        startingX = 6;
+        startingY = 2;
+    }
+    
     _map = new Map(_robotInterface, startingX, startingY);
     _mapStrategy = new MapStrategy(_map);
 }
