@@ -9,5 +9,8 @@ MapStrategy::~MapStrategy() {}
 Cell* MapStrategy::nextCell() {
 	_map->update();
 
+	// do the reserving and occupying here
+	// before returning the cell
+	
 	return NULL;
 }

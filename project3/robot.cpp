@@ -72,7 +72,7 @@ Robot::Robot(std::string address, int id) {
     
     // Put robot head down for NorthStar use
     _robotInterface->Move(RI_HEAD_DOWN, 1);
-    sleep(1);
+    sleep(2);
 
     // fill our sensors with data
     prefillData();
@@ -88,9 +88,6 @@ Robot::Robot(std::string address, int id) {
     // FIXME
     int startingX = ((int)_pose->getX()) / CELL_SIZE;
     int startingY = ((int)_pose->getY()) / CELL_SIZE;
-    
-    startingX = 0;
-    startingY = 0;
 
     _map = new Map(_robotInterface, startingX, startingY);
     _mapStrategy = new MapStrategy(_map);
@@ -600,8 +597,6 @@ bool Robot::_centerStrafe(float centerError) {
 void Robot::center() {
     while (true) {
         updateCamera();
-        // FIXME: should we update pose as well so 
-        // the turning is tracked?
 
         bool turn = false;
         float centerError = _camera->centerError(COLOR_PINK, &turn);
