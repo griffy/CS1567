@@ -620,7 +620,9 @@ void Robot::center() {
 void Robot::updateCamera() {
     //Put robot head up for camera use
     _robotInterface->Move(RI_HEAD_MIDDLE, 1);
+    sleep(2);
     _camera->update();
+    sleep(1);
     //Put robot head down for NorthStar use
     _robotInterface->Move(RI_HEAD_DOWN, 1);
 }
