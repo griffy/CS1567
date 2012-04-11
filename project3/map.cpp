@@ -53,6 +53,8 @@ Cell* Map::getCurrentCell() {
 
 bool Map::occupyCell(int x, int y) {
 	if (cells[x][y]->occupy(_robotInterface)) {
+		_curCell->setOccupied(false);
+		_curCell->setReserved(false);
 		_curCell = cells[x][y];
 		return true;
 	}
@@ -64,7 +66,7 @@ bool Map::reserveCell(int x, int y) {
 }
 
 void Map::_setRobotAt(int x, int y) {
-
+	//NOTE: do we need to 'unset' a different cell?
 	cells[x][y]->setRobot();
 }
 
