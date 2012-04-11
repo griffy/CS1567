@@ -18,7 +18,7 @@
 #include "logger.h"
 #include <math.h>
 #include <unistd.h>
- 
+
 Robot::Robot(std::string address, int id) {
     // store the robot's name as an int to be used later
     _name = Util::nameFrom(address);
@@ -70,6 +70,10 @@ Robot::Robot(std::string address, int id) {
 
     printf("pid controllers initialized\n");
     
+    // Put robot head down for NorthStar use
+    _robotInterface->Move(RI_HEAD_DOWN, 1);
+    sleep(1);
+
     // fill our sensors with data
     prefillData();
     // base the wheel encoder pose off north star to start,
