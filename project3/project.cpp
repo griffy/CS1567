@@ -31,44 +31,44 @@ int main(int argc, char *argv[]) {
 	while (true) {
 		//robot->updateCamera();
 		//robot->center();
-		robot->turnRight(1);
-		robot->turnLeft(1);
+		robot->strafeRight(1);
+		robot->strafeLeft(1);
 		usleep(1000000);
 		
-		robot->turnRight(2);
-		robot->turnLeft(2);
+		robot->strafeRight(2);
+		robot->strafeLeft(2);
 		usleep(1000000);
 		
-		robot->turnRight(3);
-		robot->turnLeft(3);
+		robot->strafeRight(3);
+		robot->strafeLeft(3);
 		usleep(1000000);
 		
-		robot->turnRight(4);
-		robot->turnLeft(4);
+		robot->strafeRight(4);
+		robot->strafeLeft(4);
 		usleep(1000000);
 
-		robot->turnRight(5);
-		robot->turnLeft(5);
+		robot->strafeRight(5);
+		robot->strafeLeft(5);
 		usleep(1000000);
 		
-		robot->turnRight(6);
-		robot->turnLeft(6);
+		robot->strafeRight(6);
+		robot->strafeLeft(6);
 		usleep(1000000);
 		
-		robot->turnRight(7);
-		robot->turnLeft(7);
+		robot->strafeRight(7);
+		robot->strafeLeft(7);
 		usleep(1000000);
 		
-		robot->turnRight(8);
-		robot->turnLeft(8);
+		robot->strafeRight(8);
+		robot->strafeLeft(8);
 		usleep(1000000);
 		
-		robot->turnRight(9);
-		robot->turnLeft(9);
+		robot->strafeRight(9);
+		robot->strafeLeft(9);
 		usleep(1000000);
 
-		robot->turnRight(10);
-		robot->turnLeft(10);
+		robot->strafeRight(10);
+		robot->strafeLeft(10);
 		usleep(1000000);
 		//robot->getInterface()->Move(RI_TURN_RIGHT, 1);
 		//robot->getInterface()->Move(RI_TURN_RIGHT, 1);

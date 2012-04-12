@@ -717,9 +717,6 @@ void Robot::turnLeft(int speed) {
     } else {
        _robotInterface->Move(RI_TURN_LEFT, speed);
     }
-//    for (int i = speed; i > 0; i--) {
-//        sleepLength += 1000*100; // 1/10th of a second
-//    }
     usleep(sleepLength);
     _robotInterface->Move(RI_STOP, 0);
 }
@@ -741,9 +738,6 @@ void Robot::turnRight(int speed) {
     } else {
        _robotInterface->Move(RI_TURN_RIGHT, speed);
     }
-//    for (int i = speed; i > 0; i--) {
-//        sleepLength += 1000*100; // 1/10th of a second
-//    }
     usleep(sleepLength);
     _robotInterface->Move(RI_STOP, 0);
 }
@@ -760,11 +754,12 @@ void Robot::turnRight(int speed) {
  **************************************/
 void Robot::strafeLeft(int speed) {
     // FIXME: these don't scale with the speed?
-	_speed = 10;
-    // we need about 5 commands to actually strafe sideways
-    for (int i = 0; i < 5; i++) {
-        _robotInterface->Move(RI_MOVE_LEFT, 10);
-    }
+    _speed = speed;
+    int sleepLength = 500000-(45000*speed);
+
+    _robotInterface->Move(RI_MOVE_LEFT, 10);
+    usleep(sleepLength);
+    _robotInterface->Move(RI_STOP, 0);
 }
 
 /**************************************
@@ -779,10 +774,12 @@ void Robot::strafeLeft(int speed) {
  **************************************/
 void Robot::strafeRight(int speed) {
     // FIXME: these don't scale with the speed?
-	_speed = 10;
-    for (int i = 0; i < 5; i++) {
-        _robotInterface->Move(RI_MOVE_RIGHT, 10);
-    }
+    _speed = speed;
+    int sleepLength = 500000-(45000*speed);
+
+    _robotInterface->Move(RI_MOVE_RIGHT, 10);
+    usleep(sleepLength);
+    _robotInterface->Move(RI_STOP, 0);
 }
 
 /**************************************
