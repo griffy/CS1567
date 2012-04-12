@@ -735,8 +735,8 @@ squares_t* Camera::findSquares(IplImage *img, int areaThreshold) {
     
     // Down and up scale the image to reduce noise
     cvPyrDown( img, pyr, CV_GAUSSIAN_5x5 );
-    cvPyrDown( pyr, pyr2, CV_GAUSSIAN_5x5 );
-    cvPyrUp( pyr2, pyr, CV_GAUSSIAN_5x5 );
+    //cvPyrDown( pyr, pyr2, CV_GAUSSIAN_5x5 );
+    //cvPyrUp( pyr2, pyr, CV_GAUSSIAN_5x5 );
     cvPyrUp( pyr, img, CV_GAUSSIAN_5x5 );
 
     // Apply the canny edge detector and set the lower to 0 (which forces edges merging) 
@@ -762,9 +762,9 @@ squares_t* Camera::findSquares(IplImage *img, int areaThreshold) {
         // Note: absolute value of an area is used because
         // area may be positive or negative - in accordance with the
         // contour orientation
-        if (result->total == 4 && 
-            fabs(cvContourArea(result,CV_WHOLE_SEQ,0)) > areaThreshold && 
-            cvCheckContourConvexity(result)) {
+        if (result->total >= 4 && 
+            fabs(cvContourArea(result,CV_WHOLE_SEQ,0)) > areaThreshold /*&& 
+            cvCheckContourConvexity(result)*/) {
             s=0;
             for(i=0; i<5; i++) {
                             // Find the minimum angle between joint edges (maximum of cosine)
@@ -777,11 +777,11 @@ squares_t* Camera::findSquares(IplImage *img, int areaThreshold) {
             }
 
             // If cosines of all angles are small (all angles are ~90 degree) then write the vertices to the sequence 
-            if( s < 0.2 ) {
+            //if( s < 0.2 ) {
                 for( i = 0; i < 4; i++ ) {
                     cvSeqPush(squares, (CvPoint*)cvGetSeqElem(result, i));
                 }
-            }
+            //}
         }    
         // Get the next contour
         contours = contours->h_next;

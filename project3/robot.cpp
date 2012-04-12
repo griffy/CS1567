@@ -561,13 +561,17 @@ void Robot::center() {
     while (true) {
         //updateCamera();
 	_robotInterface->Move(RI_HEAD_MIDDLE, 1);
+        sleep(1);
+	_robotInterface->Move(RI_HEAD_MIDDLE, 1);
 	sleep(2);
 
         bool turn = false;
         float centerError = _camera->centerError(COLOR_PINK, &turn);
         sleep(1);
         _robotInterface->Move(RI_HEAD_DOWN, 1);
-
+        sleep(1);
+        _robotInterface->Move(RI_HEAD_DOWN, 1);
+/*
         if (turn) {
             if (_centerTurn(centerError)) {
                 break;
@@ -577,7 +581,7 @@ void Robot::center() {
             if (_centerStrafe(centerError)) {
                 break;
             }
-        }
+        }*/
     }
 
     _centerTurnPID->flushPID();

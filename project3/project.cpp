@@ -29,51 +29,8 @@ int main(int argc, char *argv[]) {
 	Robot *robot = new Robot(argv[1], 0);
 
 	while (true) {
-		//robot->updateCamera();
-		//robot->center();
-		robot->strafeRight(1);
-		robot->strafeLeft(1);
-		usleep(1000000);
-		
-		robot->strafeRight(2);
-		robot->strafeLeft(2);
-		usleep(1000000);
-		
-		robot->strafeRight(3);
-		robot->strafeLeft(3);
-		usleep(1000000);
-		
-		robot->strafeRight(4);
-		robot->strafeLeft(4);
-		usleep(1000000);
-
-		robot->strafeRight(5);
-		robot->strafeLeft(5);
-		usleep(1000000);
-		
-		robot->strafeRight(6);
-		robot->strafeLeft(6);
-		usleep(1000000);
-		
-		robot->strafeRight(7);
-		robot->strafeLeft(7);
-		usleep(1000000);
-		
-		robot->strafeRight(8);
-		robot->strafeLeft(8);
-		usleep(1000000);
-		
-		robot->strafeRight(9);
-		robot->strafeLeft(9);
-		usleep(1000000);
-
-		robot->strafeRight(10);
-		robot->strafeLeft(10);
-		usleep(1000000);
-		//robot->getInterface()->Move(RI_TURN_RIGHT, 1);
-		//robot->getInterface()->Move(RI_TURN_RIGHT, 1);
-		//robot->getInterface()->Move(RI_TURN_LEFT, 1);
-		//usleep(1000000);
+		robot->updateCamera();
+		robot->center();
 	}
 	
 	//robot->move(DIR_EAST, 4); // cells
