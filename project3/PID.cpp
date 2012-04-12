@@ -15,25 +15,12 @@
 #include "PID.h"
 #include "logger.h"
 
-PID::PID(PIDConstants *newConstants) {
+PID::PID(PIDConstants *newConstants, float minError, float maxError) {
 	_constants.kp = newConstants->kp;
 	_constants.ki = newConstants->ki;
 	_constants.kd = newConstants->kd;
-	// default to a min and max for iterm
-	_minValue = -1/20.0;
-	_maxValue = 1/20.0;
-	// zero out integrator error
-	for (int i = 0; i < NUM_INTEGRATOR_VALUES; i++) {
-		_integratorValues[i] = 0.0;
-	}
-}
-
-PID::PID(PIDConstants *newConstants, float minValue, float maxValue) {
-	_constants.kp = newConstants->kp;
-	_constants.ki = newConstants->ki;
-	_constants.kd = newConstants->kd;
-	_minValue = minValue;
-	_maxValue = maxValue;
+	_minError = minError;
+	_maxError = maxError;
 	// zero out integrator error
 	for (int i = 0; i < NUM_INTEGRATOR_VALUES; i++) {
 		_integratorValues[i] = 0.0;
@@ -74,11 +61,11 @@ float PID::updatePID(float error) {
 	// get integral term of the PID control
 	float iTerm = _constants.ki * currentIntegratorError();	
 	// check that the integrator is not too high 
-	if (iTerm > _maxValue) {							
-		iTerm = _maxValue;
+	if (iTerm > _maxError * 0.10) {							
+		iTerm = 0.1;
     }
-	else if (iTerm < _minValue) {
-		iTerm = _minValue;
+	else if (iTerm < _minError * 0.10) {
+		iTerm = -0.1;
     }
 
     // get differential term by multiplying by the change in error 
@@ -91,6 +78,9 @@ float PID::updatePID(float error) {
 	float gain = pTerm + iTerm + dTerm;
 	if (gain > 1.0) {
 		gain = 1.0;
+	}
+	else if (gain < 0.0) {
+		gain = 0.0;
 	}
 
 	return gain;

@@ -58,15 +58,15 @@ Robot::Robot(std::string address, int id) {
 
     printf("kalman filter initialized\n");
 
-    PIDConstants distancePIDConstants = {PID_DIST_KP, PID_DIST_KI, PID_DIST_KD};
-    PIDConstants thetaPIDConstants = {PID_THETA_KP, PID_THETA_KI, PID_THETA_KD};
-    PIDConstants centerPIDConstants = {PID_CENTER_KP, PID_CENTER_KI, PID_CENTER_KD};
-    PIDConstants turnCenterPIDConstants = {PID_TURN_CENTER_KP, PID_TURN_CENTER_KI, PID_TURN_CENTER_KD};
+    PIDConstants movePIDConstants = {PID_MOVE_KP, PID_MOVE_KI, PID_MOVE_KD};
+    PIDConstants turnPIDConstants = {PID_TURN_KP, PID_TURN_KI, PID_TURN_KD};
+    PIDConstants centerTurnPIDConstants = {PID_CENTERTURN_KP, PID_CENTERTURN_KI, PID_CENTERTURN_KD};
+    PIDConstants centerStrafePIDConstants = {PID_CENTERSTRAFE_KP, PID_CENTERSTRAFE_KI, PID_CENTERSTRAFE_KD};
 
-    _distancePID = new PID(&distancePIDConstants, MIN_DIST_GAIN, MAX_DIST_GAIN);
-    _thetaPID = new PID(&thetaPIDConstants, MIN_THETA_GAIN, MAX_THETA_GAIN);
-    _centerPID = new PID(&centerPIDConstants, MIN_CENTER_GAIN, MAX_CENTER_GAIN);
-    _turnCenterPID = new PID(&turnCenterPIDConstants, MIN_TURN_CENTER_GAIN, MAX_TURN_CENTER_GAIN);
+    _movePID = new PID(&movePIDConstants, MIN_MOVE_ERROR, MAX_MOVE_ERROR);
+    _turnPID = new PID(&turnPIDConstants, MIN_TURN_ERROR, MAX_TURN_ERROR);
+    _centerTurnPID = new PID(&centerTurnPIDConstants, MIN_CENTERTURN_ERROR, MAX_CENTERTURN_ERROR);
+    _centerStrafePID = new PID(&centerStrafePIDConstants, MIN_CENTERSTRAFE_ERROR, MAX_CENTERSTRAFE_ERROR);
 
     printf("pid controllers initialized\n");
     
@@ -107,10 +107,10 @@ Robot::~Robot() {
     delete _northStar;
     delete _pose;
     delete _kalmanFilter;
-    delete _distancePID;
-    delete _thetaPID;
-    delete _centerPID;
-    delete _turnCenterPID;
+    delete _movePID;
+    delete _turnPID;
+    delete _centerTurnPID;
+    delete _centerStrafePID;
     delete _map;
     delete _mapStrategy;
 }
@@ -244,8 +244,8 @@ void Robot::moveToCell(float x, float y) {
         }
     } while (thetaError != 0);
 
-    _distancePID->flushPID();
-    _thetaPID->flushPID();
+    _movePID->flushPID();
+    _turnPID->flushPID();
 
     // reset wheel encoder pose to be Kalman pose since we hit our base
     _wheelEncoders->resetPose(_pose);
@@ -271,8 +271,8 @@ void Robot::moveTo(float x, float y) {
         }
     } while (thetaError != 0);
 
-    _distancePID->flushPID();
-    _thetaPID->flushPID();
+    _movePID->flushPID();
+    _turnPID->flushPID();
 
     // reset wheel encoder pose to be Kalman pose since we hit our base
     _wheelEncoders->resetPose(_pose);
@@ -293,7 +293,7 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
     float thetaError;
     float distError;
 
-    float distGain;
+    float moveGain;
 
     printf("heading toward (%f, %f)\n", x, y);
     do {
@@ -357,19 +357,19 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
                   thetaError,
                   thetaDesired);
 
-        distGain = _distancePID->updatePID(distError);
-        _thetaPID->updatePID(thetaError);
+        moveGain = _movePID->updatePID(distError);
+        _turnPID->updatePID(thetaError);
 
-        LOG.write(LOG_LOW, "move_gain", "dist: %f", distGain);
+        LOG.write(LOG_LOW, "move_gain", "move gain: %f", moveGain);
 
         if (fabs(thetaError) > thetaErrorLimit) {
 			printf("theta error of %f too great\n", thetaError);
             return thetaError;
         }
-        int moveSpeed = (int)(1.0/distGain);
-        moveSpeed = Util::capSpeed(moveSpeed, 6);
+        int moveSpeed = (int)(10 - 9 * moveGain);
+        moveSpeed = Util::capSpeed(moveSpeed, 10);
 
-        LOG.write(LOG_MED, "pid_speeds", "forward: %d", moveSpeed);
+        LOG.write(LOG_MED, "pid_speeds", "forward speed: %d", moveSpeed);
 
         moveForward(moveSpeed);
     } while (distError > MAX_DIST_ERROR);
@@ -388,7 +388,7 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
     float theta;
     float thetaError;
 
-    float thetaGain;
+    float turnGain;
  
     printf("adjusting theta\n");
     do {
@@ -419,27 +419,27 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
                   thetaError,
                   thetaGoal);
 
-        thetaGain = _thetaPID->updatePID(thetaError);
+        turnGain = _turnPID->updatePID(thetaError);
 
-        LOG.write(LOG_LOW, "turn_gain", "theta: %f", thetaGain);
+        LOG.write(LOG_LOW, "turn_gain", "turn gain: %f", turnGain);
 
         if (thetaError < -thetaErrorLimit) {
             LOG.write(LOG_MED, "turn_adjust", 
                       "direction: right, since theta error < -limit");
-            int turnSpeed = (int)fabs((1.0/thetaGain));
-            turnSpeed = Util::capSpeed(turnSpeed, 6);
+            int turnSpeed = (int)(10 - 9 * turnGain);
+            turnSpeed = Util::capSpeed(turnSpeed, 10);
 
-            LOG.write(LOG_MED, "pid_speeds", "turn: %d", turnSpeed);
+            LOG.write(LOG_MED, "pid_speeds", "turn speed: %d", turnSpeed);
 
             turnRight(turnSpeed);
         }
         else if(thetaError > thetaErrorLimit){
             LOG.write(LOG_MED, "turn_adjust", 
                       "direction: left, since theta error > limit");
-            int turnSpeed = (int)fabs((1.0/thetaGain));
-            turnSpeed = Util::capSpeed(turnSpeed, 6);
+            int turnSpeed = (int)(10 - 9 * turnGain);
+            turnSpeed = Util::capSpeed(turnSpeed, 10);
 
-            LOG.write(LOG_MED, "pid_speeds", "turn: %d", turnSpeed);
+            LOG.write(LOG_MED, "pid_speeds", "turn speed: %d", turnSpeed);
 
             turnLeft(turnSpeed);
         }
@@ -448,56 +448,12 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
     printf("theta acceptable\n");
 }
 
-// Deprecated
-/**************************************
- * Definition: Turns the robot until it is considered centered
- *             between two squares in a corridor
- **************************************/
- /*
-void Robot::turnCenter() {
-    while (true) {
-        updateCamera();
-
-        float turnCenterError = _camera->centerError(COLOR_PINK);
-        float turnCenterGain = _turnCenterPID->updatePID(turnCenterError);
-
-        LOG.write(LOG_LOW, "turnCenter", "turn center error: %f", turnCenterError);
-        LOG.write(LOG_LOW, "turnCenter", "turn center gain: %f", turnCenterGain);
-
-        if (fabs(turnCenterError) < MAX_TURN_CENTER_ERROR) {
-            // we're close enough to centered, so stop adjusting
-            LOG.write(LOG_LOW, "turnCenter", 
-                      "turn center error: |%f| < %f, stop correcting.", 
-                      turnCenterError, 
-                      MAX_TURN_CENTER_ERROR);
-            break;
-        }
-
-        int turnSpeed = (int)fabs((1.0/turnCenterGain));
-        turnSpeed = Util::capSpeed(turnSpeed, 6);
-
-        LOG.write(LOG_LOW, "pid_speeds", "turn: %d", turnSpeed);
-
-        if (turnCenterError < 0) {
-            LOG.write(LOG_LOW, "turnCenter", "Turn center error: %f, move right", turnCenterError);
-            turnRight(turnSpeed);
-        }
-        else {
-            LOG.write(LOG_LOW, "turnCenter", "Turn center error: %f, move left", turnCenterError);
-            turnLeft(turnSpeed);
-        }
-    }
-
-    _turnCenterPID->flushPID();
-}
-*/
-
 bool Robot::_centerTurn(float centerError) {
     bool success;
 
-    float centerGain = _turnCenterPID->updatePID(centerError);
+    float centerTurnGain = _centerTurnPID->updatePID(centerError);
     LOG.write(LOG_LOW, "centerTurn", "center error: %f", centerError);
-    LOG.write(LOG_LOW, "centerTurn", "center gain: %f", centerGain);
+    LOG.write(LOG_LOW, "centerTurn", "center turn gain: %f", centerTurnGain);
 
     if (fabs(centerError) < MAX_TURN_CENTER_ERROR) {
         success = true;
@@ -509,10 +465,10 @@ bool Robot::_centerTurn(float centerError) {
     else {
         success = false;
 
-        int turnSpeed = (int)fabs((centerGain));
-        turnSpeed = Util::capSpeed(turnSpeed, 8);
+        int turnSpeed = (int)(10 - 9 * centerTurnGain);
+        turnSpeed = Util::capSpeed(turnSpeed, 10);
         
-        LOG.write(LOG_LOW, "pid_speeds", "turn: %d", turnSpeed);
+        LOG.write(LOG_LOW, "pid_speeds", "turn speed: %d", turnSpeed);
 
         if (centerError < 0) {
             LOG.write(LOG_LOW, "centerTurn", "Center error: %f, move right", centerError);
@@ -561,24 +517,24 @@ bool Robot::_centerTurn(float centerError) {
 bool Robot::_centerStrafe(float centerError) {
     bool success;
 
-    float centerGain = _centerPID->updatePID(centerError);
+    float centerStrafeGain = _centerStrafePID->updatePID(centerError);
     LOG.write(LOG_LOW, "centerStrafe", "center error: %f", centerError);
-    LOG.write(LOG_LOW, "centerStrafe", "center gain: %f", centerGain);
+    LOG.write(LOG_LOW, "centerStrafe", "center strafe gain: %f", centerStrafeGain);
 
-    if (fabs(centerError) < MAX_CENTER_ERROR) {
+    if (fabs(centerError) < MAX_STRAFE_CENTER_ERROR) {
         success = true;
         // we're close enough to centered, so stop adjusting
         LOG.write(LOG_LOW, "centerStrafe", 
                   "Center error: |%f| < %f, stop correcting.", 
-                  centerError, MAX_CENTER_ERROR);
+                  centerError, MAX_STRAFE_CENTER_ERROR);
     }
     else {
         success = false;
 
-        int strafeSpeed = (int)fabs((centerGain));
-        strafeSpeed = Util::capSpeed(strafeSpeed, 8);
+        int strafeSpeed = (int)(10 - 9 * centerStrafeGain);
+        strafeSpeed = Util::capSpeed(strafeSpeed, 10);
         
-        LOG.write(LOG_LOW, "pid_speeds", "strafe: %d", strafeSpeed);
+        LOG.write(LOG_LOW, "pid_speeds", "strafe speed: %d", strafeSpeed);
 
         if (centerError < 0) {
             LOG.write(LOG_LOW, "centerStrafe", "Center error: %f, move right", centerError);
@@ -619,8 +575,8 @@ void Robot::center() {
         }
     }
 
-    _centerPID->flushPID();
-    _turnCenterPID->flushPID();
+    _centerTurnPID->flushPID();
+    _centerStrafePID->flushPID();
 }
 
 /**************************************
