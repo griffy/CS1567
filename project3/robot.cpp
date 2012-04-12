@@ -603,10 +603,15 @@ bool Robot::_centerStrafe(float centerError) {
  **************************************/
 void Robot::center() {
     while (true) {
-        updateCamera();
+        //updateCamera();
+	_robotInterface->Move(RI_HEAD_MIDDLE, 1);
+	sleep(2);
 
         bool turn = false;
         float centerError = _camera->centerError(COLOR_PINK, &turn);
+        sleep(1);
+        _robotInterface->Move(RI_HEAD_DOWN, 1);
+
         if (turn) {
             if (_centerTurn(centerError)) {
                 break;
@@ -626,6 +631,9 @@ void Robot::center() {
 /**************************************
  * Definition: Updates the robot's camera, reading in a new image.
  **************************************/
+
+//Deprecated?
+
 void Robot::updateCamera() {
     //Put robot head up for camera use
     _robotInterface->Move(RI_HEAD_MIDDLE, 1);
@@ -746,11 +754,16 @@ void Robot::turnLeft(int speed) {
 	_turnDirection = DIR_LEFT;
 	_movingForward = false;
 	_speed = speed;
-    _robotInterface->Move(RI_TURN_LEFT, speed);
-    int sleepLength = 0; 
-    for (int i = speed; i > 0; i--) {
-        sleepLength += 1000*100; // 1/10th of a second
+    int sleepLength = 300000; 
+    if(speed > 6) { 
+       _robotInterface->Move(RI_TURN_LEFT, 6);
+       sleepLength -= 50000*(speed-6);
+    } else {
+       _robotInterface->Move(RI_TURN_LEFT, speed);
     }
+//    for (int i = speed; i > 0; i--) {
+//        sleepLength += 1000*100; // 1/10th of a second
+//    }
     usleep(sleepLength);
     _robotInterface->Move(RI_STOP, 0);
 }
@@ -765,11 +778,16 @@ void Robot::turnRight(int speed) {
 	_turnDirection = DIR_RIGHT;
 	_movingForward = false;
 	_speed = speed;
-    _robotInterface->Move(RI_TURN_RIGHT, speed);
-    int sleepLength = 0; 
-    for (int i = speed; i > 0; i--) {
-        sleepLength += 1000*100; // 1/10th of a second
+    int sleepLength = 300000; 
+    if(speed > 6) { 
+       _robotInterface->Move(RI_TURN_RIGHT, 6);
+       sleepLength -= 50000*(speed-6);
+    } else {
+       _robotInterface->Move(RI_TURN_RIGHT, speed);
     }
+//    for (int i = speed; i > 0; i--) {
+//        sleepLength += 1000*100; // 1/10th of a second
+//    }
     usleep(sleepLength);
     _robotInterface->Move(RI_STOP, 0);
 }

@@ -362,6 +362,9 @@ float Camera::corridorSlopeError(int color, bool *turn) {
     regressionLine rightSide = leastSquaresRegression(color, IMAGE_RIGHT);
     regressionLine wholeImage = leastSquaresRegression(color, IMAGE_ALL);
 
+    float xIntersect = 0;
+    float yIntersect = 0;
+
     LOG.write(LOG_LOW, "slopeError", 
               "Left squares found: %d", leftSide.numSquares);
     LOG.write(LOG_LOW, "slopeError", 
@@ -372,6 +375,17 @@ float Camera::corridorSlopeError(int color, bool *turn) {
               "Right equation: y = %f*x + %f, r^2 = %f", rightSide.slope, rightSide.intercept, rightSide.rSquared);
     LOG.write(LOG_LOW, "slopeError", 
               "Total equation: y = %f*x + %f, r^2 = %f", wholeImage.slope, wholeImage.intercept, wholeImage.rSquared);
+
+    if(leftSide.numSquares >= 2 && rightSide.numSquares >= 2) {
+       xIntersect = (rightSide.intercept - leftSide.intercept)/(leftSide.slope - rightSide.slope);
+       yIntersect = leftSide.slope*xIntersect + leftSide.intercept;
+
+       LOG.write(LOG_LOW, "slopeError",
+      	         "Line intersection: (%f, %f)", xIntersect, yIntersect);
+    } else {
+       xIntersect = -999;
+       yIntersect = -999;
+    }
     
     // draw the lines of regression so we can see them
     IplImage *bgr = getBGRImage();
