@@ -47,36 +47,44 @@
 #define WE_Y_UNCERTAIN 0.05
 #define WE_THETA_UNCERTAIN 0.15
 
-// PID gains min and max
-#define MIN_DIST_GAIN -0.1
-#define MAX_DIST_GAIN 0.1
-#define MIN_THETA_GAIN -0.05
-#define MAX_THETA_GAIN 0.05
-#define MIN_CENTER_GAIN -0.05
-#define MAX_CENTER_GAIN 0.05
-#define MIN_TURN_CENTER_GAIN -0.05
-#define MAX_TURN_CENTER_GAIN 0.05
+// Distance PID
+#define PID_MOVE_KP 0.8
+#define PID_MOVE_KI 0.05
+#define PID_MOVE_KD 0.05
 
-// PID tuning constants
-#define PID_DIST_KP 0.8
-#define PID_DIST_KI 0.05
-#define PID_DIST_KD 0.05
-#define PID_THETA_KP 0.65
-#define PID_THETA_KI 0.001
-#define PID_THETA_KD 0.001
-#define PID_CENTER_KP 0.03
-#define PID_CENTER_KI 0.0001
-#define PID_CENTER_KD 0.0001
-#define PID_TURN_CENTER_KP 0.65
-#define PID_TURN_CENTER_KI 0.001
-#define PID_TURN_CENTER_KD 0.001
+#define MIN_MOVE_ERROR 0
+#define MAX_MOVE_ERROR 65
+
+// Turn PID (based on theta error)
+#define PID_TURN_KP 0.8
+#define PID_TURN_KI 0.15
+#define PID_TURN_KD 0.05
+
+#define MIN_TURN_ERROR -3.14159
+#define MAX_TURN_ERROR 3.14159
+
+// Turn PID (based on center error)
+#define PID_CENTERTURN_KP 0.8
+#define PID_CENTERTURN_KI 0.35
+#define PID_CENTERTURN_KD 0.30
+
+#define MIN_CENTERTURN_ERROR -1.0
+#define MAX_CENTERTURN_ERROR 1.0
+
+// Strafe PID (based on center error)
+#define PID_CENTERSTRAFE_KP 0.8
+#define PID_CENTERSTRAFE_KI 0.25
+#define PID_CENTERSTRAFE_KD 0.30
+
+#define MIN_CENTERSTRAFE_ERROR -1.0
+#define MAX_CENTERSTRAFE_ERROR 1.0
 
 // acceptable proximities from base
 #define MAX_DIST_ERROR 10.0 // in cm
 #define MAX_THETA_ERROR DEGREE_20
 
 // acceptable threshold for being in the center of squares (out of 1)
-#define MAX_CENTER_ERROR 0.1
+#define MAX_STRAFE_CENTER_ERROR 0.1
 #define MAX_TURN_CENTER_ERROR 0.1
 
 // the largest filter size (used for prefilling data)

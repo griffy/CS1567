@@ -27,8 +27,7 @@ typedef struct {
 
 class PID {
 public:
-	PID(PIDConstants *constants);
-	PID(PIDConstants *constants, float minValue, float maxValue);
+	PID(PIDConstants *constants, float minError, float maxError);
 	float updatePID(float error);
 	void flushPID();
 	void addErrorToIntegrator(float error);
@@ -38,8 +37,8 @@ public:
 private:
 	float _integratorValues[NUM_INTEGRATOR_VALUES];
 	PIDConstants _constants;
-	float _minValue;
-	float _maxValue;
+	float _minError;
+	float _maxError;
 };
 
 #endif
