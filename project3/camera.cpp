@@ -377,7 +377,11 @@ float Camera::corridorSlopeError(int color, bool *turn) {
     LOG.write(LOG_LOW, "slopeError", 
               "Right equation: y = %f*x + %f, r^2 = %f", rightSide.slope, rightSide.intercept, rightSide.rSquared);
     LOG.write(LOG_LOW, "slopeError", 
-              "Total equation: y = %f*x + %f, r^2 = %f", wholeImage.slope, wholeImage.intercept, wholeImage.rSquared);
+              "Total equation: y = %f*x + %f, r^2 = %f", wholeImage.slope, wholeImage.intercept, wholeImage.rSquared); 
+    LOG.write(LOG_LOW, "slopeError", 
+              "Clean Left squares found: %d", leftClean.numSquares);
+    LOG.write(LOG_LOW, "slopeError", 
+              "Clean Right squares found: %d", rightClean.numSquares);
     LOG.write(LOG_LOW, "slopeError", 
               "Clean Left equation: y = %f*x + %f, r^2 = %f", leftClean.slope, leftClean.intercept, leftClean.rSquared);
     LOG.write(LOG_LOW, "slopeError", 
@@ -607,7 +611,6 @@ squares_t* Camera::rmOverlappingSquares(squares_t *inputSquares) {
                         }
                     } else {
                         //get rid of THIS square! (don't store it)
-                        break;
                     }
                 } else {
                     //if not end of list (iterator while loop), continue
@@ -617,8 +620,11 @@ squares_t* Camera::rmOverlappingSquares(squares_t *inputSquares) {
                         newSquare->area = inputSquares->area;
                         newSquare->center.x = inputSquares->center.x;
                         newSquare->center.y = inputSquares->center.y;
+                        newSquare->next = NULL;
                         iterator->next = newSquare;
-                        break; //might just want to make it fall off the end of the list
+                        
+                        //might just want to make it fall off the end of the list
+                        iterator = iterator->next;
                     }
                 }
                 preIterator = iterator;
