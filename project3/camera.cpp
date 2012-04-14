@@ -609,6 +609,7 @@ squares_t* Camera::rmOverlappingSquares(squares_t *inputSquares) {
                             newSquare->next = iterator->next;
                             preIterator->next = newSquare;
                         }
+                        break;
                     } else {
                         //get rid of THIS square! (don't store it)
                     }
