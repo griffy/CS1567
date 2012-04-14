@@ -15,6 +15,7 @@
 #include "camera.h"
 #include "logger.h"
 #include "utilities.h"
+#include <math.h>
 
 Camera::Camera(RobotInterface *robotInterface) {
     _robotInterface = robotInterface;
@@ -358,9 +359,11 @@ float Camera::centerDistanceError(int color, bool *turn) {
 float Camera::corridorSlopeError(int color, bool *turn) {
     *turn = false;
     // find a line of regression for each side of the image
-    regressionLine leftSide = leastSquaresRegression(color, IMAGE_LEFT);
-    regressionLine rightSide = leastSquaresRegression(color, IMAGE_RIGHT);
-    regressionLine wholeImage = leastSquaresRegression(color, IMAGE_ALL);
+    regressionLine leftSide = leastSquaresRegression(color, IMAGE_LEFT, 0);
+    regressionLine rightSide = leastSquaresRegression(color, IMAGE_RIGHT, 0);
+    regressionLine wholeImage = leastSquaresRegression(color, IMAGE_ALL, 0);
+    regressionLine leftClean = leastSquaresRegression(color, IMAGE_LEFT, 1);
+    regressionLine rightClean = leastSquaresRegression(color, IMAGE_RIGHT, 1);
 
     float xIntersect = 0;
     float yIntersect = 0;
@@ -375,6 +378,11 @@ float Camera::corridorSlopeError(int color, bool *turn) {
               "Right equation: y = %f*x + %f, r^2 = %f", rightSide.slope, rightSide.intercept, rightSide.rSquared);
     LOG.write(LOG_LOW, "slopeError", 
               "Total equation: y = %f*x + %f, r^2 = %f", wholeImage.slope, wholeImage.intercept, wholeImage.rSquared);
+    LOG.write(LOG_LOW, "slopeError", 
+              "Clean Left equation: y = %f*x + %f, r^2 = %f", leftClean.slope, leftClean.intercept, leftClean.rSquared);
+    LOG.write(LOG_LOW, "slopeError", 
+              "Clean Right equation: y = %f*x + %f, r^2 = %f", rightClean.slope, rightClean.intercept, rightClean.rSquared);
+
 
     if(leftSide.numSquares >= 2 && rightSide.numSquares >= 2) {
        xIntersect = (rightSide.intercept - leftSide.intercept)/(leftSide.slope - rightSide.slope);
@@ -481,7 +489,7 @@ float Camera::corridorSlopeError(int color, bool *turn) {
  * Returns:    A regressionLine struct representing the 
  *             calculated line of best fit
  **************************************/
-regressionLine Camera::leastSquaresRegression(int color, int side) {
+regressionLine Camera::leastSquaresRegression(int color, int side, bool rmOverlap) {
     regressionLine result;
 
     int width = thresholdedOf(color)->width;
@@ -489,7 +497,7 @@ regressionLine Camera::leastSquaresRegression(int color, int side) {
 
     LOG.write(LOG_LOW, "regression", "image center: %d", center);
 
-    result.numSquares = squareCount(color, side);
+    result.numSquares = squareCount(color, side, rmOverlap);
     
     // do we have enough squares to find a line?
     if (result.numSquares >= 2) {
@@ -500,6 +508,9 @@ regressionLine Camera::leastSquaresRegression(int color, int side) {
 	float ySqSum = 0.0;
 
         squares_t *curSquare = squaresOf(color);
+        if(rmOverlap) {
+            curSquare = rmOverlappingSquares(curSquare);
+        }
         while (curSquare != NULL) {
 	        switch (side) {
 	        case IMAGE_LEFT:	
@@ -548,6 +559,76 @@ regressionLine Camera::leastSquaresRegression(int color, int side) {
     }
 
     return result;
+}
+
+/**************************************
+ * Definition: 	Takes a list of squares and returns it 
+ * 		without any overlapping squares (largest square is kept)
+ *
+ * Parameters: 	squares_t containing a list of squares (from findSquares() call)
+ * 		
+ *
+ * Returns: 	a squares_t containing the largest non-overlapping (distinct) squares
+ * 		null if inputSquares is null
+ * ************************************/
+squares_t* Camera::rmOverlappingSquares(squares_t *inputSquares) {
+    squares_t *sqHead = NULL;
+    squares_t *newSquare = NULL;
+    squares_t *sqLast = NULL;
+    squares_t *iterator = NULL;
+    squares_t *preIterator = NULL;
+
+    LOG.write(LOG_HIGH, "rmOverlap", "entered rmOverlap method");
+
+    while (inputSquares != NULL) { //Loop through all input squares once!
+        if(sqHead == NULL) { //if clean list has not been started
+	    sqHead = new squares_t;
+            sqHead->area = inputSquares->area;
+            sqHead->center.x = inputSquares->center.x;
+            sqHead->center.y = inputSquares->center.y;
+            sqHead->next = NULL;
+        } else {
+            //iterate through the clean list
+            iterator = sqHead;
+            while(iterator != NULL) {
+                //check distance cutoff
+                if(sqrt(pow(fabs(iterator->center.x - inputSquares->center.x),2.0)+pow(fabs(iterator->center.y - inputSquares->center.y),2.0)) < SQUARE_OVERLAP_DIST) {
+                    if(inputSquares->area > iterator->area) {
+                        newSquare = new squares_t;
+                        newSquare->area = inputSquares->area;
+                        newSquare->center.x = inputSquares->center.x;
+                        newSquare->center.y = inputSquares->center.y;
+                        if(iterator == sqHead) { //if we must replace the head
+                            newSquare->next = sqHead->next;
+                            sqHead = newSquare;
+                        } else { //other insertion 
+                            newSquare->next = iterator->next;
+                            preIterator->next = newSquare;
+                        }
+                    } else {
+                        //get rid of THIS square! (don't store it)
+                        break;
+                    }
+                } else {
+                    //if not end of list (iterator while loop), continue
+                    //if end of list, insert on end and break
+                    if(iterator->next == NULL) {
+                        newSquare = new squares_t;
+                        newSquare->area = inputSquares->area;
+                        newSquare->center.x = inputSquares->center.x;
+                        newSquare->center.y = inputSquares->center.y;
+                        iterator->next = newSquare;
+                        break; //might just want to make it fall off the end of the list
+                    }
+                }
+                preIterator = iterator;
+                iterator = iterator->next;
+            }
+        }
+        inputSquares = inputSquares->next; //Next square
+    } 
+
+    return sqHead; //Returns a list of distinct squares 
 }
 
 /**************************************
@@ -604,7 +685,7 @@ squares_t* Camera::biggestSquare(int color, int side) {
  *
  * Returns:    an int with the count
  **************************************/
-int Camera::squareCount(int color, int side) {
+int Camera::squareCount(int color, int side, bool rmOverlap) {
     int squareCount = 0;
 
     int width = thresholdedOf(color)->width;
@@ -613,6 +694,9 @@ int Camera::squareCount(int color, int side) {
     // iterate through the squares and count how many there are
     // on the specified side of the image
     squares_t *curSquare = squaresOf(color);
+    if(rmOverlap) {
+        curSquare = rmOverlappingSquares(curSquare);
+    }
     while (curSquare != NULL) {
         switch (side) {
         case IMAGE_LEFT: 
@@ -702,6 +786,7 @@ squares_t* Camera::findSquaresOf(int color, int areaThreshold) {
  * Definition: Finds squares in an image with the given minimum size
  *
  * (Taken from the API and modified slightly)
+ * Doesn't require exactly 4 sides, convexity or near 90 deg angles either ('findBlobs')
  *
  * Parameters: the image to find squares in and the minimum area for a square
  *

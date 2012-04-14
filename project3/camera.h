@@ -42,6 +42,9 @@
 // smallest acceptable square to pick up in image processing
 #define DEFAULT_SQUARE_SIZE 50 // in pixels
 
+// closest distance allowed for square centers without removing due to overlap
+#define SQUARE_OVERLAP_DIST 10 // in pixels
+
 // largest allowable slope between centers of two largest squares
 // to decide if they're on the same plane or not
 #define MAX_PLANE_SLOPE 10 // in pixels
@@ -119,12 +122,13 @@ public:
 	float centerError(int color, bool *turn);
 	float centerDistanceError(int color, bool *turn);
 	float corridorSlopeError(int color, bool *turn);
-    regressionLine leastSquaresRegression(int color, int side);	
+	regressionLine leastSquaresRegression(int color, int side, bool rmOverlap);	
 	bool onSamePlane(squares_t *leftSquare, squares_t *rightSquare);
 	squares_t* biggestSquare(int color, int side);
-	int squareCount(int color, int side);
+	int squareCount(int color, int side, bool rmOverlap);
 	IplImage* thresholdedOf(int color);
-	squares_t* squaresOf(int color);
+        squares_t* rmOverlappingSquares(squares_t *inputSquares);
+        squares_t* squaresOf(int color);
 	squares_t* findSquaresOf(int color, int areaThreshold);
 	squares_t* findSquares(IplImage *img, int areaThreshold);
 	IplImage* getHSVImage();
