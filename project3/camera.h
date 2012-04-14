@@ -70,7 +70,7 @@
 
 // more specific slope limits for lines of regression based on 
 // empirical data
-// TODO: Re-parameterize this?
+// Tom's parameters - Project 3 Square locations - 4/14/12
 #define RIGHT_LEFT_SLOPE -0.35
 #define RIGHT_RIGHT_SLOPE -2.22
 #define RIGHT_MIDDLE_SLOPE -0.45
@@ -122,10 +122,10 @@ public:
 	float centerError(int color, bool *turn);
 	float centerDistanceError(int color, bool *turn);
 	float corridorSlopeError(int color, bool *turn);
-	regressionLine leastSquaresRegression(int color, int side, bool rmOverlap);	
+	regressionLine leastSquaresRegression(int color, int side);	
 	bool onSamePlane(squares_t *leftSquare, squares_t *rightSquare);
 	squares_t* biggestSquare(int color, int side);
-	int squareCount(int color, int side, bool rmOverlap);
+	int squareCount(int color, int side);
 	IplImage* thresholdedOf(int color);
         squares_t* rmOverlappingSquares(squares_t *inputSquares);
         squares_t* squaresOf(int color);
