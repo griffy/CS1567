@@ -156,6 +156,9 @@ void Robot::move(int direction, int numCells) {
     int cellsTraveled = 0;
     while (cellsTraveled < numCells) {
         // first attempt to center ourselves before moving (except not first)
+        if(sideCenter(direction))
+			turn(direction);
+		
         center();
 		updatePose();
         // based on the direction, move in the global coord system
@@ -179,6 +182,38 @@ void Robot::move(int direction, int numCells) {
         cellsTraveled++;
         LOG.write(LOG_LOW, "move", "Made it to cell %d", cellsTraveled);
     }
+}
+
+bool Robot::sideCenter(int direction){
+	int type = _map->getCurrentCell()->getCellType();
+	if(type == CELL_HALL)
+		return false;
+	int openings = _map->getCurrentCell()->getOpenings();
+
+	switch (direction){
+		case DIR_NORTH:
+		case DIR_SOUTH:
+			if(openings & DIR_EAST != 0){
+				//opening to the east
+				turn(DIR_EAST);
+			}
+			else if(openings & DIR_WEST != 0){
+				turn(DIR_WEST);
+			}
+			break;
+		case DIR_EAST:
+		case DIR_WEST:
+			if(openings & DIR_NORTH != 0){
+				//opening to the east
+				turn(DIR_NORTH);
+			}
+			else if(openings & DIR_SOUTH != 0){
+				turn(DIR_SOUTH);
+			}
+			break;
+	}
+	center();
+	return true;
 }
 
 void Robot::turn(int direction) {

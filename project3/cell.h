@@ -3,10 +3,10 @@
 
 #include <robot_if++.h>
 
-#define CELL_T 0
-#define CELL_CORNER 1
-#define CELL_HALL 2
-#define CELL_INTERSECTION 3
+#define CELL_T 1
+#define CELL_CORNER 2
+#define CELL_HALL 4
+#define CELL_INTERSECTION 8
 
 #define RIGHT 1
 #define DOWN 2
@@ -34,6 +34,7 @@ public:
 	void addOpening(unsigned char dir);
 	void deleteOpening(unsigned char direction);
     int getOpenings();
+	int getCellType();
 	
 	int x;
 	int y;

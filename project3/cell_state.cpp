@@ -36,7 +36,7 @@ int CellState::_updateCellT(int newTagState) {
 	case TAGS_BOTH_GE_TWO:
 		switch (newTagState) {
 		case TAGS_BOTH_GE_TWO:
-			newState = STATE_TURN; // maybe stand, since two in a row?
+			newState = STATE_STAND;
 			break;
 		case TAGS_BOTH_ONE:
 			newState = STATE_TURN;
@@ -123,7 +123,7 @@ int CellState::_updateCellCorner(int newTagState) {
 	case TAGS_BOTH_GE_TWO:
 		switch (newTagState) {
 		case TAGS_BOTH_GE_TWO:
-			newState = STATE_TURN; // should be stand?
+			newState = STATE_STAND; // should be stand?
 			break;
 		case TAGS_BOTH_ONE:
 			newState = STATE_TURN;
@@ -204,7 +204,7 @@ int CellState::_updateCellCorner(int newTagState) {
 }
 
 int CellState::_updateCellHall(int newTagState) {
-	int newState;	
+	int newState;
 
 	switch (_tagState) {
 	case TAGS_BOTH_GE_TWO:

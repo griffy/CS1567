@@ -92,7 +92,7 @@ void Map::_loadMap() {
     for (int x = 0; x < MAP_WIDTH; x++) {
         for (int y = 0; y < MAP_HEIGHT; y++) {
         	LOG.printfScreen(LOG_LOW, "loadMap_openings", 
-        					 "%d", cells[x][y]->isBlocked());
+        					 "%d\t", cells[x][y]->isBlocked());
         }
         LOG.printfScreen(LOG_LOW, "loadMap_openings", "\n");
     }
@@ -102,7 +102,7 @@ void Map::_loadMap() {
     for (int x = 0; x < MAP_WIDTH; x++) {
         for (int y = 0; y < MAP_HEIGHT; y++) {
         	LOG.printfScreen(LOG_LOW, "loadMap_openings", 
-        					 "%d", cells[x][y]->getOpenings());
+        					 "%d\t", cells[x][y]->getOpenings());
         }
         LOG.printfScreen(LOG_LOW, "loadMap_openings", "\n");
     }
@@ -116,37 +116,25 @@ void Map::_adjustOpenings(){
 		      
 		    if (x+1 < MAP_WIDTH) {
 		        if (!cells[x+1][y]->isBlocked()) {
-		        	cells[x][y]->addOpening(RIGHT);
-		        }
-		        else {
-		        	cells[x][y]->deleteOpening(RIGHT);
+		        	cells[x][y]->addOpening(DIR_WEST);
 		        }
 			}
 
-		    if (x-1 > 0) {
+		    if (x-1 >= 0) {
 		        if (!cells[x-1][y]->isBlocked()) {
-		        	cells[x][y]->addOpening(LEFT);
-		        }
-		        else {
-		        	cells[x][y]->deleteOpening(LEFT);
+		        	cells[x][y]->addOpening(DIR_EAST);
 		        }
 		    }
 
-		    if (y+1 > MAP_HEIGHT) {
+		    if (y+1 < MAP_HEIGHT) {
 		        if (!cells[x][y+1]->isBlocked()) {
-		        	cells[x][y]->addOpening(UP);
-		        }
-		        else {
-		        	cells[x][y]->deleteOpening(UP);
+		        	cells[x][y]->addOpening(DIR_NORTH);
 		        }
 		    }
 
-		    if (y-1 > 0) {
+		    if (y-1 >= 0) {
 		        if (!cells[x][y-1]->isBlocked()) {
-		          	cells[x][y]->addOpening(DOWN);
-		        }
-		        else {
-		          	cells[x][y]->deleteOpening(DOWN);
+		          	cells[x][y]->addOpening(DIR_SOUTH);
 		        }
 		    }
 	    }
