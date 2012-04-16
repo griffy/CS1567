@@ -7,6 +7,12 @@
 #define MAP_WIDTH 7
 #define MAP_HEIGHT 5
 
+#define DIR_NORTH 1
+#define DIR_EAST 2
+#define DIR_SOUTH 4
+#define DIR_WEST 8
+
+
 class Map {
 public:
 	Map(RobotInterface *robotInterface, int startingX, int startingY);
