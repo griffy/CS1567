@@ -172,6 +172,309 @@ void Camera::update() {
     cvWaitKey(10);
 }
 
+float Camera::centerError(int color, int prevTagState, bool *turn) {
+    *turn = false;
+
+    int slopeTurnCount = 0;
+    int centerDistTurnCount = 0;
+    int intersectTurnCount = 0;
+
+    int numGoodSlopeErrors = 0;
+    int numGoodCenterDistErrors = 0;
+    int numGoodIntersectErrors = 0;
+
+    float totalGoodSlopeError = 0.0;
+    float totalGoodCenterDistError = 0.0;
+    float totalGoodIntersectError = 0.0;
+
+    float totalGoodSlopeCertainty = 0.0;
+    float totalGoodCenterDistCertainty = 0.0;
+    float totalGoodIntersectCertainty = 0.0;
+
+    float avgSlopeError = 0.0;
+    float avgCenterDistError = 0.0;
+    float avgIntersectError = 0.0;
+
+    float avgSlopeCertainty = 0.0;
+    float avgCenterDistCertainty = 0.0;
+    float avgIntersectCertainty = 0.0;
+
+    bool avgSlopeTurn = false;
+    bool avgCenterDistTurn = false;
+    bool avgIntersectTurn = false;
+
+    // calculate slope and center distance errors the specified number
+    // of times, ignoring -999's (which say they found nothing good)
+    for (int i = 0; i < NUM_CAMERA_ERRORS; i++) {
+        update();
+
+        bool slopeTurn = false;
+        bool centerDistTurn = false;
+        bool intersectTurn = false;
+
+        float slopeCertainty = 0.0;
+        float centerDistCertainty = 0.0;
+        float intersectCertainty = 0.0;
+
+        float slopeError = corridorSlopeError(color, &slopeTurn, &slopeCertainty);
+        float centerDistError = centerDistanceError(color, &centerDistTurn, &centerDistCertainty);
+        float intersectError = intersectError(color, &intersectTurn, &intersectCertainty);
+
+        if (slopeCertainty != 0.0) {
+            numGoodSlopeErrors++;
+            totalGoodSlopeError += slopeError;
+            totalGoodSlopeCertainty += slopeCertainty;
+            if (slopeTurn) {
+                slopeTurnCount++;
+            }
+        }
+
+        if (centerDistCertainty != 0.0) {
+            numGoodCenterDistErrors++;
+            totalGoodCenterDistError += centerDistError;
+            totalGoodCenterDistCertainty += centerDistCertainty;
+            if (centerDistTurn) {
+                centerDistTurnCount++;
+            }
+        }
+
+        if (intersectCertainty != 0.0) {
+            numGoodIntersectErrors++;
+            totalGoodIntersectError += intersectError;
+            totalGoodIntersectCertainty += intersectCertainty;
+            if (intersectTurn) {
+                intersectTurnCount++;
+            }
+        }
+    }
+
+    float avgSlopeError = totalGoodSlopeError / (float)numGoodSlopeErrors;
+    float avgCenterDistError = totalGoodCenterDistError / (float)numGoodCenterDistErrors;
+    float avgIntersectError = totalGoodIntersectError / (float)numGoodIntersectErrors;
+
+    float avgSlopeCertainty = totalGoodSlopeCertainty / (float)numGoodSlopeErrors;
+    float avgCenterDistCertainty = totalGoodCenterDistCertainty / (float)numGoodCenterDistErrors;
+    float avgIntersectCertainty = totalGoodIntersectCertainty / (float)numGoodIntersectErrors;
+
+    LOG.write(LOG_LOW, "centerError", "Avg. slope error: %f", avgSlopeError);
+    LOG.write(LOG_LOW, "centerError", "Avg. center dist. error: %f", avgCenterDistError);
+    LOG.write(LOG_LOW, "centerError", "Avg. intersect error: %f", avgIntersectError);
+
+    LOG.write(LOG_LOW, "centerError", "Avg. slope certainty: %f", avgSlopeCertainty);
+    LOG.write(LOG_LOW, "centerError", "Avg. center dist. certainty: %f", avgCenterDistCertainty);
+    LOG.write(LOG_LOW, "centerError", "Avg. intersect certainty: %f", avgIntersectCertainty);
+
+    if (slopeTurnCount > numGoodSlopeErrors / 2) {
+        avgSlopeTurn = true;
+    }
+
+    if (centerDistTurnCount > numGoodCenterDistErrors / 2) {
+        avgCenterDistTurn = true;
+    }
+
+    if (intersectTurnCount > numGoodIntersectErrors / 2) {
+        avgIntersectTurn = true;
+    }
+
+    // based on our previous state, let's modify
+    // the certainties based on empirical data
+    // TODO: find actual certainty increments/decrements based
+    //       off empirical data
+    if (avgSlopeCertainty != 1.0 && numGoodSlopeErrors > 0) {
+        if (avgSlopeTurn) {
+            switch (prevTagState) {
+            case TAGS_BOTH_GE_TWO:
+                avgSlopeCertainty += 0.10;
+                break;
+            case TAGS_BOTH_ONE:
+                avgSlopeCertainty += 0.10;
+                break;
+            case TAGS_ONE_OR_NONE:
+                avgSlopeCertainty += 0.10;
+                break;
+            case TAGS_LESS_LEFT:
+                avgSlopeCertainty += 0.10;
+                break;
+            case TAGS_LESS_RIGHT:
+                avgSlopeCertainty += 0.10;
+                break;
+            }
+        }
+        else {
+            switch (prevTagState) {
+            case TAGS_BOTH_GE_TWO:
+                avgSlopeCertainty += 0.10;
+                break;
+            case TAGS_BOTH_ONE:
+                avgSlopeCertainty += 0.10;
+                break;
+            case TAGS_ONE_OR_NONE:
+                avgSlopeCertainty += 0.10;
+                break;
+            case TAGS_LESS_LEFT:
+                avgSlopeCertainty += 0.10;
+                break;
+            case TAGS_LESS_RIGHT:
+                avgSlopeCertainty += 0.10;
+                break;
+            }
+        }
+    }
+
+    if (avgCenterDistCertainty != 1.0 && numGoodCenterDistErrors > 0) {
+        if (avgCenterDistTurn) {
+            switch (prevTagState) {
+            case TAGS_BOTH_GE_TWO:
+                avgCenterDistCertainty += 0.10;
+                break;
+            case TAGS_BOTH_ONE:
+                avgCenterDistCertainty += 0.10;
+                break;
+            case TAGS_ONE_OR_NONE:
+                avgCenterDistCertainty += 0.10;
+                break;
+            case TAGS_LESS_LEFT:
+                avgCenterDistCertainty += 0.10;
+                break;
+            case TAGS_LESS_RIGHT:
+                avgCenterDistCertainty += 0.10;
+                break;
+            }
+        }
+        else {
+            switch (prevTagState) {
+            case TAGS_BOTH_GE_TWO:
+                avgCenterDistCertainty += 0.10;
+                break;
+            case TAGS_BOTH_ONE:
+                avgCenterDistCertainty += 0.10;
+                break;
+            case TAGS_ONE_OR_NONE:
+                avgCenterDistCertainty += 0.10;
+                break;
+            case TAGS_LESS_LEFT:
+                avgCenterDistCertainty += 0.10;
+                break;
+            case TAGS_LESS_RIGHT:
+                avgCenterDistCertainty += 0.10;
+                break;
+            }
+        }
+    }
+
+    if (avgIntersectCertainty != 1.0 && numGoodIntersectErrors > 0) {
+        if (avgSlopeTurn) {
+            switch (prevTagState) {
+            case TAGS_BOTH_GE_TWO:
+                avgIntersectCertainty += 0.10;
+                break;
+            case TAGS_BOTH_ONE:
+                avgIntersectCertainty += 0.10;
+                break;
+            case TAGS_ONE_OR_NONE:
+                avgIntersectCertainty += 0.10;
+                break;
+            case TAGS_LESS_LEFT:
+                avgIntersectCertainty += 0.10;
+                break;
+            case TAGS_LESS_RIGHT:
+                avgIntersectCertainty += 0.10;
+                break;
+            }
+        }
+        else {
+            switch (prevTagState) {
+            case TAGS_BOTH_GE_TWO:
+                avgIntersectCertainty += 0.10;
+                break;
+            case TAGS_BOTH_ONE:
+                avgIntersectCertainty += 0.10;
+                break;
+            case TAGS_ONE_OR_NONE:
+                avgIntersectCertainty += 0.10;
+                break;
+            case TAGS_LESS_LEFT:
+                avgIntersectCertainty += 0.10;
+                break;
+            case TAGS_LESS_RIGHT:
+                avgIntersectCertainty += 0.10;
+                break;
+            }
+        }
+    }
+
+    float turnCertainty = 0.0;
+    float strafeCertainty = 0.0;
+    if (avgSlopeTurn) {
+        turnCertainty += avgSlopeCertainty;
+    }
+    else {
+        strafeCertainty += avgSlopeCertainty;
+    }
+
+    if (avgCenterDistTurn) {
+        turnCertainty += avgCenterDistCertainty;
+    }
+    else {
+        strafeCertainty += avgCenterDistCertainty;
+    }
+
+    if (avgIntersectTurn) {
+        turnCertainty += avgIntersectCertainty;
+    }
+    else {
+        strafeCertainty += avgIntersectCertainty;
+    }
+
+    if (turnCertainty > strafeCertainty) {
+        *turn = true;
+    }
+    else {
+        *turn = false;
+    }
+
+    // TODO: if necessary, modify total error based on each certainty
+    float totalError = 0.0;
+    int numErrors = 0;
+    if (*turn) {
+        if (avgSlopeTurn) {
+            numErrors++;
+            totalError += avgSlopeError;
+        }
+
+        if (avgCenterDistTurn) {
+            numErrors++;
+            totalError += avgCenterDistError;
+        }
+
+        if (avgIntersectTurn) {
+            numErrors++;
+            totalError += avgIntersectError;
+        }
+    }
+    else {
+        if (!avgSlopeTurn) {
+            numErrors++;
+            totalError += avgSlopeError;
+        }
+
+        if (!avgCenterDistTurn) {
+            numErrors++;
+            totalError += avgCenterDistError;
+        }
+
+        if (!avgIntersectTurn) {
+            numErrors++;
+            totalError += avgIntersectError;
+        }
+    }
+
+    if (numErrors == 0) {
+        return 0.0;
+    }
+
+    return totalError / (float)numErrors;
+}
 /**************************************
  * Definition: Gives an error specifying how far away from the center
  *             of the squares (corridor) the rovio is, using both
