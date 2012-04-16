@@ -131,10 +131,10 @@ private:
 	bool _movingForward;
     int _heading;
 
-    PID* _distancePID;
-    PID* _thetaPID;
-    PID* _centerPID;
-    PID* _turnCenterPID;
+    PID* _movePID;
+    PID* _turnPID;
+    PID* _centerTurnPID;
+    PID* _centerStrafePID;
 
     int _failLimit;
 
