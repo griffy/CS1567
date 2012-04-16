@@ -42,11 +42,6 @@
 
 #define NUM_SPEEDS 11
 
-#define DIR_NORTH 0
-#define DIR_SOUTH 1
-#define DIR_EAST 2
-#define DIR_WEST 3
-
 #define DIR_LEFT 0
 #define DIR_RIGHT 1
 
@@ -121,6 +116,7 @@ public:
     void printSuccessPhrase();
     void printFailPhrase();
     void rockOut();
+	bool sideCenter(int direction);
 
     Camera *_camera;
 private:

@@ -51,6 +51,8 @@ void Cell::claimRobot() {
  **************************************/
 void Cell::update(map_obj_t *mapObj) {
 	// TODO: check this to make sure it's correct
+	_openings=0;
+
 	switch (mapObj->type) {
 	case MAP_OBJ_EMPTY:
 		setPoints(0);
@@ -130,6 +132,11 @@ void Cell::setPoints(int points) {
 	_points = points;
 }
 
+int Cell::getCellType(){
+	return _type;
+}
+
+
 /**************************************
  * Definition: Determines if the cell is blocked.
  *             A cell can be blocked by being:
@@ -181,7 +188,7 @@ void Cell::addOpening(unsigned char direction) {
 }
 
 void Cell::deleteOpening(unsigned char direction) {
-	_openings = _openings & (!direction);
+	_openings = _openings & (~direction);
 }
 
 int Cell::getOpenings() {
