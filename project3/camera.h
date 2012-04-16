@@ -120,8 +120,8 @@ public:
 	void markSquare(IplImage *image, squares_t *square, CvScalar color);
 	void update();
 	float centerError(int color, bool *turn);
-	float centerDistanceError(int color, bool *turn);
-	float corridorSlopeError(int color, bool *turn);
+	float centerDistanceError(int color, bool *turn, float *certainty);
+	float corridorSlopeError(int color, bool *turn, float *certainty);
 	regressionLine leastSquaresRegression(int color, int side);	
 	bool onSamePlane(squares_t *leftSquare, squares_t *rightSquare);
 	squares_t* biggestSquare(int color, int side);
