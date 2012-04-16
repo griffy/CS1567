@@ -71,13 +71,13 @@
 // more specific slope limits for lines of regression based on 
 // empirical data
 // Tom's parameters - Project 3 Square locations - 4/14/12
-#define RIGHT_LEFT_SLOPE -0.35
-#define RIGHT_RIGHT_SLOPE -2.22
+#define RIGHT_LEFT_SLOPE -0.25
+#define RIGHT_RIGHT_SLOPE -0.75
 #define RIGHT_MIDDLE_SLOPE -0.45
 
-#define LEFT_LEFT_SLOPE 2.6
-#define LEFT_RIGHT_SLOPE 0.55
-#define LEFT_MIDDLE_SLOPE 0.45
+#define LEFT_LEFT_SLOPE 1.1
+#define LEFT_RIGHT_SLOPE 0.2
+#define LEFT_MIDDLE_SLOPE 0.49
 //Shawn's parameters - Project 2 Square locations
 /*
  * #define RIGHT_LEFT_SLOPE -0.35
