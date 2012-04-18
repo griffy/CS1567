@@ -598,10 +598,11 @@ void Robot::center() {
     _robotInterface->Move(RI_HEAD_MIDDLE, 1);
     sleep(2);
 
+    int prevTagState = TAGS_BOTH_GE_TWO;
     while (true) {
         bool turn = false;
-        // FIXME: pass in actual tag state
-        float centerError = _camera->centerError(COLOR_PINK, 0, &turn);
+        float centerError = _camera->centerError(COLOR_PINK, prevTagState, &turn);
+        prevTagState = _camera->getTagState(COLOR_PINK);
         if (turn) {
             if (_centerTurn(centerError)) {
                 break;

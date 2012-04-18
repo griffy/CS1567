@@ -119,6 +119,7 @@ public:
 	void setResolution(int resolution);
 	void markSquare(IplImage *image, squares_t *square, CvScalar color);
 	void update();
+	int getTagState(int color);
 	float centerError(int color, int prevTagState, bool *turn);
 	float centerError(int color, bool *turn);
 	float centerDistanceError(int color, bool *turn, float *certainty);

@@ -172,6 +172,31 @@ void Camera::update() {
     cvWaitKey(10);
 }
 
+int Camera::getTagState(int color) {
+    // find a line of regression for each side of the image
+    regressionLine leftSide = leastSquaresRegression(color, IMAGE_LEFT);
+    regressionLine rightSide = leastSquaresRegression(color, IMAGE_RIGHT);
+
+    if (leftSide.numSquares >= 2) {
+        if (rightSide.numSquares >= 2) {
+            return TAGS_BOTH_GE_TWO;
+        }
+        return TAGS_LESS_RIGHT;
+    }
+    else if (rightSide.numSquares >= 2) {
+        if (leftSide.numSquares >= 2) {
+            return TAGS_BOTH_GE_TWO;
+        }
+        return TAGS_LESS_LEFT;
+    }
+    else if (leftSide.numSquares == 1 && rightSide.numSquares == 1) {
+        return TAGS_BOTH_ONE;
+    }
+    else {
+        return TAGS_ONE_OR_NONE;
+    }
+}
+
 float Camera::centerError(int color, int prevTagState, bool *turn) {
     *turn = false;
 
