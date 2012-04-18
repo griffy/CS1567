@@ -98,7 +98,6 @@ public:
     void setCameraResolution(int resolution, int quality);
 	void prefillData();
     void updatePose();
-    void updateCamera();
     void moveForward(int speed);
     void turnLeft(int speed);
     void turnRight(int speed);

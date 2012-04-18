@@ -593,20 +593,15 @@ bool Robot::_centerStrafe(float centerError) {
  *             between two squares in a corridor
  **************************************/
 void Robot::center() {
-    while (true) {
-        //updateCamera();
-	_robotInterface->Move(RI_HEAD_MIDDLE, 1);
-        sleep(1);
-	_robotInterface->Move(RI_HEAD_MIDDLE, 1);
-	sleep(2);
+    _robotInterface->Move(RI_HEAD_MIDDLE, 1);
+    sleep(1);
+    _robotInterface->Move(RI_HEAD_MIDDLE, 1);
+    sleep(2);
 
+    while (true) {
         bool turn = false;
-        float centerError = _camera->centerError(COLOR_PINK, &turn);
-        sleep(1);
-        _robotInterface->Move(RI_HEAD_DOWN, 1);
-        sleep(1);
-        _robotInterface->Move(RI_HEAD_DOWN, 1);
-/*
+        // FIXME: pass in actual tag state
+        float centerError = _camera->centerError(COLOR_PINK, 0, &turn);
         if (turn) {
             if (_centerTurn(centerError)) {
                 break;
@@ -616,27 +611,16 @@ void Robot::center() {
             if (_centerStrafe(centerError)) {
                 break;
             }
-        }*/
+        }
     }
+
+    sleep(1);
+    _robotInterface->Move(RI_HEAD_DOWN, 1);
+    sleep(1);
+    _robotInterface->Move(RI_HEAD_DOWN, 1);
 
     _centerTurnPID->flushPID();
     _centerStrafePID->flushPID();
-}
-
-/**************************************
- * Definition: Updates the robot's camera, reading in a new image.
- **************************************/
-
-//Deprecated?
-
-void Robot::updateCamera() {
-    //Put robot head up for camera use
-    _robotInterface->Move(RI_HEAD_MIDDLE, 1);
-    sleep(2);
-    _camera->update();
-    sleep(1);
-    //Put robot head down for NorthStar use
-    _robotInterface->Move(RI_HEAD_DOWN, 1);
 }
 
 /**************************************

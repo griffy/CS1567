@@ -71,13 +71,13 @@
 // more specific slope limits for lines of regression based on 
 // empirical data
 // Tom's parameters - Project 3 Square locations - 4/14/12
-#define RIGHT_LEFT_SLOPE -0.35
-#define RIGHT_RIGHT_SLOPE -2.22
+#define RIGHT_LEFT_SLOPE -0.25
+#define RIGHT_RIGHT_SLOPE -0.75
 #define RIGHT_MIDDLE_SLOPE -0.45
 
-#define LEFT_LEFT_SLOPE 2.6
-#define LEFT_RIGHT_SLOPE 0.55
-#define LEFT_MIDDLE_SLOPE 0.45
+#define LEFT_LEFT_SLOPE 1.1
+#define LEFT_RIGHT_SLOPE 0.2
+#define LEFT_MIDDLE_SLOPE 0.49
 //Shawn's parameters - Project 2 Square locations
 /*
  * #define RIGHT_LEFT_SLOPE -0.35
@@ -120,16 +120,16 @@ public:
 	void markSquare(IplImage *image, squares_t *square, CvScalar color);
 	void update();
 	float centerError(int color, int prevTagState, bool *turn);
-	float centerError(int color, bool *turn); // REMOVE
-	float centerDistanceError(int color, bool *turn);
-	float corridorSlopeError(int color, bool *turn);
+	float centerError(int color, bool *turn);
+	float centerDistanceError(int color, bool *turn, float *certainty);
+	float corridorSlopeError(int color, bool *turn, float *certainty);
 	regressionLine leastSquaresRegression(int color, int side);	
 	bool onSamePlane(squares_t *leftSquare, squares_t *rightSquare);
 	squares_t* biggestSquare(int color, int side);
 	int squareCount(int color, int side);
 	IplImage* thresholdedOf(int color);
-        squares_t* rmOverlappingSquares(squares_t *inputSquares);
-        squares_t* squaresOf(int color);
+    squares_t* rmOverlappingSquares(squares_t *inputSquares);
+    squares_t* squaresOf(int color);
 	squares_t* findSquaresOf(int color, int areaThreshold);
 	squares_t* findSquares(IplImage *img, int areaThreshold);
 	IplImage* getHSVImage();

@@ -175,33 +175,36 @@ void Camera::update() {
 float Camera::centerError(int color, int prevTagState, bool *turn) {
     *turn = false;
 
-    int slopeTurnCount = 0;
-    int centerDistTurnCount = 0;
-    int intersectTurnCount = 0;
+    float slopeTurnCount = 0;
+    float centerDistTurnCount = 0;
+    //int intersectTurnCount = 0;
+ 
+    float slopeTurnError = 0;
+    float centerDistTurnError = 0;
 
     int numGoodSlopeErrors = 0;
     int numGoodCenterDistErrors = 0;
-    int numGoodIntersectErrors = 0;
+    //int numGoodIntersectErrors = 0;
 
     float totalGoodSlopeError = 0.0;
     float totalGoodCenterDistError = 0.0;
-    float totalGoodIntersectError = 0.0;
+    //float totalGoodIntersectError = 0.0;
 
     float totalGoodSlopeCertainty = 0.0;
     float totalGoodCenterDistCertainty = 0.0;
-    float totalGoodIntersectCertainty = 0.0;
+    //float totalGoodIntersectCertainty = 0.0;
 
     float avgSlopeError = 0.0;
     float avgCenterDistError = 0.0;
-    float avgIntersectError = 0.0;
+    //float avgIntersectError = 0.0;
 
     float avgSlopeCertainty = 0.0;
     float avgCenterDistCertainty = 0.0;
-    float avgIntersectCertainty = 0.0;
+    //float avgIntersectCertainty = 0.0;
 
     bool avgSlopeTurn = false;
     bool avgCenterDistTurn = false;
-    bool avgIntersectTurn = false;
+    //bool avgIntersectTurn = false;
 
     // calculate slope and center distance errors the specified number
     // of times, ignoring -999's (which say they found nothing good)
@@ -210,22 +213,23 @@ float Camera::centerError(int color, int prevTagState, bool *turn) {
 
         bool slopeTurn = false;
         bool centerDistTurn = false;
-        bool intersectTurn = false;
+        //bool intersectTurn = false;
 
         float slopeCertainty = 0.0;
         float centerDistCertainty = 0.0;
-        float intersectCertainty = 0.0;
+        //float intersectCertainty = 0.0;
 
         float slopeError = corridorSlopeError(color, &slopeTurn, &slopeCertainty);
         float centerDistError = centerDistanceError(color, &centerDistTurn, &centerDistCertainty);
-        float intersectError = intersectError(color, &intersectTurn, &intersectCertainty);
+        //float intersectError = intersectError(color, &intersectTurn, &intersectCertainty);
 
         if (slopeCertainty != 0.0) {
             numGoodSlopeErrors++;
             totalGoodSlopeError += slopeError;
             totalGoodSlopeCertainty += slopeCertainty;
             if (slopeTurn) {
-                slopeTurnCount++;
+                slopeTurnCount += slopeCertainty;
+                slopeTurnError += slopeError;
             }
         }
 
@@ -234,47 +238,48 @@ float Camera::centerError(int color, int prevTagState, bool *turn) {
             totalGoodCenterDistError += centerDistError;
             totalGoodCenterDistCertainty += centerDistCertainty;
             if (centerDistTurn) {
-                centerDistTurnCount++;
+                centerDistTurnCount += centerDistCertainty;
+                centerDistTurnError += centerDistError;
             }
         }
 
-        if (intersectCertainty != 0.0) {
+        /*if (intersectCertainty != 0.0) {
             numGoodIntersectErrors++;
             totalGoodIntersectError += intersectError;
             totalGoodIntersectCertainty += intersectCertainty;
             if (intersectTurn) {
                 intersectTurnCount++;
             }
-        }
+        }*/
     }
 
-    float avgSlopeError = totalGoodSlopeError / (float)numGoodSlopeErrors;
-    float avgCenterDistError = totalGoodCenterDistError / (float)numGoodCenterDistErrors;
-    float avgIntersectError = totalGoodIntersectError / (float)numGoodIntersectErrors;
+    avgSlopeError = totalGoodSlopeError / (float)numGoodSlopeErrors;
+    avgCenterDistError = totalGoodCenterDistError / (float)numGoodCenterDistErrors;
+    //avgIntersectError = totalGoodIntersectError / (float)numGoodIntersectErrors;
 
-    float avgSlopeCertainty = totalGoodSlopeCertainty / (float)numGoodSlopeErrors;
-    float avgCenterDistCertainty = totalGoodCenterDistCertainty / (float)numGoodCenterDistErrors;
-    float avgIntersectCertainty = totalGoodIntersectCertainty / (float)numGoodIntersectErrors;
+    avgSlopeCertainty = totalGoodSlopeCertainty / (float)numGoodSlopeErrors;
+    avgCenterDistCertainty = totalGoodCenterDistCertainty / (float)numGoodCenterDistErrors;
+    //avgIntersectCertainty = totalGoodIntersectCertainty / (float)numGoodIntersectErrors;
 
     LOG.write(LOG_LOW, "centerError", "Avg. slope error: %f", avgSlopeError);
     LOG.write(LOG_LOW, "centerError", "Avg. center dist. error: %f", avgCenterDistError);
-    LOG.write(LOG_LOW, "centerError", "Avg. intersect error: %f", avgIntersectError);
+    //LOG.write(LOG_LOW, "centerError", "Avg. intersect error: %f", avgIntersectError);
 
     LOG.write(LOG_LOW, "centerError", "Avg. slope certainty: %f", avgSlopeCertainty);
     LOG.write(LOG_LOW, "centerError", "Avg. center dist. certainty: %f", avgCenterDistCertainty);
-    LOG.write(LOG_LOW, "centerError", "Avg. intersect certainty: %f", avgIntersectCertainty);
+    //LOG.write(LOG_LOW, "centerError", "Avg. intersect certainty: %f", avgIntersectCertainty);
 
-    if (slopeTurnCount > numGoodSlopeErrors / 2) {
+    if (slopeTurnCount > totalGoodSlopeCertainty / 2.0) {
         avgSlopeTurn = true;
     }
 
-    if (centerDistTurnCount > numGoodCenterDistErrors / 2) {
+    if (centerDistTurnCount > totalGoodCenterDistCertainty / 2.0) {
         avgCenterDistTurn = true;
     }
 
-    if (intersectTurnCount > numGoodIntersectErrors / 2) {
+    /*if (intersectTurnCount > numGoodIntersectErrors / 2) {
         avgIntersectTurn = true;
-    }
+    }*/
 
     // based on our previous state, let's modify
     // the certainties based on empirical data
@@ -362,7 +367,7 @@ float Camera::centerError(int color, int prevTagState, bool *turn) {
         }
     }
 
-    if (avgIntersectCertainty != 1.0 && numGoodIntersectErrors > 0) {
+    /*if (avgIntersectCertainty != 1.0 && numGoodIntersectErrors > 0) {
         if (avgSlopeTurn) {
             switch (prevTagState) {
             case TAGS_BOTH_GE_TWO:
@@ -401,11 +406,16 @@ float Camera::centerError(int color, int prevTagState, bool *turn) {
                 break;
             }
         }
-    }
+    }*/
 
     float turnCertainty = 0.0;
     float strafeCertainty = 0.0;
-    if (avgSlopeTurn) {
+
+    turnCertainty = centerDistTurnCount + slopeTurnCount;
+    strafeCertainty = totalGoodCenterDistCertainty + totalGoodSlopeCertainty;
+    strafeCertainty -= turnCertainty;
+
+    /*if (avgSlopeTurn) {
         turnCertainty += avgSlopeCertainty;
     }
     else {
@@ -424,16 +434,18 @@ float Camera::centerError(int color, int prevTagState, bool *turn) {
     }
     else {
         strafeCertainty += avgIntersectCertainty;
-    }
+    }*/
 
     if (turnCertainty > strafeCertainty) {
         *turn = true;
+        
     }
     else {
         *turn = false;
     }
 
     // TODO: if necessary, modify total error based on each certainty
+    // I think this is necessary, so I'm going to do this
     float totalError = 0.0;
     int numErrors = 0;
     if (*turn) {
@@ -446,11 +458,6 @@ float Camera::centerError(int color, int prevTagState, bool *turn) {
             numErrors++;
             totalError += avgCenterDistError;
         }
-
-        if (avgIntersectTurn) {
-            numErrors++;
-            totalError += avgIntersectError;
-        }
     }
     else {
         if (!avgSlopeTurn) {
@@ -462,11 +469,6 @@ float Camera::centerError(int color, int prevTagState, bool *turn) {
             numErrors++;
             totalError += avgCenterDistError;
         }
-
-        if (!avgIntersectTurn) {
-            numErrors++;
-            totalError += avgIntersectError;
-        }
     }
 
     if (numErrors == 0) {
@@ -475,6 +477,7 @@ float Camera::centerError(int color, int prevTagState, bool *turn) {
 
     return totalError / (float)numErrors;
 }
+
 /**************************************
  * Definition: Gives an error specifying how far away from the center
  *             of the squares (corridor) the rovio is, using both
@@ -487,13 +490,19 @@ float Camera::centerError(int color, int prevTagState, bool *turn) {
  *             A negative value is an indication to move right
  *             A positive value is an indication to move left
  **************************************/
+
+//Deprecated
+/*
 float Camera::centerError(int color, bool *turn) {
     *turn = false;
     int slopeTurnCount = 0;
+    int vgSlopeTurnCount = 0;
     int centerDistTurnCount = 0;
     int numGoodSlopeErrors = 0;
+    int numVeryGoodSlopeErrors = 0;
     int numGoodCenterDistErrors = 0;
     float totalGoodSlopeError = 0.0;
+    float totalVeryGoodSlopeError = 0.0;
     float totalGoodCenterDistError = 0.0;
 
     // calculate slope and center distance errors the specified number
@@ -507,15 +516,22 @@ float Camera::centerError(int color, bool *turn) {
         float slopeError = corridorSlopeError(color, &slopeTurn);
         float centerDistError = centerDistanceError(color, &centerDistTurn);
 
-        if (slopeError != -999) {
+        if (slopeError > -900) { //aka. != -999, no floating point comparisons
             numGoodSlopeErrors++;
             totalGoodSlopeError += slopeError;
             if (slopeTurn) {
                 slopeTurnCount++;
             }
+            if(fabs(slopeError < .99)) {
+                numVeryGoodSlopeErrors++;
+                totalVeryGoodSlopeError += slopeError;
+                if (slopeTurn) {
+                    vgSlopeTurnCount++;
+                }
+            }
         }
 
-        if (centerDistError != -999) {
+        if (centerDistError > -900) { //aka. != -999, no floating point comparisons
             numGoodCenterDistErrors++;
             totalGoodCenterDistError += centerDistError;
             if (centerDistTurn) {
@@ -524,6 +540,12 @@ float Camera::centerError(int color, bool *turn) {
         }
     }
 
+    if(numVeryGoodSlopeErrors > numGoodSlopeErrors / 2.0 && numVeryGoodSlopeErrors >= 2) {
+        totalGoodSlopeError = totalVeryGoodSlopeError;
+        numGoodSlopeErrors = numVeryGoodSlopeErrors;
+        slopeTurnCount = vgSlopeTurnCount;
+    }
+ 
     float avgSlopeError = totalGoodSlopeError / (float)numGoodSlopeErrors;
     float avgCenterDistError = totalGoodCenterDistError / (float)numGoodCenterDistErrors;
 
@@ -562,6 +584,7 @@ float Camera::centerError(int color, bool *turn) {
     *turn = true;
     return 1;
 }
+*/
 
 /**************************************
  * Definition: Gives an error specifying the difference of the distance 
@@ -574,7 +597,7 @@ float Camera::centerError(int color, bool *turn) {
  *             A negative value is an indication to move right
  *             A positive value is an indication to move left
  **************************************/
-float Camera::centerDistanceError(int color, bool *turn) {
+float Camera::centerDistanceError(int color, bool *turn, float *certainty) {
     *turn = false;
     // find the center of the camera's image
     int width = thresholdedOf(color)->width;
@@ -609,8 +632,9 @@ float Camera::centerDistanceError(int color, bool *turn) {
             // we're probably just too far over on the
             // side of the larger square
             if (leftSquare->area > rightSquare->area) {
-                // we should turn right slightly to 
-                // unobstruct the right square
+                // Turns determined here should be pretty uncertain
+                // Certainty based on area difference?
+                // we should turn right slightly to unobstruct the right square
                 *turn = true;
                 return -0.25;
             }
@@ -659,8 +683,18 @@ float Camera::centerDistanceError(int color, bool *turn) {
  *             A negative value is an indication to move right
  *             A positive value is an indication to move left
  **************************************/
-float Camera::corridorSlopeError(int color, bool *turn) {
+float Camera::corridorSlopeError(int color, bool *turn, float *certainty) {
+    bool hasSlopeRight = false;
+    bool hasSlopeLeft = false;
+    // find the center of the camera's image
+    int width = thresholdedOf(color)->width;
+    int center = width / 2;
+    bool softLeftTurn = false;
+    bool softRightTurn = false;
     *turn = false;
+
+    float error = -999.0;
+
     // find a line of regression for each side of the image
     regressionLine leftSide = leastSquaresRegression(color, IMAGE_LEFT);
     regressionLine rightSide = leastSquaresRegression(color, IMAGE_RIGHT);
@@ -673,6 +707,8 @@ float Camera::corridorSlopeError(int color, bool *turn) {
               "Left squares found: %d", leftSide.numSquares);
     LOG.write(LOG_LOW, "slopeError", 
               "Right squares found: %d", rightSide.numSquares);
+    LOG.write(LOG_LOW, "slopeError",
+              "All squares found: %d", wholeImage.numSquares);
     LOG.write(LOG_LOW, "slopeError", 
               "Left equation: y = %f*x + %f, r^2 = %f", leftSide.slope, leftSide.intercept, leftSide.rSquared);
     LOG.write(LOG_LOW, "slopeError", 
@@ -687,7 +723,8 @@ float Camera::corridorSlopeError(int color, bool *turn) {
 
        LOG.write(LOG_LOW, "slopeError",
       	         "Line intersection: (%f, %f)", xIntersect, yIntersect);
-    } else {
+    } 
+    else {
        xIntersect = -999;
        yIntersect = -999;
     }
@@ -713,64 +750,118 @@ float Camera::corridorSlopeError(int color, bool *turn) {
         cvReleaseImage(&bgr);
     }
 
+    // did we find a line across the entire screen?
+    if (wholeImage.numSquares >= 3) {
+        if(leftSide.numSquares < 2 && rightSide.numSquares < 2) { //No line on either side
+            if(wholeImage.rSquared > .9) {
+                //we can be fairly sure that we should make a turn move here
+                *turn = true;
+                //if positive slope, turn right and vice versa
+                if(wholeImage.slope > 0) {
+                    //turn right
+                    return -.98; //.98 indicates full magnitude and NO uncertainty (for later)
+                } 
+                else {
+                    //turn left
+                    return .98;
+                }
+            }
+        } 
+    }
+
+    //look for extra squares on either side 
+    if(leftSide.numSquares >= 2) {
+        if (leftSide.rSquared < .9) { //bad values up to .9?
+            //turn left
+            *turn = true;
+            return .75; //less dramatic than above
+            //boost confidence if no line found on right
+            //boost confidence if slope < ~.14
+        } 
+
+        if (leftSide.slope < .14) {
+            //turn left
+            *turn = true;
+            return .70;
+            //boost confidence if no line found on right
+        }
+    }
+
+    if(rightSide.numSquares >= 2) {
+        if (rightSide.rSquared < .9) {
+            //turn right
+            *turn = true;
+            return -.75;
+            //boost confidence if no line found on left
+            //boost confidence if slope > ~-.1
+        }
+       
+        if (rightSide.slope > -.1) {
+            //turn right
+            *turn = true;
+            return -.70; 
+            //boost confidence if no line found on left
+        }
+    }
+   
+    //base certainty of turning vs. strafing on intersection data (when available)
+    
     // did we have enough squares on each side to find a line?
     if (leftSide.numSquares >= 2 && rightSide.numSquares >= 2) { 
-        bool hasSlopeRight = false;
-        bool hasSlopeLeft = false;
+        float difference = leftSide.slope + rightSide.slope;
+         
+        if(xIntersect > -900 && xIntersect < .85*center) {
+            //we're probably looking left
+            //turn right?
+            softRightTurn = true;
+        }
+        
+        if(xIntersect > 1.15*center) {
+            //probably looking right
+            //turn left
+            softLeftTurn = true;
+        }
 
-        // sanity-check the slopes to make sure we have good ones to go off of
-		if (rightSide.slope > RIGHT_RIGHT_SLOPE && rightSide.slope < RIGHT_LEFT_SLOPE && 
-            rightSide.slope != -0.500000 && rightSide.slope != 0.500000) {
-			// seems like a good slope!
-			hasSlopeRight = true;
-		}
-
-		if (leftSide.slope < LEFT_LEFT_SLOPE && leftSide.slope > LEFT_RIGHT_SLOPE && 
-            leftSide.slope != -0.500000 && leftSide.slope != 0.500000) {
-			// seems like a good slope!
-			hasSlopeLeft = true;
-		}
-		
-		if (hasSlopeLeft && hasSlopeRight) {
-            float difference = leftSide.slope + rightSide.slope;
-
-			if (difference > MAX_SLOPE_DIFFERENCE) {
-                // the difference is large enough that we can say
-                // the error is at its max, so we should move right
-				return -1;
-			} 
-            else if (difference < -MAX_SLOPE_DIFFERENCE) {
-                // we should move left
-				return 1;
-			} 
-            else {
-                // return the error in the range [-1, 1]
+        if (difference > MAX_SLOPE_DIFFERENCE) {
+            // the difference is large enough that we can say
+            // the error is at its max, so we should move right
+            if(softRightTurn) {
                 *turn = true;
-				return -difference / MAX_SLOPE;
-			}
-		}
-/*
-		if (hasSlopeLeft && !hasSlopeRight) {
-			// no right slope, so interpolate based on left
-            *turn = true;
-            float leftTranslate = leftSide.slope - LEFT_MIDDLE_SLOPE;
-			LOG.write(LOG_LOW, "slopeError", 
-                      "only left slope, left translate: %f", leftTranslate);
-			return leftTranslate;
-		}
-		
-		if (!hasSlopeLeft && hasSlopeRight) {
-            *turn = true;
-			// no left slope, so interpolate based on right
-			float rightTranslate= -(rightSide.slope - RIGHT_MIDDLE_SLOPE);
-            LOG.write(LOG_LOW, "slopeError", 
-                      "only right slope, right translate: %f", rightTranslate);
-            return rightTranslate;
-		}
-*/
-	}
-    // we didn't have enough squares to be useful
+                return -.5; //less magnitude of a turn than strafe
+            }
+            return -1; //1 indicates full magnitude and SOME uncertainty
+        } 
+        else if (difference < -MAX_SLOPE_DIFFERENCE) {
+            // we should move left
+            if(softLeftTurn) {
+                *turn = true;
+                return .5;
+            }
+            return 1;
+        } 
+        else {
+            if(fabs(difference) > MAX_SLOPE_DIFFERENCE*.75) {
+                if(softLeftTurn && difference < 0) {
+                    //turn left
+                    *turn = true;
+                    return .25;
+                }
+                if(softRightTurn && difference > 0) {
+                    //turn right
+                    *turn = true;
+                    return .25;
+                }
+            }
+            // return the error in the range [-1, 1]
+            // This should be pretty certain
+            *turn = false;
+            return -difference / MAX_SLOPE;
+        } 
+    }
+
+    // we didn't have enough squares to be useful (no certainty)
     LOG.write(LOG_LOW, "slopeError", "no slopes!");
+    *certainty = 0.0;
     return -999.0;
 }
 
@@ -845,7 +936,8 @@ regressionLine Camera::leastSquaresRegression(int color, int side) {
                        (xSqSum - (result.numSquares * xAvg * xAvg));
 	result.rSquared = ((xySum - (result.numSquares * xAvg * yAvg))*(xySum - (result.numSquares * xAvg * yAvg)) / ((xSqSum - (result.numSquares * xAvg * xAvg)) * (ySqSum - (result.numSquares * yAvg * yAvg))));
     
-    } else {
+    } 
+    else {
         // there aren't enough squares, so we error out the intercept and slope
         result.intercept = -999;
 	result.slope = -999;
@@ -868,11 +960,9 @@ regressionLine Camera::leastSquaresRegression(int color, int side) {
 squares_t* Camera::rmOverlappingSquares(squares_t *inputSquares) {
     squares_t *sqHead = NULL;
     squares_t *newSquare = NULL;
-    squares_t *sqLast = NULL;
     squares_t *iterator = NULL;
     squares_t *preIterator = NULL;
 
-    LOG.write(LOG_HIGH, "rmOverlap", "entered rmOverlap method");
 
     while (inputSquares != NULL) { //Loop through all input squares once!
         if(sqHead == NULL) { //if clean list has not been started
@@ -881,7 +971,8 @@ squares_t* Camera::rmOverlappingSquares(squares_t *inputSquares) {
             sqHead->center.x = inputSquares->center.x;
             sqHead->center.y = inputSquares->center.y;
             sqHead->next = NULL;
-        } else {
+        } 
+        else {
             //iterate through the clean list
             iterator = sqHead;
             while(iterator != NULL) {
@@ -895,14 +986,16 @@ squares_t* Camera::rmOverlappingSquares(squares_t *inputSquares) {
                         if(iterator == sqHead) { //if we must replace the head
                             newSquare->next = sqHead->next;
                             sqHead = newSquare;
-                        } else { //other insertion 
+                        } 
+                        else { //other insertion 
                             newSquare->next = iterator->next;
                             preIterator->next = newSquare;
                         }
                         break; //once square has been inserted, we don't need to keep comparing it
                     } 
                     //otherwise, don't store it
-                } else {
+                } 
+                else {
                     //if not end of list (iterator while loop), continue
                     //if end of list, insert on end and break
                     if(iterator->next == NULL) {
@@ -1006,6 +1099,9 @@ int Camera::squareCount(int color, int side) {
                           curSquare->center.x, curSquare->center.y, curSquare->area);
                 squareCount++;
             }
+            break;
+        case IMAGE_ALL:
+            squareCount++;
             break;
         }
         curSquare = curSquare->next;

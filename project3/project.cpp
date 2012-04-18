@@ -29,7 +29,6 @@ int main(int argc, char *argv[]) {
 	Robot *robot = new Robot(argv[1], 0);
 
 	while (true) {
-		robot->updateCamera();
 		robot->center();
 	}
 	
