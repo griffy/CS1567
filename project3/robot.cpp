@@ -156,9 +156,10 @@ void Robot::move(int direction, int numCells) {
     int cellsTraveled = 0;
     while (cellsTraveled < numCells) {
         // first attempt to center ourselves before moving (except not first)
-        if(sideCenter(direction))
+        if (sideCenter(direction)) {
 			turn(direction);
-		
+		}
+
         center();
 		updatePose();
         // based on the direction, move in the global coord system
@@ -186,31 +187,32 @@ void Robot::move(int direction, int numCells) {
 
 bool Robot::sideCenter(int direction){
 	int type = _map->getCurrentCell()->getCellType();
-	if(type == CELL_HALL)
+	if (type == CELL_HALL) {
 		return false;
+    }
 	int openings = _map->getCurrentCell()->getOpenings();
 
-	switch (direction){
-		case DIR_NORTH:
-		case DIR_SOUTH:
-			if(openings & DIR_EAST != 0){
-				//opening to the east
-				turn(DIR_EAST);
-			}
-			else if(openings & DIR_WEST != 0){
-				turn(DIR_WEST);
-			}
-			break;
-		case DIR_EAST:
-		case DIR_WEST:
-			if(openings & DIR_NORTH != 0){
-				//opening to the east
-				turn(DIR_NORTH);
-			}
-			else if(openings & DIR_SOUTH != 0){
-				turn(DIR_SOUTH);
-			}
-			break;
+	switch (direction) {
+	case DIR_NORTH:
+	case DIR_SOUTH:
+		if (openings & DIR_EAST != 0) {
+			//opening to the east
+			turn(DIR_EAST);
+		}
+		else if (openings & DIR_WEST != 0) {
+			turn(DIR_WEST);
+		}
+		break;
+	case DIR_EAST:
+	case DIR_WEST:
+		if (openings & DIR_NORTH != 0) {
+			//opening to the north
+			turn(DIR_NORTH);
+		}
+		else if (openings & DIR_SOUTH != 0) {
+			turn(DIR_SOUTH);
+		}
+		break;
 	}
 	center();
 	return true;
@@ -615,10 +617,10 @@ void Robot::center() {
         }
     }
 
-    sleep(1);
     _robotInterface->Move(RI_HEAD_DOWN, 1);
     sleep(1);
     _robotInterface->Move(RI_HEAD_DOWN, 1);
+    sleep(2);
 
     _centerTurnPID->flushPID();
     _centerStrafePID->flushPID();
@@ -777,7 +779,6 @@ void Robot::turnRight(int speed) {
  * Parameters: int specifying speed to strafe at
  **************************************/
 void Robot::strafeLeft(int speed) {
-    // FIXME: these don't scale with the speed?
     _speed = speed;
     int sleepLength = 500000-(45000*speed);
 
@@ -797,7 +798,6 @@ void Robot::strafeLeft(int speed) {
  * Parameters: int specifying speed to strafe at
  **************************************/
 void Robot::strafeRight(int speed) {
-    // FIXME: these don't scale with the speed?
     _speed = speed;
     int sleepLength = 500000-(45000*speed);
 

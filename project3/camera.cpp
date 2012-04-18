@@ -173,23 +173,22 @@ void Camera::update() {
 }
 
 int Camera::getTagState(int color) {
-    // find a line of regression for each side of the image
-    regressionLine leftSide = leastSquaresRegression(color, IMAGE_LEFT);
-    regressionLine rightSide = leastSquaresRegression(color, IMAGE_RIGHT);
+    int leftSquareCount = squareCount(color, IMAGE_LEFT);
+    int rightSquareCount = squareCount(color, IMAGE_RIGHT);
 
-    if (leftSide.numSquares >= 2) {
-        if (rightSide.numSquares >= 2) {
+    if (leftSquareCount >= 2) {
+        if (rightSquareCount >= 2) {
             return TAGS_BOTH_GE_TWO;
         }
         return TAGS_LESS_RIGHT;
     }
-    else if (rightSide.numSquares >= 2) {
-        if (leftSide.numSquares >= 2) {
+    else if (rightSquareCount >= 2) {
+        if (leftSquareCount >= 2) {
             return TAGS_BOTH_GE_TWO;
         }
         return TAGS_LESS_LEFT;
     }
-    else if (leftSide.numSquares == 1 && rightSide.numSquares == 1) {
+    else if (leftSquareCount == 1 && rightSquareCount == 1) {
         return TAGS_BOTH_ONE;
     }
     else {
