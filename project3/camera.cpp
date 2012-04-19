@@ -495,6 +495,11 @@ float Camera::centerError(int color, int prevTagState, bool *turn) {
         }
     }
 
+    LOG.write(LOG_LOW, "centerError", "totalError: %f",
+              totalError);
+    LOG.write(LOG_LOW, "centerError", "numErrors: %d",
+              numErrors);
+
     if (numErrors == 0) {
         return 0.0;
     }
