@@ -638,11 +638,10 @@ void Robot::center() {
     _robotInterface->Move(RI_HEAD_MIDDLE, 1);
     sleep(2);
 
-    int prevTagState = -1;
+    Camera::prevTagState = -1;
     while (true) {
         bool turn = false;
-        float centerError = _camera->centerError(COLOR_PINK, prevTagState, &turn);
-        prevTagState = _camera->getTagState(COLOR_PINK);
+        float centerError = _camera->centerError(COLOR_PINK, &turn);
         if (turn) {
             if (_centerTurn(centerError)) {
                 break;

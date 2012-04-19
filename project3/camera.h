@@ -136,6 +136,8 @@ public:
 	IplImage* getHSVImage();
 	IplImage* getBGRImage();
 	IplImage* getThresholdedImage(CvScalar low, CvScalar high);
+ 
+        static int prevTagState;
 private:
 	RobotInterface *_robotInterface;
 	int _quality;
@@ -144,6 +146,7 @@ private:
 	IplImage *_yellowThresholded;
 	squares_t *_pinkSquares;
 	squares_t *_yellowSquares;
+ 
 };
 
 #endif
