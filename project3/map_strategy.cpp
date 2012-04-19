@@ -105,10 +105,32 @@ Cell* MapStrategy::nextCell() {
 Cell* MapStrategy::nextCell() {
 	_map->update();
 
+	Cell *cells[MAP_WIDTH][MAP_HEIGHT]
 	Cell *curCell = _map->getCurrentCell();
-	return maxMove(curCell, NULL, 0, 0, 0);
+	Move *move = maxMove(curCell, NULL, MAX_SEARCH_DEPTH, 0, 0);
+	if (move == NULL) {
+		return NULL;
+	}
+	
+	switch (move->direction) {
+	case DIR_NORTH:
+		return _map->cellAt(curCell->x, curCell->y+1);
+	case DIR_SOUTH:
+		return _map->cellAt(curCell->x, curCell->y-1);
+	case DIR_EAST:
+		return _map->cellAt(curCell->x-1, curCell->y);
+	case DIR_WEST:
+		return _map->cellAt(curCell->x+1, curCell->y);
+	}
 }
 
+Move* MapStrategy::maxMove(Cell *pos, Move *best, int depth, int alpha, int beta) {
+	if (depth <= 0) {
+		return 
+	}
+}
+
+/*
 // TODO: Each Move needs to have its next and prev
 //       links set so a Move is a list of Moves
 Move* MapStrategy::maxMove(Cell *cur, Move *best, int depth, int alpha, int beta) {
@@ -119,33 +141,36 @@ Move* MapStrategy::maxMove(Cell *cur, Move *best, int depth, int alpha, int beta
 	int x = cur->x;
 	int y = cur->y;
 
-	Move *bestMove = NULL;
-
 	int newX[4] = {x, x, x-1, x+1};
 	int newY[4] = {y+1, y-1, y, y};
 
 	for (int i = 0; i < 4; i++) {
 		if (canOccupy(newX[i], newY[i])) {
-			Move *move = minMove(_map->cellAt(newX[i], newY[i]), best, depth+1, alpha, beta);
-			if (bestMove == NULL) {
-				bestMove = move;
+			Move *move = minMove(_map->cellAt(newX[i], newY[i]), 
+								 best, depth+1, alpha, beta);
+			if (move == NULL) {
+
+			}
+
+
+			if (best == NULL) {
+				best = move;
 			}
 			else {
-				if (move->cost > bestMove->cost) {
-					bestMove = move;
+				if (move->cost > best->cost) {
+					best = move;
 					alpha = move->cost;
 				}
 			}
 
 			if (beta > alpha) {
-				return bestMove;
+				return best;
 			}
 		}
 	}
 
-	return bestMove;
+	return best;
 }
 
 // TODO: minMove
-
 */
