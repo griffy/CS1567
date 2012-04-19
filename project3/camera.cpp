@@ -199,36 +199,35 @@ int Camera::getTagState(int color) {
 float Camera::centerError(int color, int prevTagState, bool *turn) {
     *turn = false;
 
-    float slopeTurnCount = 0;
-    float centerDistTurnCount = 0;
-    //int intersectTurnCount = 0;
+    float slopeTurnCertainty = 0;
+    float centerDistTurnCertainty = 0;
  
     float slopeTurnError = 0;
     float centerDistTurnError = 0;
 
+    int numSlopeTurnErrors = 0;
+    int numCenterDistTurnErrors = 0;
+
+    float slopeStrafeCertainty = 0;
+    float centerDistStrafeCertainty = 0;
+
+    float slopeStrafeError = 0;
+    float centerDistStrafeError = 0;
+
+    int numSlopeStrafeErrors = 0;
+    int numCenterDistStrafeErrors = 0;
+
     int numGoodSlopeErrors = 0;
     int numGoodCenterDistErrors = 0;
-    //int numGoodIntersectErrors = 0;
-
-    float totalGoodSlopeError = 0.0;
-    float totalGoodCenterDistError = 0.0;
-    //float totalGoodIntersectError = 0.0;
-
-    float totalGoodSlopeCertainty = 0.0;
-    float totalGoodCenterDistCertainty = 0.0;
-    //float totalGoodIntersectCertainty = 0.0;
-
-    float avgSlopeError = 0.0;
-    float avgCenterDistError = 0.0;
-    //float avgIntersectError = 0.0;
-
-    float avgSlopeCertainty = 0.0;
-    float avgCenterDistCertainty = 0.0;
-    //float avgIntersectCertainty = 0.0;
 
     bool avgSlopeTurn = false;
     bool avgCenterDistTurn = false;
-    //bool avgIntersectTurn = false;
+
+    float avgSlopeError = 0;
+    float avgCenterDistError = 0;
+
+    float avgSlopeCertainty = 0;
+    float avgCenterDistCertainty = 0;
 
     // calculate slope and center distance errors the specified number
     // of times, ignoring -999's (which say they found nothing good)
@@ -237,73 +236,77 @@ float Camera::centerError(int color, int prevTagState, bool *turn) {
 
         bool slopeTurn = false;
         bool centerDistTurn = false;
-        //bool intersectTurn = false;
 
         float slopeCertainty = 0.0;
         float centerDistCertainty = 0.0;
-        //float intersectCertainty = 0.0;
 
         float slopeError = corridorSlopeError(color, &slopeTurn, &slopeCertainty);
         float centerDistError = centerDistanceError(color, &centerDistTurn, &centerDistCertainty);
-        //float intersectError = intersectError(color, &intersectTurn, &intersectCertainty);
 
         if (slopeCertainty > 0.0) {
-            numGoodSlopeErrors++;
-            totalGoodSlopeError += slopeError;
-            totalGoodSlopeCertainty += slopeCertainty;
             if (slopeTurn) {
-                slopeTurnCount += slopeCertainty;
+                numSlopeTurnErrors++;
+                slopeTurnCertainty += slopeCertainty;
                 slopeTurnError += slopeError;
+            } 
+            else {
+                numSlopeStrafeErrors++;
+                slopeStrafeCertainty += slopeCertainty;
+                slopeStrafeError += slopeError;
             }
         }
 
         if (centerDistCertainty > 0.0) {
-            numGoodCenterDistErrors++;
-            totalGoodCenterDistError += centerDistError;
-            totalGoodCenterDistCertainty += centerDistCertainty;
             if (centerDistTurn) {
-                centerDistTurnCount += centerDistCertainty;
+                numCenterDistTurnErrors++;
+                centerDistTurnCertainty += centerDistCertainty;
                 centerDistTurnError += centerDistError;
+            } 
+            else {
+                numCenterDistStrafeErrors++;
+                centerDistStrafeCertainty += centerDistCertainty;
+                centerDistStrafeError += centerDistError;
             }
         }
-
-        /*if (intersectCertainty != 0.0) {
-            numGoodIntersectErrors++;
-            totalGoodIntersectError += intersectError;
-            totalGoodIntersectCertainty += intersectCertainty;
-            if (intersectTurn) {
-                intersectTurnCount++;
-            }
-        }*/
     }
 
-    avgSlopeError = totalGoodSlopeError / (float)numGoodSlopeErrors;
-    avgCenterDistError = totalGoodCenterDistError / (float)numGoodCenterDistErrors;
-    //avgIntersectError = totalGoodIntersectError / (float)numGoodIntersectErrors;
 
-    avgSlopeCertainty = totalGoodSlopeCertainty / (float)numGoodSlopeErrors;
-    avgCenterDistCertainty = totalGoodCenterDistCertainty / (float)numGoodCenterDistErrors;
-    //avgIntersectCertainty = totalGoodIntersectCertainty / (float)numGoodIntersectErrors;
-
-    LOG.write(LOG_LOW, "centerError", "Avg. slope error: %f", avgSlopeError);
-    LOG.write(LOG_LOW, "centerError", "Avg. center dist. error: %f", avgCenterDistError);
-    //LOG.write(LOG_LOW, "centerError", "Avg. intersect error: %f", avgIntersectError);
-
-    LOG.write(LOG_LOW, "centerError", "Avg. slope certainty: %f", avgSlopeCertainty);
-    LOG.write(LOG_LOW, "centerError", "Avg. center dist. certainty: %f", avgCenterDistCertainty);
-    //LOG.write(LOG_LOW, "centerError", "Avg. intersect certainty: %f", avgIntersectCertainty);
-
-    if (slopeTurnCount > totalGoodSlopeCertainty / 2.0) {
+    if ((slopeTurnCertainty / (float)numSlopeTurnErrors)  > (slopeStrafeCertainty / (float)numSlopeStrafeErrors)) {
         avgSlopeTurn = true;
     }
 
-    if (centerDistTurnCount > totalGoodCenterDistCertainty / 2.0) {
+    if ((centerDistTurnCertainty / (float)numCenterDistTurnErrors) > (centerDistStrafeCertainty / (float)numCenterDistStrafeErrors)) {
         avgCenterDistTurn = true;
     }
 
-    /*if (intersectTurnCount > numGoodIntersectErrors / 2) {
-        avgIntersectTurn = true;
-    }*/
+    if(avgSlopeTurn) {
+        avgSlopeError = slopeTurnError / (float)numSlopeTurnErrors;
+        avgSlopeCertainty = slopeTurnCertainty / (float)numSlopeTurnErrors;
+        numGoodSlopeErrors = numSlopeTurnErrors;
+    } 
+    else {
+        avgSlopeError = slopeStrafeError / (float)numSlopeStrafeErrors;
+        avgSlopeCertainty = slopeStrafeCertainty / (float)numSlopeStrafeErrors;
+        numGoodSlopeErrors = numSlopeStrafeErrors;
+    }
+
+    if(avgCenterDistTurn) {
+        avgCenterDistError = centerDistTurnError / (float)numCenterDistTurnErrors;
+        avgCenterDistCertainty = centerDistTurnCertainty / (float)numCenterDistTurnErrors;
+        numGoodCenterDistErrors = numCenterDistTurnErrors;
+    } 
+    else {
+        avgCenterDistError = centerDistStrafeError / (float)numCenterDistStrafeErrors;
+        avgCenterDistCertainty = centerDistStrafeCertainty / (float)numCenterDistStrafeErrors;
+        numGoodCenterDistErrors = numCenterDistStrafeErrors;
+    }
+
+    LOG.write(LOG_LOW, "centerError", "Avg. slope error: %f", avgSlopeError);
+    LOG.write(LOG_LOW, "centerError", "Avg. center dist. error: %f", avgCenterDistError);
+
+    LOG.write(LOG_LOW, "centerError", "Avg. slope certainty: %f", avgSlopeCertainty);
+    LOG.write(LOG_LOW, "centerError", "Avg. center dist. certainty: %f", avgCenterDistCertainty);
+    
 
     // based on our previous state, let's modify
     // the certainties based on empirical data
@@ -391,74 +394,22 @@ float Camera::centerError(int color, int prevTagState, bool *turn) {
         }
     }
 
-    /*if (avgIntersectCertainty < 1.0 && numGoodIntersectErrors > 0) {
-        if (avgSlopeTurn) {
-            switch (prevTagState) {
-            case TAGS_BOTH_GE_TWO:
-                avgIntersectCertainty += 0.10;
-                break;
-            case TAGS_BOTH_ONE:
-                avgIntersectCertainty += 0.10;
-                break;
-            case TAGS_ONE_OR_NONE:
-                avgIntersectCertainty += 0.10;
-                break;
-            case TAGS_LESS_LEFT:
-                avgIntersectCertainty += 0.10;
-                break;
-            case TAGS_LESS_RIGHT:
-                avgIntersectCertainty += 0.10;
-                break;
-            }
-        }
-        else {
-            switch (prevTagState) {
-            case TAGS_BOTH_GE_TWO:
-                avgIntersectCertainty += 0.10;
-                break;
-            case TAGS_BOTH_ONE:
-                avgIntersectCertainty += 0.10;
-                break;
-            case TAGS_ONE_OR_NONE:
-                avgIntersectCertainty += 0.10;
-                break;
-            case TAGS_LESS_LEFT:
-                avgIntersectCertainty += 0.10;
-                break;
-            case TAGS_LESS_RIGHT:
-                avgIntersectCertainty += 0.10;
-                break;
-            }
-        }
-    }*/
-
     float turnCertainty = 0.0;
     float strafeCertainty = 0.0;
 
-    turnCertainty = centerDistTurnCount + slopeTurnCount;
-    strafeCertainty = totalGoodCenterDistCertainty + totalGoodSlopeCertainty;
-    strafeCertainty -= turnCertainty;
-
-    /*if (avgSlopeTurn) {
+    if(avgSlopeTurn) {
         turnCertainty += avgSlopeCertainty;
-    }
+    } 
     else {
         strafeCertainty += avgSlopeCertainty;
     }
 
-    if (avgCenterDistTurn) {
+    if(avgCenterDistTurn) {
         turnCertainty += avgCenterDistCertainty;
-    }
+    } 
     else {
         strafeCertainty += avgCenterDistCertainty;
     }
-
-    if (avgIntersectTurn) {
-        turnCertainty += avgIntersectCertainty;
-    }
-    else {
-        strafeCertainty += avgIntersectCertainty;
-    }*/
 
     if (turnCertainty > strafeCertainty) {
         *turn = true;
@@ -495,16 +446,6 @@ float Camera::centerError(int color, int prevTagState, bool *turn) {
         }
     }
 
-    LOG.write(LOG_LOW, "centerError", "centerDistTurnCount: %f",
-              centerDistTurnCount);
-    LOG.write(LOG_LOW, "centerError", "slopeTurnCount: %f",
-              slopeTurnCount);
-    LOG.write(LOG_LOW, "centerError", "totalGoodCenterDistCertainty: %f",
-              totalGoodCenterDistCertainty);
-    LOG.write(LOG_LOW, "centerError", "totalGoodSlopeCertainty: %f",
-              totalGoodSlopeCertainty);
-    LOG.write(LOG_LOW, "centerError", "strafeCertainty: %f",
-              strafeCertainty);
     LOG.write(LOG_LOW, "centerError", "avgSlopeError: %f",
               avgSlopeError);
     LOG.write(LOG_LOW, "centerError", "avgCenterDistError: %f",
@@ -810,8 +751,8 @@ float Camera::corridorSlopeError(int color, bool *turn, float *certainty) {
 
     // did we find a line across the entire screen?
     if (wholeImage.numSquares >= 3) {
-        // FIXME: this will never be true
-        if(leftSide.numSquares < 2 && rightSide.numSquares < 2) { //No line on either side
+        if((leftSide.numSquares < 2 || rightSide.numSquares < 2) && (leftSide.numSquares != 0 && rightSide.numSquares != 0)) { //No line on either side
+            //TODO: .9? - REPLACE WITH SOMETHING REASONABLE
             if(wholeImage.rSquared > .9) {
                 //we can be fairly sure that we should make a turn move here
                 *turn = true;
