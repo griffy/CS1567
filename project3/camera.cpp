@@ -445,7 +445,7 @@ float Camera::centerError(int color, int prevTagState, bool *turn) {
     }
 
     // TODO: if necessary, modify total error based on each certainty
-    // I think this is necessary, so I'm going to do this
+    //
     float totalError = 0.0;
     int numErrors = 0;
     if (*turn) {
