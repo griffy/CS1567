@@ -495,6 +495,20 @@ float Camera::centerError(int color, int prevTagState, bool *turn) {
         }
     }
 
+    LOG.write(LOG_LOW, "centerError", "centerDistTurnCount: %f",
+              centerDistTurnCount);
+    LOG.write(LOG_LOW, "centerError", "slopeTurnCount: %f",
+              slopeTurnCount);
+    LOG.write(LOG_LOW, "centerError", "totalGoodCenterDistCertainty: %f",
+              totalGoodCenterDistCertainty);
+    LOG.write(LOG_LOW, "centerError", "totalGoodSlopeCertainty: %f",
+              totalGoodSlopeCertainty);
+    LOG.write(LOG_LOW, "centerError", "strafeCertainty: %f",
+              strafeCertainty);
+    LOG.write(LOG_LOW, "centerError", "avgSlopeError: %f",
+              avgSlopeError);
+    LOG.write(LOG_LOW, "centerError", "avgCenterDistError: %f",
+              avgCenterDistError);
     LOG.write(LOG_LOW, "centerError", "totalError: %f",
               totalError);
     LOG.write(LOG_LOW, "centerError", "numErrors: %d",
