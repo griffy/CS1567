@@ -14,7 +14,6 @@
 typedef struct move {
 	int direction;
 	struct move *next;
-	struct move *prev;
 	int cost;
 } Move;
 
