@@ -319,86 +319,84 @@ float Camera::centerError(int color, bool *turn) {
     // the certainties based on empirical data
     // TODO: find actual certainty increments/decrements based
     //       off empirical data
-    if (prevTagState != -1) {
-        if (avgSlopeCertainty < 1.0 && numGoodSlopeErrors > 0) {
-            if (avgSlopeTurn) {
-                switch (prevTagState) {
-                case TAGS_BOTH_GE_TWO:
-                    avgSlopeCertainty += 0.10;
-                    break;
-                case TAGS_BOTH_ONE:
-                    avgSlopeCertainty += 0.10;
-                    break;
-                case TAGS_ONE_OR_NONE:
-                    avgSlopeCertainty += 0.10;
-                    break;
-                case TAGS_LESS_LEFT:
-                    avgSlopeCertainty += 0.10;
-                    break;
-                case TAGS_LESS_RIGHT:
-                    avgSlopeCertainty += 0.10;
-                    break;
-                }
-            }
-            else {
-                switch (prevTagState) {
-                case TAGS_BOTH_GE_TWO:
-                    avgSlopeCertainty += 0.10;
-                    break;
-                case TAGS_BOTH_ONE:
-                    avgSlopeCertainty += 0.10;
-                    break;
-                case TAGS_ONE_OR_NONE:
-                    avgSlopeCertainty += 0.10;
-                    break;
-                case TAGS_LESS_LEFT:
-                    avgSlopeCertainty += 0.10;
-                    break;
-                case TAGS_LESS_RIGHT:
-                    avgSlopeCertainty += 0.10;
-                    break;
-                }
+    if (avgSlopeCertainty < 1.0 && numGoodSlopeErrors > 0) {
+        if (avgSlopeTurn) {
+            switch (prevTagState) {
+            case TAGS_BOTH_GE_TWO:
+                avgSlopeCertainty -= 0.10; //Don't turn away from a good state
+                break;
+            case TAGS_BOTH_ONE:
+                //no-op: Kinda a wash?
+                break;
+            case TAGS_ONE_OR_NONE:
+                avgSlopeCertainty += 0.10; //Turn to find more squares
+                break;
+            case TAGS_LESS_LEFT:
+                avgSlopeCertainty += 0.10; //Turn to find more squares
+                break;
+            case TAGS_LESS_RIGHT:
+                avgSlopeCertainty += 0.10; //Turn to find more squares
+                break;
             }
         }
-
-        if (avgCenterDistCertainty < 1.0 && numGoodCenterDistErrors > 0) {
-            if (avgCenterDistTurn) {
-                switch (prevTagState) {
-                case TAGS_BOTH_GE_TWO:
-                    avgCenterDistCertainty += 0.10;
-                    break;
-                case TAGS_BOTH_ONE:
-                    avgCenterDistCertainty += 0.10;
-                    break;
-                case TAGS_ONE_OR_NONE:
-                    avgCenterDistCertainty += 0.10;
-                    break;
-                case TAGS_LESS_LEFT:
-                    avgCenterDistCertainty += 0.10;
-                    break;
-                case TAGS_LESS_RIGHT:
-                    avgCenterDistCertainty += 0.10;
-                    break;
-                }
+        else {
+            switch (prevTagState) {
+            case TAGS_BOTH_GE_TWO:
+                avgSlopeCertainty += 0.10; //Strafing good!
+                break;
+            case TAGS_BOTH_ONE:
+                //no-op
+                break;
+            case TAGS_ONE_OR_NONE:
+                avgSlopeCertainty += 0.10;
+                break;
+            case TAGS_LESS_LEFT:
+                avgSlopeCertainty += 0.10;
+                break;
+            case TAGS_LESS_RIGHT:
+                avgSlopeCertainty += 0.10;
+                break;
             }
-            else {
-                switch (prevTagState) {
-                case TAGS_BOTH_GE_TWO:
-                    avgCenterDistCertainty += 0.10;
-                    break;
-                case TAGS_BOTH_ONE:
-                    avgCenterDistCertainty += 0.10;
-                    break;
-                case TAGS_ONE_OR_NONE:
-                    avgCenterDistCertainty += 0.10;
-                    break;
-                case TAGS_LESS_LEFT:
-                    avgCenterDistCertainty += 0.10;
-                    break;
-                case TAGS_LESS_RIGHT:
-                    avgCenterDistCertainty += 0.10;
-                    break;
-                }
+        }
+    }
+
+    if (avgCenterDistCertainty < 1.0 && numGoodCenterDistErrors > 0) {
+        if (avgCenterDistTurn) {
+            switch (prevTagState) {
+            case TAGS_BOTH_GE_TWO:
+                avgCenterDistCertainty -= 0.10;
+                break;
+            case TAGS_BOTH_ONE:
+                //no-op
+                break;
+            case TAGS_ONE_OR_NONE:
+                avgCenterDistCertainty += 0.10; 
+                break;
+            case TAGS_LESS_LEFT:
+                avgCenterDistCertainty += 0.10;
+                break;
+            case TAGS_LESS_RIGHT:
+                avgCenterDistCertainty += 0.10;
+                break;
+            }
+        }
+        else {
+            switch (prevTagState) {
+            case TAGS_BOTH_GE_TWO:
+                avgCenterDistCertainty += 0.10;
+                break;
+            case TAGS_BOTH_ONE:
+                avgCenterDistCertainty += 0.10;
+                break;
+            case TAGS_ONE_OR_NONE:
+                avgCenterDistCertainty -= 0.10;
+                break;
+            case TAGS_LESS_LEFT:
+                avgCenterDistCertainty += 0.10;
+                break;
+            case TAGS_LESS_RIGHT:
+                avgCenterDistCertainty += 0.10;
+                break;
             }
         }
     }
