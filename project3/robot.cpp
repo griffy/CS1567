@@ -187,6 +187,41 @@ void Robot::move(int direction, int numCells) {
     }
 }
 
+bool Robot::sideCenter(int direction) {
+    Cell *curCell = _map->getCurrentCell();
+    if (curCell->getCellType() == CELL_HALL) {
+        return false;
+    }
+
+    switch (direction) {
+    case DIR_NORTH:
+    case DIR_SOUTH:
+        if (_map->canOccupy(curCell->x-1, curCell->y)) {
+            turn(DIR_EAST);
+        }
+        else if (_map->canOccupy(curCell->x+1, curCell->y)) {
+            turn(DIR_WEST);
+        }
+        break;
+    case DIR_EAST:
+    case DIR_WEST:
+        if (_map->canOccupy(curCell->x, curCell->y+1)) {
+            turn(DIR_NORTH);
+        }
+        else if (_map->canOccupy(curCell->x, curCell->y-1)) {
+            turn(DIR_SOUTH);
+        }
+        break;
+    }
+
+    center();
+
+    return true;
+}
+
+// Openings seem to behave oddly
+/*
+Openings behave oddly
 bool Robot::sideCenter(int direction){
 	int type = _map->getCurrentCell()->getCellType();
 	if (type == CELL_HALL) {
@@ -219,6 +254,7 @@ bool Robot::sideCenter(int direction){
 	center();
 	return true;
 }
+*/
 
 void Robot::turn(int direction) {
     switch (direction) {
@@ -671,9 +707,9 @@ void Robot::updatePose() {
 
     // if we're in room 2, don't trust north star so much
     if (getRoom() == ROOM_2) {
-        _kalmanFilter->setNSUncertainty(NS_X_UNCERTAIN+0.05, 
-                                        NS_Y_UNCERTAIN+0.15, 
-                                        NS_THETA_UNCERTAIN+0.05);
+        _kalmanFilter->setNSUncertainty(NS_X_UNCERTAIN+0.025, 
+                                        NS_Y_UNCERTAIN+0.05, 
+                                        NS_THETA_UNCERTAIN+0.025);
     } 
     else {
         _kalmanFilter->setNSUncertainty(NS_X_UNCERTAIN,

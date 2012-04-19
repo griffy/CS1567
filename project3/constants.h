@@ -33,9 +33,9 @@
 
 // Kalman uncertainties
 // process uncertainties
-#define PROC_X_UNCERTAIN 0.25
-#define PROC_Y_UNCERTAIN 0.25
-#define PROC_THETA_UNCERTAIN 0.25
+#define PROC_X_UNCERTAIN 0.10
+#define PROC_Y_UNCERTAIN 0.10
+#define PROC_THETA_UNCERTAIN 0.10
 
 // north star uncertainties
 #define NS_X_UNCERTAIN 0.15
@@ -80,7 +80,7 @@
 #define MAX_CENTERSTRAFE_ERROR 1.0
 
 // acceptable proximities from base
-#define MAX_DIST_ERROR 10.0 // in cm
+#define MAX_DIST_ERROR 20.0 // in cm
 #define MAX_THETA_ERROR DEGREE_20
 
 // acceptable threshold for being in the center of squares (out of 1)
