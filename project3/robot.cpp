@@ -115,12 +115,12 @@ Robot::~Robot() {
     delete _mapStrategy;
 }
 
-void Robot::playGame() {
+void Robot::eatShit() {
     Cell *nextCell = _mapStrategy->nextCell();
 
     while (nextCell != NULL) {
         Cell *curCell = _map->getCurrentCell();
-        
+
         int xDiff = nextCell->x - curCell->x;
         int yDiff = nextCell->y - curCell->y;
 
@@ -138,6 +138,8 @@ void Robot::playGame() {
         else if (yDiff < 0) {
             move(DIR_SOUTH, 1);
         }
+
+        _map->occupyCell(nextCell->x, nextCell->y);
     }
 }
 

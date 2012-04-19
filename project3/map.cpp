@@ -11,9 +11,6 @@ Map::Map(RobotInterface *robotInterface, int startingX, int startingY) {
 	_curCell = cells[startingX][startingY];
 	LOG.write(LOG_LOW, "map", "starting cell: %d, %d",
 			  startingX, startingY);
-	// Don't think these are necessary
-    // reserveCell(startingX, startingY);
-    // occupyCell(startingX, startingY);
 }
 
 Map::~Map() {
@@ -51,6 +48,22 @@ int Map::getRobot2Score() {
 
 Cell* Map::getCurrentCell() {
 	return _curCell;
+}
+
+bool Map::canOccupy(int x, int y) {
+	Cell *moveCell = NULL;
+	moveCell = cellAt(x, y);
+	if (moveCell == NULL) {
+		return false;
+	}
+	return moveCell->isBlocked();
+}
+
+Cell* Map::cellAt(int x, int y) {
+	if (x < 0 || y < 0 || x > MAP_WIDTH || y > MAP_HEIGHT) {
+		return NULL;
+	}
+	return cells[x][y];
 }
 
 bool Map::occupyCell(int x, int y) {

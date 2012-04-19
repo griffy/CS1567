@@ -35,6 +35,8 @@ int main(int argc, char *argv[]) {
 	//robot->move(DIR_EAST, 4); // cells
 	//robot->move(DIR_SOUTH, 3);
 
+	//robot->eatShit();
+
 	delete robot;
 
 	return 0;

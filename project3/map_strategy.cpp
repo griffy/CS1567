@@ -21,7 +21,6 @@ Cell* MapStrategy::nextCell() {
 	int x = curCell->x;
 	int y = curCell->y;
 
-
 	int openings = curCell->getOpenings();
 	int best = 0;
 	int adder=1;
@@ -79,8 +78,9 @@ Cell* MapStrategy::nextCell() {
 		}
 	}
 
-	switch (direction){
+	switch (direction) {
 		case DIR_NORTH:
+			// if this is false, panic and slam into a wall?
 			_map->reserveCell(x,y+1);
 			return _map->cells[x][y+1];
 		case DIR_SOUTH:
@@ -93,21 +93,59 @@ Cell* MapStrategy::nextCell() {
 			_map->reserveCell(x+1,y);
 			return _map->cells[x+1][y];
 	}
-
-	/*
-
-	for (int i = 1; i < MAP_WIDTH; i++) {
-		for (int j = 1; j < MAP_HEIGHT; j++) {
-			int maxPoints = 0;
-
-			if (!map->cells[x+i]->isBlocked() && map-
-		}
-	}
-	*/
-
-
-	// do the reserving and occupying here
-	// before returning the cell
 	
 	return NULL;
 }
+/*
+// MiniMax notes:
+// Branching factor will be ~4, and
+// the nodes we'd generate would be 4^n
+// So, we should probably limit depth to
+// 8 or so if we want to be performant
+Cell* MapStrategy::nextCell() {
+	_map->update();
+
+	Cell *curCell = _map->getCurrentCell();
+	return maxMove(curCell, NULL, 0, 0, 0);
+}
+
+// TODO: Each Move needs to have its next and prev
+//       links set so a Move is a list of Moves
+Move* MapStrategy::maxMove(Cell *cur, Move *best, int depth, int alpha, int beta) {
+	if (depth > MAX_SEARCH_DEPTH || cur == NULL) {
+		return best;
+	}
+
+	int x = cur->x;
+	int y = cur->y;
+
+	Move *bestMove = NULL;
+
+	int newX[4] = {x, x, x-1, x+1};
+	int newY[4] = {y+1, y-1, y, y};
+
+	for (int i = 0; i < 4; i++) {
+		if (canOccupy(newX[i], newY[i])) {
+			Move *move = minMove(_map->cellAt(newX[i], newY[i]), best, depth+1, alpha, beta);
+			if (bestMove == NULL) {
+				bestMove = move;
+			}
+			else {
+				if (move->cost > bestMove->cost) {
+					bestMove = move;
+					alpha = move->cost;
+				}
+			}
+
+			if (beta > alpha) {
+				return bestMove;
+			}
+		}
+	}
+
+	return bestMove;
+}
+
+// TODO: minMove
+
+*/

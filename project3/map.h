@@ -21,6 +21,8 @@ public:
 	int getRobot1Score();
 	int getRobot2Score();
 	Cell* getCurrentCell();
+	bool canOccupy(int x, int y);
+	Cell* cellAt(int x, int y);
 	bool occupyCell(int x, int y);
 	bool reserveCell(int x, int y);
 
