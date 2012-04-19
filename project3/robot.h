@@ -83,7 +83,7 @@ class Robot {
 public:
     Robot(std::string address, int id);
     ~Robot();
-    void playGame();
+    void eatShit();
     void move(int direction, int numCells);
     void turn(int direction);
     void turn(int relDirection, float radians);
@@ -98,7 +98,6 @@ public:
     void setCameraResolution(int resolution, int quality);
 	void prefillData();
     void updatePose();
-    void updateCamera();
     void moveForward(int speed);
     void turnLeft(int speed);
     void turnRight(int speed);

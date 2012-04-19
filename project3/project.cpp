@@ -29,12 +29,13 @@ int main(int argc, char *argv[]) {
 	Robot *robot = new Robot(argv[1], 0);
 
 	while (true) {
-		robot->updateCamera();
 		robot->center();
 	}
 	
 	//robot->move(DIR_EAST, 4); // cells
 	//robot->move(DIR_SOUTH, 3);
+
+	//robot->eatShit();
 
 	delete robot;
 
