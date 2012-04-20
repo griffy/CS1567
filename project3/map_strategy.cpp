@@ -105,9 +105,53 @@ Cell* MapStrategy::nextCell() {
 Cell* MapStrategy::nextCell() {
 	_map->update();
 
-	Cell *cells[MAP_WIDTH][MAP_HEIGHT]
 	Cell *curCell = _map->getCurrentCell();
-	Move *move = maxMove(curCell, NULL, MAX_SEARCH_DEPTH, 0, 0);
+
+	// create a 2d array representing the map
+	// with all the points that are left.
+	// 0 is a cell without points
+	// > 0 is a cell with points
+	// -3 is an obstacle
+	// -2 is the other robot
+	// -1 is our robot
+	int mapValues[MAP_WIDTH][MAP_HEIGHT];
+	for (int x = 0; x < MAP_WIDTH; x++) {
+		for (int y = 0; y < MAP_HEIGHT; y++) {
+			if (_map->canOccupy(x, y)) {
+				mapValues[x][y] = _map->cellAt(x, y)->getPoints();
+			}
+			else {
+				if (_map->robotAt(x, y) == 1) {
+					if (Cell::robot == 1) {
+						mapValues[x][y] = -1;
+					}
+					else {
+						mapValues[x][y] = -2;
+					}
+				}
+				else if (_map->robotAt(x, y) == 2) {
+					if (Cell::robot == 2) {
+						mapValues[x][y] = -1;
+					}
+					else {
+						mapValues[x][y] = -2;
+					}
+				}
+				else {	
+					mapValues[x][y] = -3;
+				}
+			}
+		}
+	}
+
+	Move *initial = new Move;
+	initial->robot = -1;
+	initial->x = curCell->x;
+	initial->y = curCell->y;
+	initial->next = NULL;
+	initial->value = 0;
+
+	Move *move = maxMove(mapValues, initial, 0, 0, 0);
 	if (move == NULL) {
 		return NULL;
 	}
@@ -124,9 +168,20 @@ Cell* MapStrategy::nextCell() {
 	}
 }
 
-Move* MapStrategy::maxMove(Cell *pos, Move *best, int depth, int alpha, int beta) {
-	if (depth <= 0) {
-		return 
+void MapStrategy::apply(Move *move, int map[][]) {
+	Move *curMove = move;
+	while (curMove != NULL) {
+		map[curMove->x][curMove->y] = 0;
+	}
+}
+
+Move* MapStrategy::maxMove(bool visited[][], Move *move, int depth, int alpha, int beta) {
+	if (depth > MAX_SEARCH_DEPTH) {
+		return move;
+	}
+	else {
+		Move *best = NULL;
+		apply(move, map);
 	}
 }
 
