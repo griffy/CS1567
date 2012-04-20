@@ -1,18 +1,11 @@
 #include "map_strategy.h"
+#include "logger.h"
 
 MapStrategy::MapStrategy(Map *map) {
 	_map = map;
 }
 
 MapStrategy::~MapStrategy() {}
-
-/*
-int Map::getRobot1Score();
-int Map::getRobot2Score();
-Cell* Map::getCurrentCell();
-bool Map::occupyCell(int x, int y);
-bool Map::reserveCell(int x, int y);
-*/
 
 Cell* MapStrategy::nextCell() {
 	_map->update();
@@ -25,7 +18,13 @@ Cell* MapStrategy::nextCell() {
 		}
 	}
 	
-	return path->getFirstCell();
+	Cell *nextCell = path->getFirstCell();
+	LOG.write(LOG_LOW, "nextCell", "We have a path.");
+	LOG.write(LOG_LOW, "nextCell", "Cell (x, y): (%d, %d)",
+	          nextCell->x, nextCell->y);
+	_map->reserveCell(nextCell->x, nextCell->y);
+
+	return nextCell;
 }
 
 /*
