@@ -63,7 +63,8 @@ const float SPEED_FORWARD[NUM_SPEEDS] = {
     TIME_DISTANCE/4.8,
     TIME_DISTANCE/4.9
 };
-
+/*
+ * Old stuff
 // average speed for left and right turns at integer robot speeds
 const float SPEED_TURN[][NUM_SPEEDS] = {
     {0.0, 0.0},
@@ -77,6 +78,23 @@ const float SPEED_TURN[][NUM_SPEEDS] = {
     {(2*PI)/4.75, -(2*PI)/4.75},
     {(2*PI)/5.35, -(2*PI)/5.35},
     {(2*PI)/5.35, -(2*PI)/5.45}
+};
+*/
+
+
+// average speed for left and right turns at integer robot speeds
+const float SPEED_TURN[][NUM_SPEEDS] = {
+    {0.0, 0.0},
+    {(2*PI)/2.75, -(2*PI)/2.81},
+    {(2*PI)/2.8, -(2*PI)/2.59},
+    {(2*PI)/3.75, -(2*PI)/3.75},
+    {(2*PI)/3.90, -(2*PI)/3.75},
+    {(2*PI)/5.80, -(2*PI)/6.05},
+    {(2*PI)/5.60, -(2*PI)/5.45},
+    {(2*PI)/4.50, -(2*PI)/4.39},
+    {(2*PI)/4.60, -(2*PI)/4.45},
+    {(2*PI)/5.00, -(2*PI)/5.02},
+    {(2*PI)/10.00, -(2*PI)/8.8}
 };
 
 class Robot {
