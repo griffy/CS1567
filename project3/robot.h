@@ -122,6 +122,7 @@ public:
     void strafeLeft(int speed);
     void strafeRight(int speed);
     void stop();
+	void moveHead(int position);
     Pose* getPose();
     RobotInterface* getInterface();
     int getName();

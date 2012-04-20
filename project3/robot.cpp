@@ -140,6 +140,7 @@ void Robot::eatShit() {
         }
 
         _map->occupyCell(nextCell->x, nextCell->y);
+		nextCell = _mapStrategy->nextCell();
     }
 }
 
@@ -158,12 +159,12 @@ void Robot::move(int direction, int numCells) {
     int cellsTraveled = 0;
     while (cellsTraveled < numCells) {
         // first attempt to center ourselves before moving (except not first)
-        //if (sideCenter(direction)) {
-	//	turn(direction);
-	//}
+        if (sideCenter(direction)) {
+			turn(direction);
+		}
 
         center();
-	updatePose(true);
+		updatePose(true);
         // based on the direction, move in the global coord system
         float goalX = _pose->getX();
         float goalY = _pose->getY();
@@ -182,6 +183,8 @@ void Robot::move(int direction, int numCells) {
             break;
         }
         moveTo(goalX, goalY); // was moveToCell
+		stop();
+		usleep(5000000);
         cellsTraveled++;
         LOG.write(LOG_LOW, "move", "Made it to cell %d", cellsTraveled);
     }
@@ -198,22 +201,25 @@ bool Robot::sideCenter(int direction) {
     case DIR_SOUTH:
         if (_map->canOccupy(curCell->x-1, curCell->y)) {
             turn(DIR_EAST);
+			printf("Opening is: EAST\n");
         }
         else if (_map->canOccupy(curCell->x+1, curCell->y)) {
             turn(DIR_WEST);
+			printf("Opening is: WEST\n");
         }
         break;
     case DIR_EAST:
     case DIR_WEST:
         if (_map->canOccupy(curCell->x, curCell->y+1)) {
             turn(DIR_NORTH);
+			printf("Opening is: NORTH\n");
         }
         else if (_map->canOccupy(curCell->x, curCell->y-1)) {
             turn(DIR_SOUTH);
+			printf("Opening is: SOUTH\n");
         }
         break;
     }
-
     center();
 
     return true;
@@ -524,6 +530,21 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
     printf("theta acceptable\n");
 }
 
+/*******************************
+ * 
+ * Moves the robot head (camera) to the position given as the argument
+ * 
+ * *****************************/
+
+void Robot::moveHead(int position){
+    _robotInterface->Move(position, 1);
+    sleep(1);
+    _robotInterface->Move(position, 1);
+    sleep(2);
+}
+
+
+
 bool Robot::_centerTurn(float centerError) {
     bool success;
 
@@ -640,10 +661,13 @@ void Robot::center() {
     sleep(1);
     _robotInterface->Move(RI_HEAD_MIDDLE, 1);
     sleep(2);
+	
+	int attempts = 0;
 
     Camera::prevTagState = -1;
     while (true) {
         bool turn = false;
+
         float centerError = _camera->centerError(COLOR_PINK, &turn);
         if (turn) {
             if (_centerTurn(centerError)) {
@@ -655,6 +679,43 @@ void Robot::center() {
                 break;
             }
         }
+        attempts++;
+        
+        if(attempts > 1){
+			moveHead(RI_HEAD_MIDDLE);
+
+			// make sure we are close to our desired heading, in case we didn't move correctly
+			updatePose(false);
+
+			float thetaHeading;
+			switch (_heading) {
+			case DIR_NORTH:
+				thetaHeading = DEGREE_90;
+				break;
+			case DIR_SOUTH:
+				thetaHeading = DEGREE_270;
+				break;
+			case DIR_EAST:
+				thetaHeading = DEGREE_0;
+				break;
+			case DIR_WEST:
+				thetaHeading = DEGREE_180;
+				break;
+			}
+
+			float theta = _pose->getTheta();
+			float thetaError = thetaHeading - theta;
+			thetaError = Util::normalizeThetaError(thetaError);
+			if (fabs(thetaError) > DEGREE_45) {
+				// if we turned beyond 45 degrees from our
+				// heading, this was a mistake. let's turn
+				// back just enough so we're 45 degrees from
+				// our heading.
+				float thetaGoal = Util::normalizeTheta(theta + (DEGREE_45 + thetaError));
+				turnTo(thetaGoal, MAX_THETA_ERROR);
+			}
+			attempts = 0;
+		}
     }
 
     _robotInterface->Move(RI_HEAD_DOWN, 1);
