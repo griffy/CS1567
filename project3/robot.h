@@ -96,8 +96,8 @@ public:
     void setFailLimit(int limit);
     int getFailLimit();
     void setCameraResolution(int resolution, int quality);
-	void prefillData();
-    void updatePose();
+    void prefillData();
+    void updatePose(bool useWheelEncoders);
     void moveForward(int speed);
     void turnLeft(int speed);
     void turnRight(int speed);

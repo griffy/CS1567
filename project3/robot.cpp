@@ -81,7 +81,7 @@ Robot::Robot(std::string address, int id) {
     _wheelEncoders->resetPose(_northStar->getPose());
     // now update our pose again so our global pose isn't
     // some funky value (since it's based off we and ns)
-    updatePose();
+    updatePose(true);
 
     // load the map once we've found our position in the global
     // system, so we can know what cell we started at
@@ -158,12 +158,12 @@ void Robot::move(int direction, int numCells) {
     int cellsTraveled = 0;
     while (cellsTraveled < numCells) {
         // first attempt to center ourselves before moving (except not first)
-        if (sideCenter(direction)) {
-			turn(direction);
-		}
+        //if (sideCenter(direction)) {
+	//	turn(direction);
+	//}
 
         center();
-		updatePose();
+	updatePose(true);
         // based on the direction, move in the global coord system
         float goalX = _pose->getX();
         float goalY = _pose->getY();
@@ -284,11 +284,11 @@ void Robot::turn(int relDirection, float radians) {
     float goalTheta;
 
     if (relDirection == DIR_LEFT) {
-        goalTheta = Util::normalizeTheta(_pose->getTheta()+radians);
+        goalTheta = Util::normalizeTheta(_northStar->getTheta()+radians);
         turnTo(goalTheta, MAX_THETA_ERROR);
     }
     else {
-        goalTheta = Util::normalizeTheta(_pose->getTheta()-radians);
+        goalTheta = Util::normalizeTheta(_northStar->getTheta()-radians);
         turnTo(goalTheta, MAX_THETA_ERROR);
     }
 }
@@ -302,7 +302,7 @@ void Robot::turn(int relDirection, float radians) {
 void Robot::moveToCell(float x, float y) {
     LOG.write(LOG_LOW, "moveToCell", 
               "moveToCell cur. location: %f, %f, %f", 
-              _pose->getX(), _pose->getY(), _pose->getTheta());
+              _pose->getX(), _pose->getY(), _northStar->getTheta());
 
     printf("beginning move to cell at (%f, %f)\n", x, y);
 
@@ -310,7 +310,7 @@ void Robot::moveToCell(float x, float y) {
     do {
         // move to the location until theta is off by too much
         thetaError = moveToUntil(x, y, MAX_THETA_ERROR);
-        float goal = Util::normalizeTheta(_pose->getTheta() + thetaError);
+        float goal = Util::normalizeTheta(_northStar->getTheta() + thetaError);
         if (thetaError != 0) {
             // if we're off in theta, turn to adjust 
             turnTo(goal, MAX_THETA_ERROR);
@@ -339,7 +339,7 @@ void Robot::moveTo(float x, float y) {
     do {
         // move to the location until theta is off by too much
         thetaError = moveToUntil(x, y, MAX_THETA_ERROR);
-		float goal = Util::normalizeTheta(_pose->getTheta() + thetaError);
+		float goal = Util::normalizeTheta(_northStar->getTheta() + thetaError);
         if (thetaError != 0) {
             // if we're off in theta, turn to adjust 
             turnTo(goal, MAX_THETA_ERROR);
@@ -372,7 +372,7 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
 
     printf("heading toward (%f, %f)\n", x, y);
     do {
-        updatePose();
+        updatePose(true);
 
         LOG.write(LOG_HIGH, "move_we_pose",
                   "x: %f \t y: %f \t theta: %f", 
@@ -412,7 +412,7 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
             break;
         }
 
-        thetaError = thetaDesired - _pose->getTheta();
+        thetaError = thetaDesired - _northStar->getTheta();
         thetaError = Util::normalizeThetaError(thetaError);
 
 /*      Old way
@@ -467,7 +467,7 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
  
     printf("adjusting theta\n");
     do {
-	    updatePose();
+	updatePose(false);
 
         LOG.write(LOG_LOW, "turn_we_pose",
                   "x: %f \t y: %f \t theta: %f", 
@@ -485,7 +485,7 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
                   _pose->getY(),
                   _pose->getTheta()); 
 
-        theta = _pose->getTheta();
+        theta = _northStar->getTheta();
         thetaError = thetaGoal - theta;
         thetaError = Util::normalizeThetaError(thetaError);
 
@@ -519,6 +519,7 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
             turnLeft(turnSpeed);
         }
     } while (fabs(thetaError) > thetaErrorLimit);
+
 
     printf("theta acceptable\n");
 }
@@ -555,7 +556,7 @@ bool Robot::_centerTurn(float centerError) {
         }
 
         // make sure we haven't turned beyond 45 degrees (our max adjustment)
-        updatePose();
+        /*updatePose();
 
         float thetaHeading;
         switch (_heading) {
@@ -583,7 +584,9 @@ bool Robot::_centerTurn(float centerError) {
             // our heading.
             float thetaGoal = Util::normalizeTheta(theta + (DEGREE_45 + thetaError));
             turnTo(thetaGoal, MAX_THETA_ERROR);
-        }
+        }*/
+
+        _robotInterface->reset_state();
     }
 
     return success;
@@ -668,13 +671,18 @@ void Robot::center() {
  *             coord system with the best estimate of its position
  *             using a kalman filter
  **************************************/
-void Robot::updatePose() {
+void Robot::updatePose(bool useWheelEncoders) {
     // update the robot interface so wheel encoder
     // and north star have the same time-values
     _updateInterface();
     // update each pose estimate
     _northStar->updatePose();
-    _wheelEncoders->updatePose();
+    if(useWheelEncoders) {
+    	_wheelEncoders->updatePose();
+    } 
+    else {
+        _wheelEncoders->setTheta(_northStar->getTheta());
+    }
 
     if (_speed <= 0) {
         _speed=0;
@@ -746,7 +754,7 @@ Pose* Robot::getPose() {
 void Robot::prefillData() {
     printf("prefilling data...\n");
     for (int i = 0; i < MAX_FILTER_TAPS; i++){
-        updatePose();
+        updatePose(true);
     }
     printf("sufficient data collected\n");
 }

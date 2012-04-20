@@ -71,3 +71,7 @@ float PositionSensor::getTheta() {
 Pose* PositionSensor::getPose() {
 	return _pose;
 }
+
+void PositionSensor::setTheta(float theta) {
+	_pose->setTheta(theta);
+}

@@ -32,8 +32,10 @@ int main(int argc, char *argv[]) {
 	//	robot->center();
 	//}
 	
-	robot->move(DIR_EAST, 4); // cells
-	robot->move(DIR_SOUTH, 3);
+	robot->move(DIR_EAST, 2); // cells
+	robot->move(DIR_SOUTH, 2);
+        robot->move(DIR_WEST, 2);
+        robot->move(DIR_NORTH, 2);
 
 	//robot->eatShit();
 
