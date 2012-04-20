@@ -12,9 +12,11 @@
 #define CELL_WEST 3
 
 typedef struct move {
-	int direction;
+	int robot;
+	int x;
+	int y;
 	struct move *next;
-	int cost;
+	int value;
 } Move;
 
 class MapStrategy {
