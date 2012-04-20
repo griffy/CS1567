@@ -1,4 +1,50 @@
 #include "path.h"
+#include "map.h"
+
+float NS_PENALTY[MAP_WIDTH][MAP_HEIGHT] = {
+	// col 1 (starting from left of room)
+	{0.60,
+	 0.55,
+	 0.50,
+	 0.50,
+	 0.50},
+	// col 2
+	{0.35,
+	 0.30,
+	 0.25,
+	 0.25,
+	 0.25},
+	// col 3
+	{0.10,
+	 0.05,
+	 0.01,
+	 0.00,
+	 0.00},
+	// col 4
+	{0.10,
+	 0.05,
+	 0.01,
+	 0.00,
+	 0.00},
+	// col 5
+	{0.10,
+	 0.05,
+	 0.01,
+	 0.00,
+	 0.00},
+	// col 6
+	{0.15,
+	 0.10,
+	 0.01,
+	 0.00,
+	 0.00},
+	// col 7
+	{0.20,
+	 0.15,
+	 0.01,
+	 0.00,
+	 0.00}
+};
 
 Path::Path() 
 : _cells() {	
@@ -67,38 +113,52 @@ int Path::getHeading(int upTo) {
 float Path::getValue() {
 	float value = 0.0;
 
+	bool used[MAP_WIDTH][MAP_HEIGHT] = {
+		{false, false, false, false, false},
+		{false, false, false, false, false},
+		{false, false, false, false, false},
+		{false, false, false, false, false},
+		{false, false, false, false, false},
+		{false, false, false, false, false},
+		{false, false, false, false, false}
+	};
+
 	int directionChanges = 0;
 	for (int i = 0; i < length(); i++) {
 		Cell *nextCell = getCell(i);
+		int nextX = nextCell->x;
+		int nextY = nextCell->y;
 
-		int points = nextCell->getPoints();
-		value += (float)points * NS_PENALTY[nextCell->x][nextCell->y];
+		if (!used[nextX][nextY]) {
+			int points = nextCell->getPoints();
+			value += (float)points * NS_PENALTY[nextX][nextY];
+			used[nextX][nextY] = true;
+		}
 
 		if (i > 1) {
 			Cell *curCell = getCell(i-1);
+			int curX = curCell->x;
+			int curY = curCell->y;
+
 			int heading = getHeading(i);
 			switch (heading) {
 			case DIR_NORTH:
-				if (nextCell->y < curCell->y ||
-					nextCell->x != curCell->x) {
+				if (nextY < curY || nextX != curX) {
 					directionChanges++;
 				}
 				break;
 			case DIR_SOUTH:
-				if (nextCell->y > curCell->y ||
-					nextCell->x != curCell->x) {
+				if (nextY > curY || nextX != curX) {
 					directionChanges++;
 				}
 				break;
 			case DIR_EAST:
-				if (nextCell->x > curCell->x ||
-					nextCell->y != curCell->y) {
+				if (nextX > curX || nextY != curY) {
 					directionChanges++;
 				}
 				break;
 			case DIR_WEST:
-				if (nextCell->x < curCell->x ||
-					nextCell->y != curCell->y) {
+				if (nextX < curX || nextY != curY) {
 					directionChanges++;
 				}
 				break;

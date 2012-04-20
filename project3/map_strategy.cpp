@@ -159,7 +159,7 @@ void MapStrategy::createPaths(Path *parentPath, int length) {
 		for (int i = 0; i < 4; i++) {
 			if (_map->canOccupy(newX[i], newY[i])) {
 				curPath->push(_map->cells[newX[i]][newY[i]]);
-				createPath(curPath, length-1);
+				createPaths(curPath, length-1);
 				curPath->pop();
 			}
 		}
