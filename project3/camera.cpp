@@ -17,6 +17,8 @@
 #include "utilities.h"
 #include <math.h>
 
+int Camera::prevTagState = -1;
+
 Camera::Camera(RobotInterface *robotInterface) {
     _robotInterface = robotInterface;
     _pinkThresholded = NULL;
@@ -196,39 +198,40 @@ int Camera::getTagState(int color) {
     }
 }
 
-float Camera::centerError(int color, int prevTagState, bool *turn) {
+float Camera::centerError(int color, bool *turn) {
     *turn = false;
+   
+    int curTagState = 5;
 
-    float slopeTurnCount = 0;
-    float centerDistTurnCount = 0;
-    //int intersectTurnCount = 0;
+    float slopeTurnCertainty = 0;
+    float centerDistTurnCertainty = 0;
  
     float slopeTurnError = 0;
     float centerDistTurnError = 0;
 
+    int numSlopeTurnErrors = 0;
+    int numCenterDistTurnErrors = 0;
+
+    float slopeStrafeCertainty = 0;
+    float centerDistStrafeCertainty = 0;
+
+    float slopeStrafeError = 0;
+    float centerDistStrafeError = 0;
+
+    int numSlopeStrafeErrors = 0;
+    int numCenterDistStrafeErrors = 0;
+
     int numGoodSlopeErrors = 0;
     int numGoodCenterDistErrors = 0;
-    //int numGoodIntersectErrors = 0;
-
-    float totalGoodSlopeError = 0.0;
-    float totalGoodCenterDistError = 0.0;
-    //float totalGoodIntersectError = 0.0;
-
-    float totalGoodSlopeCertainty = 0.0;
-    float totalGoodCenterDistCertainty = 0.0;
-    //float totalGoodIntersectCertainty = 0.0;
-
-    float avgSlopeError = 0.0;
-    float avgCenterDistError = 0.0;
-    //float avgIntersectError = 0.0;
-
-    float avgSlopeCertainty = 0.0;
-    float avgCenterDistCertainty = 0.0;
-    //float avgIntersectCertainty = 0.0;
 
     bool avgSlopeTurn = false;
     bool avgCenterDistTurn = false;
-    //bool avgIntersectTurn = false;
+
+    float avgSlopeError = 0;
+    float avgCenterDistError = 0;
+
+    float avgSlopeCertainty = 0;
+    float avgCenterDistCertainty = 0;
 
     // calculate slope and center distance errors the specified number
     // of times, ignoring -999's (which say they found nothing good)
@@ -237,229 +240,206 @@ float Camera::centerError(int color, int prevTagState, bool *turn) {
 
         bool slopeTurn = false;
         bool centerDistTurn = false;
-        //bool intersectTurn = false;
 
         float slopeCertainty = 0.0;
         float centerDistCertainty = 0.0;
-        //float intersectCertainty = 0.0;
 
         float slopeError = corridorSlopeError(color, &slopeTurn, &slopeCertainty);
         float centerDistError = centerDistanceError(color, &centerDistTurn, &centerDistCertainty);
-        //float intersectError = intersectError(color, &intersectTurn, &intersectCertainty);
 
-        if (slopeCertainty > 0.0) {
-            numGoodSlopeErrors++;
-            totalGoodSlopeError += slopeError;
-            totalGoodSlopeCertainty += slopeCertainty;
+        LOG.write(LOG_LOW, "centerError", "\n\nslopeError: %f\ncenter: %f\n\n", slopeError, centerDistError);
+
+	//Find and store the best (aka. lowest) tag state seen
+        curTagState = getTagState(color) < curTagState ? getTagState(color) : curTagState;
+
+        if (slopeCertainty > 0.01) {
             if (slopeTurn) {
-                slopeTurnCount += slopeCertainty;
+                numSlopeTurnErrors++;
+                slopeTurnCertainty += slopeCertainty;
                 slopeTurnError += slopeError;
+            } 
+            else {
+                numSlopeStrafeErrors++;
+                slopeStrafeCertainty += slopeCertainty;
+                slopeStrafeError += slopeError;
             }
         }
 
-        if (centerDistCertainty > 0.0) {
-            numGoodCenterDistErrors++;
-            totalGoodCenterDistError += centerDistError;
-            totalGoodCenterDistCertainty += centerDistCertainty;
+        if (centerDistCertainty > 0.01) {
             if (centerDistTurn) {
-                centerDistTurnCount += centerDistCertainty;
+                numCenterDistTurnErrors++;
+                centerDistTurnCertainty += centerDistCertainty;
                 centerDistTurnError += centerDistError;
+            } 
+            else {
+                numCenterDistStrafeErrors++;
+                centerDistStrafeCertainty += centerDistCertainty;
+                centerDistStrafeError += centerDistError;
             }
         }
-
-        /*if (intersectCertainty != 0.0) {
-            numGoodIntersectErrors++;
-            totalGoodIntersectError += intersectError;
-            totalGoodIntersectCertainty += intersectCertainty;
-            if (intersectTurn) {
-                intersectTurnCount++;
-            }
-        }*/
     }
 
-    avgSlopeError = totalGoodSlopeError / (float)numGoodSlopeErrors;
-    avgCenterDistError = totalGoodCenterDistError / (float)numGoodCenterDistErrors;
-    //avgIntersectError = totalGoodIntersectError / (float)numGoodIntersectErrors;
-
-    avgSlopeCertainty = totalGoodSlopeCertainty / (float)numGoodSlopeErrors;
-    avgCenterDistCertainty = totalGoodCenterDistCertainty / (float)numGoodCenterDistErrors;
-    //avgIntersectCertainty = totalGoodIntersectCertainty / (float)numGoodIntersectErrors;
-
-    LOG.write(LOG_LOW, "centerError", "Avg. slope error: %f", avgSlopeError);
-    LOG.write(LOG_LOW, "centerError", "Avg. center dist. error: %f", avgCenterDistError);
-    //LOG.write(LOG_LOW, "centerError", "Avg. intersect error: %f", avgIntersectError);
-
-    LOG.write(LOG_LOW, "centerError", "Avg. slope certainty: %f", avgSlopeCertainty);
-    LOG.write(LOG_LOW, "centerError", "Avg. center dist. certainty: %f", avgCenterDistCertainty);
-    //LOG.write(LOG_LOW, "centerError", "Avg. intersect certainty: %f", avgIntersectCertainty);
-
-    if (slopeTurnCount > totalGoodSlopeCertainty / 2.0) {
+    if (numSlopeTurnErrors == 0) {
+        avgSlopeTurn = false;
+    } 
+    else if (numSlopeStrafeErrors == 0) {
+        avgSlopeTurn = true;
+    }
+    else if ((slopeTurnCertainty / (float)numSlopeTurnErrors)  > (slopeStrafeCertainty / (float)numSlopeStrafeErrors)) {
         avgSlopeTurn = true;
     }
 
-    if (centerDistTurnCount > totalGoodCenterDistCertainty / 2.0) {
+    if (numCenterDistTurnErrors == 0) {
+        avgCenterDistTurn = false;
+    }
+    else if (numCenterDistStrafeErrors == 0) {
+        avgCenterDistTurn = true;
+    }
+    else if ((centerDistTurnCertainty / (float)numCenterDistTurnErrors) > (centerDistStrafeCertainty / (float)numCenterDistStrafeErrors)) {
         avgCenterDistTurn = true;
     }
 
-    /*if (intersectTurnCount > numGoodIntersectErrors / 2) {
-        avgIntersectTurn = true;
-    }*/
+    if(numSlopeTurnErrors == 0 && numSlopeStrafeErrors == 0) {
+        avgSlopeError = 0;
+        avgSlopeCertainty = 0;
+        numGoodSlopeErrors = 0;
+    }
+    else if(avgSlopeTurn) {
+        avgSlopeError = slopeTurnError / (float)numSlopeTurnErrors;
+        avgSlopeCertainty = slopeTurnCertainty / (float)numSlopeTurnErrors;
+        numGoodSlopeErrors = numSlopeTurnErrors;
+    } 
+    else {
+        avgSlopeError = slopeStrafeError / (float)numSlopeStrafeErrors;
+        avgSlopeCertainty = slopeStrafeCertainty / (float)numSlopeStrafeErrors;
+        numGoodSlopeErrors = numSlopeStrafeErrors;
+    }
+
+    if(numCenterDistTurnErrors == 0 && numCenterDistStrafeErrors == 0) {
+        avgCenterDistError = 0;
+        avgCenterDistCertainty = 0;
+        numGoodCenterDistErrors = 0;
+    }
+    else if(avgCenterDistTurn) {
+        avgCenterDistError = centerDistTurnError / (float)numCenterDistTurnErrors;
+        avgCenterDistCertainty = centerDistTurnCertainty / (float)numCenterDistTurnErrors;
+        numGoodCenterDistErrors = numCenterDistTurnErrors;
+    } 
+    else {
+        avgCenterDistError = centerDistStrafeError / (float)numCenterDistStrafeErrors;
+        avgCenterDistCertainty = centerDistStrafeCertainty / (float)numCenterDistStrafeErrors;
+        numGoodCenterDistErrors = numCenterDistStrafeErrors;
+    }
+
+    LOG.write(LOG_LOW, "centerError", "Avg. slope error: %f", avgSlopeError);
+    LOG.write(LOG_LOW, "centerError", "Avg. center dist. error: %f", avgCenterDistError);
+
+    LOG.write(LOG_LOW, "centerError", "Avg. slope certainty: %f", avgSlopeCertainty);
+    LOG.write(LOG_LOW, "centerError", "Avg. center dist. certainty: %f", avgCenterDistCertainty);
+    
 
     // based on our previous state, let's modify
     // the certainties based on empirical data
     // TODO: find actual certainty increments/decrements based
     //       off empirical data
-    if (prevTagState != -1) {
-        if (avgSlopeCertainty < 1.0 && numGoodSlopeErrors > 0) {
-            if (avgSlopeTurn) {
-                switch (prevTagState) {
-                case TAGS_BOTH_GE_TWO:
-                    avgSlopeCertainty += 0.10;
-                    break;
-                case TAGS_BOTH_ONE:
-                    avgSlopeCertainty += 0.10;
-                    break;
-                case TAGS_ONE_OR_NONE:
-                    avgSlopeCertainty += 0.10;
-                    break;
-                case TAGS_LESS_LEFT:
-                    avgSlopeCertainty += 0.10;
-                    break;
-                case TAGS_LESS_RIGHT:
-                    avgSlopeCertainty += 0.10;
-                    break;
-                }
-            }
-            else {
-                switch (prevTagState) {
-                case TAGS_BOTH_GE_TWO:
-                    avgSlopeCertainty += 0.10;
-                    break;
-                case TAGS_BOTH_ONE:
-                    avgSlopeCertainty += 0.10;
-                    break;
-                case TAGS_ONE_OR_NONE:
-                    avgSlopeCertainty += 0.10;
-                    break;
-                case TAGS_LESS_LEFT:
-                    avgSlopeCertainty += 0.10;
-                    break;
-                case TAGS_LESS_RIGHT:
-                    avgSlopeCertainty += 0.10;
-                    break;
-                }
-            }
-        }
-
-        if (avgCenterDistCertainty < 1.0 && numGoodCenterDistErrors > 0) {
-            if (avgCenterDistTurn) {
-                switch (prevTagState) {
-                case TAGS_BOTH_GE_TWO:
-                    avgCenterDistCertainty += 0.10;
-                    break;
-                case TAGS_BOTH_ONE:
-                    avgCenterDistCertainty += 0.10;
-                    break;
-                case TAGS_ONE_OR_NONE:
-                    avgCenterDistCertainty += 0.10;
-                    break;
-                case TAGS_LESS_LEFT:
-                    avgCenterDistCertainty += 0.10;
-                    break;
-                case TAGS_LESS_RIGHT:
-                    avgCenterDistCertainty += 0.10;
-                    break;
-                }
-            }
-            else {
-                switch (prevTagState) {
-                case TAGS_BOTH_GE_TWO:
-                    avgCenterDistCertainty += 0.10;
-                    break;
-                case TAGS_BOTH_ONE:
-                    avgCenterDistCertainty += 0.10;
-                    break;
-                case TAGS_ONE_OR_NONE:
-                    avgCenterDistCertainty += 0.10;
-                    break;
-                case TAGS_LESS_LEFT:
-                    avgCenterDistCertainty += 0.10;
-                    break;
-                case TAGS_LESS_RIGHT:
-                    avgCenterDistCertainty += 0.10;
-                    break;
-                }
-            }
-        }
-    }
-    /*if (avgIntersectCertainty < 1.0 && numGoodIntersectErrors > 0) {
+    if (avgSlopeCertainty < 1.0 && numGoodSlopeErrors > 0) {
         if (avgSlopeTurn) {
             switch (prevTagState) {
             case TAGS_BOTH_GE_TWO:
-                avgIntersectCertainty += 0.10;
+                avgSlopeCertainty -= 0.10; //Don't turn away from a good state
                 break;
             case TAGS_BOTH_ONE:
-                avgIntersectCertainty += 0.10;
+                //no-op: Kinda a wash?
                 break;
             case TAGS_ONE_OR_NONE:
-                avgIntersectCertainty += 0.10;
+                avgSlopeCertainty += 0.10; //Turn to find more squares
                 break;
             case TAGS_LESS_LEFT:
-                avgIntersectCertainty += 0.10;
+                avgSlopeCertainty += 0.10; //Turn to find more squares
                 break;
             case TAGS_LESS_RIGHT:
-                avgIntersectCertainty += 0.10;
+                avgSlopeCertainty += 0.10; //Turn to find more squares
                 break;
             }
         }
         else {
             switch (prevTagState) {
             case TAGS_BOTH_GE_TWO:
-                avgIntersectCertainty += 0.10;
+                avgSlopeCertainty += 0.10; //Strafing good!
                 break;
             case TAGS_BOTH_ONE:
-                avgIntersectCertainty += 0.10;
+                //no-op
                 break;
             case TAGS_ONE_OR_NONE:
-                avgIntersectCertainty += 0.10;
+                avgSlopeCertainty += 0.10;
                 break;
             case TAGS_LESS_LEFT:
-                avgIntersectCertainty += 0.10;
+                avgSlopeCertainty += 0.10;
                 break;
             case TAGS_LESS_RIGHT:
-                avgIntersectCertainty += 0.10;
+                avgSlopeCertainty += 0.10;
                 break;
             }
         }
-    }*/
+    }
+
+    if (avgCenterDistCertainty < 1.0 && numGoodCenterDistErrors > 0) {
+        if (avgCenterDistTurn) {
+            switch (prevTagState) {
+            case TAGS_BOTH_GE_TWO:
+                avgCenterDistCertainty -= 0.10;
+                break;
+            case TAGS_BOTH_ONE:
+                //no-op
+                break;
+            case TAGS_ONE_OR_NONE:
+                avgCenterDistCertainty += 0.10; 
+                break;
+            case TAGS_LESS_LEFT:
+                avgCenterDistCertainty += 0.10;
+                break;
+            case TAGS_LESS_RIGHT:
+                avgCenterDistCertainty += 0.10;
+                break;
+            }
+        }
+        else {
+            switch (prevTagState) {
+            case TAGS_BOTH_GE_TWO:
+                avgCenterDistCertainty += 0.10;
+                break;
+            case TAGS_BOTH_ONE:
+                avgCenterDistCertainty += 0.10;
+                break;
+            case TAGS_ONE_OR_NONE:
+                avgCenterDistCertainty -= 0.10;
+                break;
+            case TAGS_LESS_LEFT:
+                avgCenterDistCertainty += 0.10;
+                break;
+            case TAGS_LESS_RIGHT:
+                avgCenterDistCertainty += 0.10;
+                break;
+            }
+        }
+    }
 
     float turnCertainty = 0.0;
     float strafeCertainty = 0.0;
 
-    turnCertainty = centerDistTurnCount + slopeTurnCount;
-    strafeCertainty = totalGoodCenterDistCertainty + totalGoodSlopeCertainty;
-    strafeCertainty -= turnCertainty;
-
-    /*if (avgSlopeTurn) {
-        turnCertainty += avgSlopeCertainty;
-    }
+    if(avgSlopeTurn) {
+        turnCertainty += numSlopeTurnErrors * avgSlopeCertainty;
+    } 
     else {
-        strafeCertainty += avgSlopeCertainty;
+        strafeCertainty += numSlopeStrafeErrors * avgSlopeCertainty;
     }
 
-    if (avgCenterDistTurn) {
-        turnCertainty += avgCenterDistCertainty;
-    }
+    if(avgCenterDistTurn) {
+        turnCertainty +=  numCenterDistTurnErrors * avgCenterDistCertainty;
+    } 
     else {
-        strafeCertainty += avgCenterDistCertainty;
+        strafeCertainty += numCenterDistStrafeErrors * avgCenterDistCertainty;
     }
-
-    if (avgIntersectTurn) {
-        turnCertainty += avgIntersectCertainty;
-    }
-    else {
-        strafeCertainty += avgIntersectCertainty;
-    }*/
 
     if (turnCertainty > strafeCertainty) {
         *turn = true;
@@ -470,7 +450,7 @@ float Camera::centerError(int color, int prevTagState, bool *turn) {
     }
 
     // TODO: if necessary, modify total error based on each certainty
-    // I think this is necessary, so I'm going to do this
+    //
     float totalError = 0.0;
     int numErrors = 0;
     if (*turn) {
@@ -496,16 +476,6 @@ float Camera::centerError(int color, int prevTagState, bool *turn) {
         }
     }
 
-    LOG.write(LOG_LOW, "centerError", "centerDistTurnCount: %f",
-              centerDistTurnCount);
-    LOG.write(LOG_LOW, "centerError", "slopeTurnCount: %f",
-              slopeTurnCount);
-    LOG.write(LOG_LOW, "centerError", "totalGoodCenterDistCertainty: %f",
-              totalGoodCenterDistCertainty);
-    LOG.write(LOG_LOW, "centerError", "totalGoodSlopeCertainty: %f",
-              totalGoodSlopeCertainty);
-    LOG.write(LOG_LOW, "centerError", "strafeCertainty: %f",
-              strafeCertainty);
     LOG.write(LOG_LOW, "centerError", "avgSlopeError: %f",
               avgSlopeError);
     LOG.write(LOG_LOW, "centerError", "avgCenterDistError: %f",
@@ -515,120 +485,14 @@ float Camera::centerError(int color, int prevTagState, bool *turn) {
     LOG.write(LOG_LOW, "centerError", "numErrors: %d",
               numErrors);
 
+    prevTagState = curTagState;
+
     if (numErrors == 0) {
         return 0.0;
     }
 
     return totalError / (float)numErrors;
 }
-
-/**************************************
- * Definition: Gives an error specifying how far away from the center
- *             of the squares (corridor) the rovio is, using both
- *             error of the slopes of seen squares and distance error
- *             of the two largest squares
- *
- * Parameters: The color of the squares we're supposed to be looking at
- *
- * Returns:    The center error in the interval [-1, 1], where 0 is no error
- *             A negative value is an indication to move right
- *             A positive value is an indication to move left
- **************************************/
-
-//Deprecated
-/*
-float Camera::centerError(int color, bool *turn) {
-    *turn = false;
-    int slopeTurnCount = 0;
-    int vgSlopeTurnCount = 0;
-    int centerDistTurnCount = 0;
-    int numGoodSlopeErrors = 0;
-    int numVeryGoodSlopeErrors = 0;
-    int numGoodCenterDistErrors = 0;
-    float totalGoodSlopeError = 0.0;
-    float totalVeryGoodSlopeError = 0.0;
-    float totalGoodCenterDistError = 0.0;
-
-    // calculate slope and center distance errors the specified number
-    // of times, ignoring -999's (which say they found nothing good)
-    for (int i = 0; i < NUM_CAMERA_ERRORS; i++) {
-        update();
-
-        bool slopeTurn = false;
-        bool centerDistTurn = false;
-
-        float slopeError = corridorSlopeError(color, &slopeTurn);
-        float centerDistError = centerDistanceError(color, &centerDistTurn);
-
-        if (slopeError > -900) { //aka. != -999, no floating point comparisons
-            numGoodSlopeErrors++;
-            totalGoodSlopeError += slopeError;
-            if (slopeTurn) {
-                slopeTurnCount++;
-            }
-            if(fabs(slopeError < .99)) {
-                numVeryGoodSlopeErrors++;
-                totalVeryGoodSlopeError += slopeError;
-                if (slopeTurn) {
-                    vgSlopeTurnCount++;
-                }
-            }
-        }
-
-        if (centerDistError > -900) { //aka. != -999, no floating point comparisons
-            numGoodCenterDistErrors++;
-            totalGoodCenterDistError += centerDistError;
-            if (centerDistTurn) {
-                centerDistTurnCount++;
-            }
-        }
-    }
-
-    if(numVeryGoodSlopeErrors > numGoodSlopeErrors / 2.0 && numVeryGoodSlopeErrors >= 2) {
-        totalGoodSlopeError = totalVeryGoodSlopeError;
-        numGoodSlopeErrors = numVeryGoodSlopeErrors;
-        slopeTurnCount = vgSlopeTurnCount;
-    }
- 
-    float avgSlopeError = totalGoodSlopeError / (float)numGoodSlopeErrors;
-    float avgCenterDistError = totalGoodCenterDistError / (float)numGoodCenterDistErrors;
-
-    LOG.write(LOG_LOW, "centerError", "Avg. slope error: %f", avgSlopeError);
-    LOG.write(LOG_LOW, "centerError", "Avg. center dist. error: %f", avgCenterDistError);
-	
-    // if we have good center distance errors, let's use those
-	if (numGoodCenterDistErrors > 0) {
-        // but are they still not optimal?
-        if (avgCenterDistError > 0.25) {
-            // center distance error is probably no longer a good indicator
-            // of center error, so trust slope error now if we have it
-            if (numGoodSlopeErrors > 0) {
-                if (slopeTurnCount > numGoodSlopeErrors / 2) {
-                    *turn = true;
-                }
-                return avgSlopeError;
-            }
-        }
-        if (centerDistTurnCount > numGoodCenterDistErrors / 2) {
-            *turn = true;
-        }
-        return avgCenterDistError;
-    }
-
-    // if we didn't have good center distance errors, let's
-    // use slope error if we have it
-    if (numGoodSlopeErrors > 0) {
-        if (slopeTurnCount > numGoodSlopeErrors / 2) {
-            *turn = true;
-        }
-        return avgSlopeError;
-    }
-
-    // otherwise, we didn't have good errors for either!
-    *turn = true;
-    return 1;
-}
-*/
 
 /**************************************
  * Definition: Gives an error specifying the difference of the distance 
@@ -710,13 +574,13 @@ float Camera::centerDistanceError(int color, bool *turn, float *certainty) {
     else if (leftSquare == NULL) {
         // the left seems to be out of view, so we're
         // probably too far left. we should move right
-        *certainty = 0.50; 
+        *certainty = 0.40; 
         return -0.5;
     } 
     else if (rightSquare == NULL) {
         // the right seems to be out of view, so we're
         // probably too far right. we should move left
-        *certainty = 0.50;
+        *certainty = 0.40;
         return 0.5;
     }
 
@@ -725,9 +589,9 @@ float Camera::centerDistanceError(int color, bool *turn, float *certainty) {
     int rightError = center - rightSquare->center.x;
 
     // return the difference in errors in range [-1, 1]
-    *turn = true;
-    *certainty = 0.80; // should be high-ish
-    return (float)(leftError + rightError) / (float)center;
+    *turn = false;
+    *certainty = 0.70; // should be high-ish
+    return (float)(leftError + rightError) / (2.0*(float)center);
 }
 
 /**************************************
@@ -809,10 +673,33 @@ float Camera::corridorSlopeError(int color, bool *turn, float *certainty) {
         cvReleaseImage(&bgr);
     }
 
+    //LOTS OF ARBITRARY CASES!!!
+    //
+    //STILL TO ACCOUNT FOR: REALLY HIGH (correct sign) slopes in hallways indicating turning towards that side
+    //	Unsure of how to factor in what is seen on the other side
+
+
+
+    if (wholeImage.numSquares == 2) {
+        if(leftSide.numSquares == 1 && rightSide.numSquares == 1) {
+            if(fabs(wholeImage.slope) > MAX_PLANE_SLOPE) {
+                *certainty = 0.4 + (0.5 * fmin(1.0, 5*(fabs(wholeImage.slope)-MAX_PLANE_SLOPE))); //arbitrary certainty increase for larger slopes
+            }
+            if(wholeImage.slope > 0) {
+                //turn right
+                return -.4 + fmin(.3,.75*fabs(wholeImage.slope - MAX_PLANE_SLOPE));
+            } 
+            else {
+                //turn left
+                return .4 + fmin(.3,.75*fabs(wholeImage.slope - MAX_PLANE_SLOPE));
+            }
+        }
+    }
+
     // did we find a line across the entire screen?
     if (wholeImage.numSquares >= 3) {
-        // FIXME: this will never be true
-        if(leftSide.numSquares < 2 && rightSide.numSquares < 2) { //No line on either side
+        if((leftSide.numSquares < 2 || rightSide.numSquares < 2) && (leftSide.numSquares != 0 && rightSide.numSquares != 0)) { //No line on either side
+            //TODO: .9? - REPLACE WITH SOMETHING REASONABLE
             if(wholeImage.rSquared > .9) {
                 //we can be fairly sure that we should make a turn move here
                 *turn = true;
@@ -820,11 +707,11 @@ float Camera::corridorSlopeError(int color, bool *turn, float *certainty) {
                 //if positive slope, turn right and vice versa
                 if(wholeImage.slope > 0) {
                     //turn right
-                    return -.98; //.98 indicates full magnitude and NO uncertainty (for later)
+                    return -1; 
                 } 
                 else {
                     //turn left
-                    return .98;
+                    return 1;
                 }
             }
         } 
@@ -832,42 +719,66 @@ float Camera::corridorSlopeError(int color, bool *turn, float *certainty) {
 
     //look for extra squares on either side 
     if(leftSide.numSquares >= 2) {
-        if (leftSide.rSquared < .9) { //bad values up to .9?
+        if (leftSide.rSquared < .9 && !(rightSide.numSquares >= 2 && (fabs(rightSide.slope-leftSide.slope) < .15))) { //bad values up to .9?
             //turn left
             *turn = true;
-            *certainty = 0.75;
+            *certainty = 0.70;
+            if(leftSide.slope < .14) {
+                *certainty += 0.10;
+            }
+
+            if(rightSide.numSquares < 2) {
+                *certainty += 0.10;
+            }
+ 
             return .75; //less dramatic than above
-            //boost confidence if no line found on right
-            //boost confidence if slope < ~.14
         } 
 
-        if (leftSide.slope < .14) {
+        //If r-squared is good, then the extra squares are not of the right type!!
+        //Unless we see nothing on the other side at all
+        if (leftSide.slope < 0.14 && rightSide.numSquares == 0) {
             //turn left
             *turn = true;
-            *certainty = 0.85;
-            return .70;
-            //boost confidence if no line found on right
+            *certainty = 0.50;
+ 
+            if(leftSide.slope < 0) {
+                *certainty += 0.15;
+            }
+
+            return .75;
         }
     }
 
     if(rightSide.numSquares >= 2) {
-        if (rightSide.rSquared < .9) {
+        if (rightSide.rSquared < .9 && !(leftSide.numSquares >= 2 && (fabs(leftSide.slope-rightSide.slope) < .15))) {
             //turn right
             *turn = true;
-            *certainty = 0.75;
+            *certainty = 0.70;
+ 
+            if(rightSide.slope > -.1) {
+                *certainty += 0.10;
+            }
+ 
+            if(leftSide.numSquares < 2) {
+                *certainty += 0.10;
+            }
+
             return -.75;
-            //boost confidence if no line found on left
-            //boost confidence if slope > ~-.1
         }
        
-        if (rightSide.slope > -.1) {
+        
+        if (rightSide.slope > -.1 && leftSide.numSquares == 0) {
             //turn right
             *turn = true;
-            *certainty = 0.85;
-            return -.70; 
-            //boost confidence if no line found on left
+            *certainty = 0.50;
+            
+            if(rightSide.slope > 0) {
+                *certainty += 0.15;
+            }
+           
+            return -.75;
         }
-    }
+    } 
    
     //base certainty of turning vs. strafing on intersection data (when available)
     
@@ -877,7 +788,7 @@ float Camera::corridorSlopeError(int color, bool *turn, float *certainty) {
          
         if(xIntersect > -900 && xIntersect < .85*center) {
             //we're probably looking left
-            //turn right?
+            //turn right
             softRightTurn = true;
         }
         
@@ -891,21 +802,21 @@ float Camera::corridorSlopeError(int color, bool *turn, float *certainty) {
             // the difference is large enough that we can say
             // the error is at its max, so we should move right
             if(softRightTurn) {
-                *certainty = 0.90;
+                *certainty = 0.70;
                 *turn = true;
                 return -.5; //less magnitude of a turn than strafe
             }
-            *certainty = 0.80;
+            *certainty = 0.70;
             return -1; //1 indicates full magnitude and SOME uncertainty
         } 
         else if (difference < -MAX_SLOPE_DIFFERENCE) {
             // we should move left
             if(softLeftTurn) {
-                *certainty = 0.60;
+                *certainty = 0.70;
                 *turn = true;
                 return .5;
             }
-            *certainty = 0.50;
+            *certainty = 0.70;
             return 1;
         } 
         else {
@@ -913,14 +824,14 @@ float Camera::corridorSlopeError(int color, bool *turn, float *certainty) {
                 if(softLeftTurn && difference < 0) {
                     //turn left
                     *turn = true;
-                    *certainty = 0.75;
-                    return .25;
+                    *certainty = 0.55;
+                    return .4;
                 }
                 if(softRightTurn && difference > 0) {
                     //turn right
                     *turn = true;
-                    *certainty = 0.75;
-                    return .25;
+                    *certainty = 0.55;
+                    return -.4;
                 }
             }
             // return the error in the range [-1, 1]

@@ -47,7 +47,7 @@
 
 // largest allowable slope between centers of two largest squares
 // to decide if they're on the same plane or not
-#define MAX_PLANE_SLOPE 10 // in pixels
+#define MAX_PLANE_SLOPE .10 // in pixels
 
 // low and high colors for thresholding
 #define YELLOW_LOW cvScalar(25, 100, 100)
@@ -136,6 +136,8 @@ public:
 	IplImage* getHSVImage();
 	IplImage* getBGRImage();
 	IplImage* getThresholdedImage(CvScalar low, CvScalar high);
+ 
+        static int prevTagState;
 private:
 	RobotInterface *_robotInterface;
 	int _quality;
@@ -144,6 +146,7 @@ private:
 	IplImage *_yellowThresholded;
 	squares_t *_pinkSquares;
 	squares_t *_yellowSquares;
+ 
 };
 
 #endif

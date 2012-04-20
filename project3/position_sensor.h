@@ -29,6 +29,7 @@ public:
 	float getY();
 	float getTheta();
 	Pose* getPose();
+	void setTheta(float theta);
 protected:
 	Robot *_robot;
 	Pose *_pose;

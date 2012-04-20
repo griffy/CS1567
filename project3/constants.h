@@ -81,7 +81,7 @@
 
 // acceptable proximities from base
 #define MAX_DIST_ERROR 20.0 // in cm
-#define MAX_THETA_ERROR DEGREE_20
+#define MAX_THETA_ERROR DEGREE_20/2.0
 
 // acceptable threshold for being in the center of squares (out of 1)
 #define MAX_STRAFE_CENTER_ERROR 0.1
