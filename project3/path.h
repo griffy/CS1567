@@ -2,8 +2,10 @@
 #define CS1567_PATH_H
 
 #include "map.h"
+#include "cell.h"
+#include <vector>
 
-NS_PENALTY[MAP_WIDTH][MAP_HEIGHT] = {
+float NS_PENALTY[MAP_WIDTH][MAP_HEIGHT] = {
 	// col 1 (starting from left of room)
 	{0.60,
 	 0.55,
@@ -19,25 +21,25 @@ NS_PENALTY[MAP_WIDTH][MAP_HEIGHT] = {
 	// col 3
 	{0.10,
 	 0.05,
-	 0.00,
+	 0.01,
 	 0.00,
 	 0.00},
 	// col 4
 	{0.10,
 	 0.05,
-	 0.00,
+	 0.01,
 	 0.00,
 	 0.00},
 	// col 5
 	{0.10,
 	 0.05,
-	 0.00,
+	 0.01,
 	 0.00,
 	 0.00},
 	// col 6
 	{0.15,
 	 0.10,
-	 0.00,
+	 0.01,
 	 0.00,
 	 0.00},
 	// col 7
@@ -54,7 +56,11 @@ public:
 	Path(Cell *cell);
 	Path(Path *path);
 	~Path();
-	double getValue();
+	void push(Cell *cell);
+	void pop();
+	int length();
+	int getHeading(int upTo);
+	float getValue();
 	Cell* getCell(int i);
 	Cell* getFirstCell();
 	Cell* getLastCell();
