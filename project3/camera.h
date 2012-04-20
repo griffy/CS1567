@@ -47,7 +47,7 @@
 
 // largest allowable slope between centers of two largest squares
 // to decide if they're on the same plane or not
-#define MAX_PLANE_SLOPE .10 // in pixels
+#define MAX_PLANE_SLOPE 0.10 // in pixels
 
 // low and high colors for thresholding
 #define YELLOW_LOW cvScalar(25, 100, 100)
@@ -95,7 +95,7 @@
 
 // how many images should be taken and processed to find (average)
 // center error 
-#define NUM_CAMERA_ERRORS 7
+#define NUM_CAMERA_ERRORS 3
 
 #define TAGS_BOTH_GE_TWO 0 // >= 2 tags on both sides
 #define TAGS_BOTH_ONE 1 // 1 tag on both sides
@@ -137,7 +137,7 @@ public:
 	IplImage* getBGRImage();
 	IplImage* getThresholdedImage(CvScalar low, CvScalar high);
  
-        static int prevTagState;
+    static int prevTagState;
 private:
 	RobotInterface *_robotInterface;
 	int _quality;
