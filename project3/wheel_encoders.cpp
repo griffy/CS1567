@@ -102,6 +102,17 @@ float WheelEncoders::_getDeltaTheta() {
 float WheelEncoders::_getRobotDeltaY() {
     float leftRobotDeltaY = -_getFilteredDeltaLeft() * cos(DEGREE_150);
     float rightRobotDeltaY = _getFilteredDeltaRight() * cos(DEGREE_30);
+    // some robots have bad wheel encoders for one side,
+    // so account for this by faking the data on the opposite
+    // wheel
+    switch (_robot->getName()) {
+    case ROSIE:
+    	rightRobotDeltaY = leftRobotDeltaY;
+    	break;
+    case OPTIMUS:
+    	leftRobotDeltaY = rightRobotDeltaY;
+    	break;
+    }
     float avgRobotDeltaY = (leftRobotDeltaY + rightRobotDeltaY) / 2.0;
     return avgRobotDeltaY;
 }
