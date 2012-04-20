@@ -64,6 +64,8 @@ public:
 	Cell* getCell(int i);
 	Cell* getFirstCell();
 	Cell* getLastCell();
+	void push(Cell *);
+	Cell* pop();
 private:
 	std::vector<Cell*> _cells;
 };

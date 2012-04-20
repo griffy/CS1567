@@ -13,6 +13,22 @@ Cell* Map::getCurrentCell();
 bool Map::occupyCell(int x, int y);
 bool Map::reserveCell(int x, int y);
 */
+
+Cell* MapStrategy::nextCell() {
+	_map->update();
+	
+	Path *path = getBestPath(PATH_LENGTH);
+	if (path == NULL || path->getValue() == 0) {
+		path = getBestPath(10);
+		if (path == NULL || path->getValue() == 0) {
+			return NULL;
+		}
+	}
+	
+	return path->getFirstCell();
+}
+
+/*
 // TODO: use MiniMax algorithm
 Cell* MapStrategy::nextCell() {
 	_map->update();
@@ -96,6 +112,67 @@ Cell* MapStrategy::nextCell() {
 	
 	return NULL;
 }
+*/
+
+/********************************************
+ * Definition:
+ * 
+ *******************************************/
+Path* MapStrategy::getBestPath(int length) {
+	Path *bestPath = NULL;
+	Path *curPath = new Path(_map->getCurrentCell());
+	createPaths(curPath, length);
+	float bestPathVal = 0.0;
+	int bestPathIndex = -1;
+	for (int i = 0; i < _pathList.size(); i++) {
+		float pathVal = _pathList[i]->getValue();
+		if (pathVal > bestPathVal) {
+			bestPathVal = pathVal;
+			bestPathIndex = i;
+		}
+	}
+	
+	if (bestPathIndex != -1) {
+		bestPath = _pathList[bestPathIndex];
+		_pathList.erase(_pathList.begin()+bestPathIndex);
+	}
+	clearPaths();
+	return bestPath;
+}
+
+void MapStrategy::createPaths(Path *parentPath, int length) {
+	Path *curPath = new Path(parentPath);
+
+	if (length == 0) {
+		_pathList.push_back(curPath);
+		return;
+	}
+
+	int openings = curPath->getLastCell()->getOpenings();
+	if (openings > 0) {
+		int x = curPath->getLastCell()->x;
+		int y = curPath->getLastCell()->y;
+
+		int newX[4] = {x, x, x-1, x+1};
+		int newY[4] = {y+1, y-1, y, y};
+
+		for (int i = 0; i < 4; i++) {
+			if (_map->canOccupy(newX[i], newY[i])) {
+				curPath->push(_map->cells[newX[i]][newY[i]]);
+				createPath(curPath, length-1);
+				curPath->pop();
+			}
+		}
+	}
+}
+
+void MapStrategy::clearPaths() {
+	for (int i = 0; i < _pathList.size(); i++) {
+		delete _pathList[i];
+	}
+	_pathList.clear();
+}
+
 /*
 // MiniMax notes:
 // Branching factor will be ~4, and
