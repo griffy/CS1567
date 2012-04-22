@@ -5,23 +5,27 @@ MapStrategy::MapStrategy(Map *map) {
 	_map = map;
 }
 
-MapStrategy::~MapStrategy() {}
+MapStrategy::~MapStrategy() {
+	clearPaths();
+}
 
 Cell* MapStrategy::nextCell() {
 	_map->update();
-	
+
 	Path *path = getBestPath(PATH_LENGTH);
+	//LOG.printfScreen(LOG_LOW, "path", "Path # = %d\n", path);
 	if (path == NULL || path->getValue() == 0) {
 		path = getBestPath(10);
+		//LOG.printfScreen(LOG_LOW, "path", "Trying bigger path");
 		if (path == NULL || path->getValue() == 0) {
 			return NULL;
 		}
 	}
 	
 	Cell *nextCell = path->getFirstCell();
-	LOG.write(LOG_LOW, "nextCell", "We have a path.");
-	LOG.write(LOG_LOW, "nextCell", "Cell (x, y): (%d, %d)",
-	          nextCell->x, nextCell->y);
+	//LOG.write(LOG_LOW, "nextCell", "We have a path.");
+	//LOG.write(LOG_LOW, "nextCell", "Cell (x, y): (%d, %d)",
+	//          nextCell->x, nextCell->y);
 	_map->reserveCell(nextCell->x, nextCell->y);
 
 	return nextCell;
@@ -120,12 +124,14 @@ Cell* MapStrategy::nextCell() {
 Path* MapStrategy::getBestPath(int length) {
 	Path *bestPath = NULL;
 	Path *curPath = new Path(_map->getCurrentCell());
+	//LOG.printfScreen(LOG_LOW, "path", "creating paths\n");
 	createPaths(curPath, length);
 	float bestPathVal = 0.0;
 	int bestPathIndex = -1;
 	for (int i = 0; i < _pathList.size(); i++) {
 		float pathVal = _pathList[i]->getValue();
 		if (pathVal > bestPathVal) {
+	//		LOG.printfScreen(LOG_LOW, "path", "found new path -- value = %f\n", pathVal);
 			bestPathVal = pathVal;
 			bestPathIndex = i;
 		}
@@ -136,33 +142,47 @@ Path* MapStrategy::getBestPath(int length) {
 		_pathList.erase(_pathList.begin()+bestPathIndex);
 	}
 	clearPaths();
+	
+	LOG.write(LOG_LOW, "path", "best path & value = ");
+	bestPath->getValue();
+	
 	return bestPath;
 }
 
 void MapStrategy::createPaths(Path *parentPath, int length) {
 	Path *curPath = new Path(parentPath);
 
+	//LOG.printfScreen(LOG_LOW, "path", "in paths... length = %d\n", length);
 	if (length == 0) {
+	//	LOG.printfScreen(LOG_LOW, "path", "pushing back path\n");
 		_pathList.push_back(curPath);
-		return;
+		return ;
 	}
 
+	//LOG.printfScreen(LOG_LOW, "path", "calculating neighbors\n");
 	int openings = curPath->getLastCell()->getOpenings();
-	if (openings > 0) {
+	//LOG.printfScreen(LOG_LOW, "path", "openings: %d\n", openings);
+	//if (openings > 0) {
 		int x = curPath->getLastCell()->x;
 		int y = curPath->getLastCell()->y;
+	//LOG.printfScreen(LOG_LOW, "path", "X: %d\n", x);
+	//LOG.printfScreen(LOG_LOW, "path", "Y: %d\n", y);
+		
 
 		int newX[4] = {x, x, x-1, x+1};
 		int newY[4] = {y+1, y-1, y, y};
 
 		for (int i = 0; i < 4; i++) {
+	//		LOG.printfScreen(LOG_LOW, "path", "looping openings: %d\n", i);
 			if (_map->canOccupy(newX[i], newY[i])) {
+	//			LOG.printfScreen(LOG_LOW, "path", "branching i = %d\n", i);
 				curPath->push(_map->cells[newX[i]][newY[i]]);
 				createPaths(curPath, length-1);
 				curPath->pop();
 			}
 		}
-	}
+	//}
+	delete curPath;
 }
 
 void MapStrategy::clearPaths() {

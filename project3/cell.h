@@ -36,6 +36,8 @@ public:
     int getOpenings();
 	int getCellType();
 	
+	static int robot;
+	
 	int x;
 	int y;
 private:
@@ -48,8 +50,6 @@ private:
 	bool _reserved;
 
 	char _openings;
-
-	static int _robot;
 };
 
 #endif
