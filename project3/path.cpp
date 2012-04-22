@@ -10,9 +10,9 @@ float NS_PENALTY[MAP_WIDTH][MAP_HEIGHT] = {
 	 0.50},
 	// col 2
 	{0.35,
-	 0.30,
+	 1000,
 	 0.25,
-	 0.25,
+	 1000,
 	 0.25},
 	// col 3
 	{0.10,
@@ -22,9 +22,9 @@ float NS_PENALTY[MAP_WIDTH][MAP_HEIGHT] = {
 	 0.00},
 	// col 4
 	{0.10,
-	 0.05,
+	 1000,
 	 0.01,
-	 0.00,
+	 1000,
 	 0.00},
 	// col 5
 	{0.10,
@@ -34,9 +34,9 @@ float NS_PENALTY[MAP_WIDTH][MAP_HEIGHT] = {
 	 0.00},
 	// col 6
 	{0.15,
-	 0.10,
+	 1000,
 	 0.01,
-	 0.00,
+	 1000,
 	 0.00},
 	// col 7
 	{0.20,

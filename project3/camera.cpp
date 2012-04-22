@@ -201,8 +201,10 @@ int Camera::getTagState(int color) {
 float Camera::centerError(int color, bool *turn) {
     *turn = false;
    
+    //flag value 'worse' than any real existing tag state
     int curTagState = 5;
 
+    //Tons of accumulator / counting variables to keep track of multiple error measures for multiple camera shots
     float slopeTurnCertainty = 0;
     float centerDistTurnCertainty = 0;
  
