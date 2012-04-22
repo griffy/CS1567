@@ -115,8 +115,14 @@ Robot::~Robot() {
     delete _mapStrategy;
 }
 
+/**************************************
+ * Definition:	Perform the calculations for the Rovio-Man project (project 3)
+ * 				get the next cell from the path created by map_strategy
+ * 				and perform the 'move' function in the desired direction
+ *************************************/
 void Robot::eatShit() {
     Cell *nextCell = _mapStrategy->nextCell();
+	sleep(10);
 
     while (nextCell != NULL) {
         Cell *curCell = _map->getCurrentCell();
@@ -141,6 +147,7 @@ void Robot::eatShit() {
 
         _map->occupyCell(nextCell->x, nextCell->y);
 		nextCell = _mapStrategy->nextCell();
+		sleep(10);
     }
 }
 
@@ -159,9 +166,9 @@ void Robot::move(int direction, int numCells) {
     int cellsTraveled = 0;
     while (cellsTraveled < numCells) {
         // first attempt to center ourselves before moving (except not first)
-        if (sideCenter(direction)) {
-			turn(direction);
-		}
+        //if (sideCenter(direction)) {
+		//	turn(direction);
+		//}
 
         center();
 		updatePose(true);
@@ -190,6 +197,11 @@ void Robot::move(int direction, int numCells) {
     }
 }
 
+/************************************
+ * Definition:	Center the robot in the North/South and East/West
+ * 				directions based on the state of the cell that the
+ * 				robot is in
+ ***********************************/
 bool Robot::sideCenter(int direction) {
     Cell *curCell = _map->getCurrentCell();
     if (curCell->getCellType() == CELL_HALL) {
@@ -262,6 +274,13 @@ bool Robot::sideCenter(int direction){
 }
 */
 
+/************************************
+ * Definition:	Turns the robot in the cardinal direction
+ * 				given as the parameter
+ * 
+ * Parameters:	A cardinal direction constant as follows
+ * 				DIR_NORTH, DIR_SOUTH, DIR_EAST, DIR_WEST
+ ***********************************/
 void Robot::turn(int direction) {
     switch (direction) {
     case DIR_NORTH:
@@ -531,19 +550,14 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
 }
 
 /*******************************
- * 
- * Moves the robot head (camera) to the position given as the argument
- * 
+ * Definition: Moves the robot head (camera) to the position given as the argument
  * *****************************/
-
 void Robot::moveHead(int position){
     _robotInterface->Move(position, 1);
     sleep(1);
     _robotInterface->Move(position, 1);
     sleep(2);
 }
-
-
 
 bool Robot::_centerTurn(float centerError) {
     bool success;
@@ -796,6 +810,9 @@ RobotInterface* Robot::getInterface() {
     return _robotInterface;
 }
 
+/************************************
+ * Definition:	Returns the name of the robot being used
+ ***********************************/
 int Robot::getName() {
     return _name;
 }

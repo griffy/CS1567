@@ -2,7 +2,7 @@
 
 
 // we don't know what robot we are yet in the game 
-int Cell::_robot = -1;
+int Cell::robot = -1;
 
 Cell::Cell(map_obj_t *mapObj) {
 	x = mapObj->x;
@@ -36,10 +36,10 @@ Cell::~Cell() {}
 
 void Cell::claimRobot() {
 	if (_type == MAP_OBJ_ROBOT_1) {
-		_robot = 1;
+		robot = 1;
 	}
 	else if (_type == MAP_OBJ_ROBOT_2) {
-		_robot = 2;
+		robot = 2;
 	}
 }
 
@@ -149,8 +149,8 @@ int Cell::getCellType(){
 bool Cell::isBlocked() {
 	if (isPost() || isOccupied()) {
 		if (isReserved()) {
-			if ((_robot == 1 && _type == MAP_OBJ_RESERVE_1) ||
-			    (_robot == 2 && _type == MAP_OBJ_RESERVE_2)) {
+			if ((robot == 1 && _type == MAP_OBJ_RESERVE_1) ||
+			    (robot == 2 && _type == MAP_OBJ_RESERVE_2)) {
 				return false;
 			}
 		}
