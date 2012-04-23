@@ -171,11 +171,11 @@ void Robot::move(int direction, int numCells) {
         int leftSquareCount = _camera->avgSquareCount(COLOR_PINK, IMAGE_LEFT);
         int rightSquareCount = _camera->avgSquareCount(COLOR_PINK, IMAGE_RIGHT);
         moveHead(RI_HEAD_DOWN);
-        if (leftSquareCount > 3.0) {
-            leftSquareCount = 3.0;
+        if (leftSquareCount > 4.0) {
+            leftSquareCount = 4.0;
         }
-        if (rightSquareCount > 3.0) {
-            rightSquareCount = 3.0;
+        if (rightSquareCount > 4.0) {
+            rightSquareCount = 4.0;
         }
         // update our pose estimates now, ignoring
         // wheel encoders and setting them to be north star's
@@ -226,11 +226,11 @@ void Robot::move(int direction, int numCells) {
             moveHead(RI_HEAD_MIDDLE);
             int newLeftSquareCount = _camera->avgSquareCount(COLOR_PINK, IMAGE_LEFT);
             int newRightSquareCount = _camera->avgSquareCount(COLOR_PINK, IMAGE_RIGHT);
-            if (newLeftSquareCount > 3.0) {
-                newLeftSquareCount = 3.0;
+            if (newLeftSquareCount > 4.0) {
+                newLeftSquareCount = 4.0;
             }
-            if (newRightSquareCount > 3.0) {
-                newRightSquareCount = 3.0;
+            if (newRightSquareCount > 4.0) {
+                newRightSquareCount = 4.0;
             }
             int i = 0;
             while (newLeftSquareCount + 0.25 < leftSquareCount &&
