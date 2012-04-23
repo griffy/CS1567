@@ -1,6 +1,5 @@
 #include "cell.h"
 
-
 // we don't know what robot we are yet in the game 
 int Cell::robot = -1;
 

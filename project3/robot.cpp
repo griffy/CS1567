@@ -95,7 +95,6 @@ Robot::Robot(std::string address, int id) {
         startingY = 2;
     }
     
-    //FIXME: Undo this
     _map = new Map(_robotInterface, startingX, startingY);
     _mapStrategy = new MapStrategy(_map);
 }
@@ -131,8 +130,6 @@ void Robot::eatShit() {
         int xDiff = nextCell->x - curCell->x;
         int yDiff = nextCell->y - curCell->y;
 
-        // TODO: make sure these match up with proper cardinal
-        // directions
         if (xDiff > 0) {
             move(DIR_WEST, 1);
         }
@@ -159,22 +156,18 @@ void Robot::eatShit() {
  * Parameters: ints specifying direction and number of cells
  **************************************/
 void Robot::move(int direction, int numCells) {
-    // make sure we're facing the right direction first
-    turn(direction);
-
     _heading = direction;
 
     int cellsTraveled = 0;
     while (cellsTraveled < numCells) {
-        // first attempt to center ourselves before moving (except not first)
-        //if (sideCenter(direction)) {
-		//	turn(direction);
-		//}
-
-        center();
-        //Turn to a cardinal direction 
+        // make sure we're facing the right direction first
         turn(direction);
-        moveHead(RI_HEAD_DOWN);
+        // center ourselves between the walls
+        center();
+        // turn once more to fix any odd angling 
+        turn(direction);
+        // update our pose estimates now, ignoring
+        // wheel encoders and setting them to be north star's
         updatePose(false);
         _wheelEncoders->resetPose(_northStar->getPose());
         // based on the direction, move in the global coord system
@@ -194,8 +187,10 @@ void Robot::move(int direction, int numCells) {
             goalX -= CELL_SIZE;
             break;
         }
-        moveTo(goalX, goalY); // was moveToCell
+        moveTo(goalX, goalY);
+        // make sure we stop once we're there
 		stop();
+        // we made it!
         cellsTraveled++;
         LOG.write(LOG_LOW, "move", "Made it to cell %d", cellsTraveled);
     }
@@ -240,43 +235,6 @@ bool Robot::sideCenter(int direction) {
 
     return true;
 }
-
-// Openings seem to behave oddly
-/*
-Openings behave oddly
-bool Robot::sideCenter(int direction){
-	int type = _map->getCurrentCell()->getCellType();
-	if (type == CELL_HALL) {
-		return false;
-    }
-	int openings = _map->getCurrentCell()->getOpenings();
-
-	switch (direction) {
-	case DIR_NORTH:
-	case DIR_SOUTH:
-		if (openings & DIR_EAST != 0) {
-			//opening to the east
-			turn(DIR_EAST);
-		}
-		else if (openings & DIR_WEST != 0) {
-			turn(DIR_WEST);
-		}
-		break;
-	case DIR_EAST:
-	case DIR_WEST:
-		if (openings & DIR_NORTH != 0) {
-			//opening to the north
-			turn(DIR_NORTH);
-		}
-		else if (openings & DIR_SOUTH != 0) {
-			turn(DIR_SOUTH);
-		}
-		break;
-	}
-	center();
-	return true;
-}
-*/
 
 /************************************
  * Definition:	Turns the robot in the cardinal direction
@@ -412,14 +370,6 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
 
         thetaError = thetaDesired - _northStar->getTheta();
         thetaError = Util::normalizeThetaError(thetaError);
-
-/*      Old way
-
-        thetaDesired = atan2(yError, xError);
-        thetaDesired = Util::normalizeTheta(thetaDesired);
-
-        distError = sqrt(yError*yError + xError*xError);
-*/
 
         LOG.write(LOG_MED, "move_error_estimates",
                   "x err: %f \t y err: %f \t distance err: %f \t "
@@ -566,6 +516,8 @@ bool Robot::_centerTurn(float centerError) {
             turnLeft(turnSpeed);
         }
 
+        // since the turns are generally small, we should ignore
+        // wheel encoder updates for this
         _robotInterface->reset_state();
     }
 
@@ -637,7 +589,7 @@ void Robot::center() {
             }
         }
         
-        if (turnAttempts > 1) {
+        if (turnAttempts > 2) {
 			moveHead(RI_HEAD_DOWN);
 
 			// make sure we are close to our desired heading, in case we didn't move correctly
@@ -672,9 +624,12 @@ void Robot::center() {
 			}
 
 			turnAttempts = 0;
+
         	moveHead(RI_HEAD_MIDDLE);
 	    }
     }
+
+    moveHead(RI_HEAD_DOWN);
 
     _centerTurnPID->flushPID();
     _centerStrafePID->flushPID();
@@ -691,7 +646,7 @@ void Robot::updatePose(bool useWheelEncoders) {
     _updateInterface();
     // update each pose estimate
     _northStar->updatePose();
-    if(useWheelEncoders) {
+    if (useWheelEncoders) {
     	_wheelEncoders->updatePose();
     } 
     else {

@@ -105,7 +105,6 @@ public:
     void move(int direction, int numCells);
     void turn(int direction);
     void turn(int relDirection, float radians);
-    void moveToCell(float x, float y);
     void moveTo(float x, float y);
     float moveToUntil(float x, float y, float thetaErrorLimit);
     void turnTo(float theta, float thetaErrorLimit);
