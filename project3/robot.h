@@ -137,6 +137,8 @@ public:
 	bool sideCenter(int direction);
 
     Camera *_camera;
+    NorthStar *_northStar;
+    bool _updateInterface();
 private:
     bool _centerTurn(float centerError);
     bool _centerStrafe(float centerError);
@@ -160,14 +162,14 @@ private:
 
     //Camera *_camera;
     WheelEncoders *_wheelEncoders;
-    NorthStar *_northStar;
+    //NorthStar *_northStar;
 
     KalmanFilter *_kalmanFilter;
 
     Map *_map;
     MapStrategy *_mapStrategy;
     
-    bool _updateInterface();
+    //bool _updateInterface();
 };
 
 #endif

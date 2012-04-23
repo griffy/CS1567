@@ -19,7 +19,7 @@ int main() {
         pid->updatePID(error);
     }
 
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 20; i++) {
         gain = pid->updatePID(error);
         speed = 10 - 9 * gain;
 
@@ -28,6 +28,14 @@ int main() {
 
         error -= 0.1;
     }
+   
+    for (int i = 0; i < 10; i++) { 
+        gain = pid->updatePID(error);
+        speed = 10 - 9 * gain;
 
+        printf("Error: %f\t Gain: %f\t Speed: %f\n",
+               error, gain, speed);
+    }
+    
     return 0;
 }

@@ -85,7 +85,7 @@ void NorthStar::updatePose() {
 	float y = _getFilteredY();
 	float theta = _getFilteredTheta();
 
-	LOG.write(LOG_LOW, "northStarUpdate", 
+	LOG.write(LOG_HIGH, "northStarUpdate", 
 			  "north star (filtered) room %d: (%f, %f, %f)",
 			  room+2, x, y, theta);
 

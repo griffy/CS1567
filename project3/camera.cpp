@@ -344,7 +344,7 @@ float Camera::centerError(int color, bool *turn) {
     // the certainties based on empirical data
     // TODO: find actual certainty increments/decrements based
     //       off empirical data
-    if (avgSlopeCertainty < 1.0 && numGoodSlopeErrors > 0) {
+    if (numGoodSlopeErrors > 0) {
         if (avgSlopeTurn) {
             switch (prevTagState) {
             case TAGS_BOTH_GE_TWO:
@@ -367,25 +367,25 @@ float Camera::centerError(int color, bool *turn) {
         else {
             switch (prevTagState) {
             case TAGS_BOTH_GE_TWO:
-                avgSlopeCertainty += 0.10; //Strafing good!
+                avgSlopeCertainty += 0.30; //Strafing good!
                 break;
             case TAGS_BOTH_ONE:
                 //no-op
                 break;
             case TAGS_ONE_OR_NONE:
-                avgSlopeCertainty += 0.10;
+                avgSlopeCertainty -= 0.10;
                 break;
             case TAGS_LESS_LEFT:
-                avgSlopeCertainty += 0.10;
+                avgSlopeCertainty -= 0.10;
                 break;
             case TAGS_LESS_RIGHT:
-                avgSlopeCertainty += 0.10;
+                avgSlopeCertainty -= 0.10;
                 break;
             }
         }
     }
 
-    if (avgCenterDistCertainty < 1.0 && numGoodCenterDistErrors > 0) {
+    if (numGoodCenterDistErrors > 0) {
         if (avgCenterDistTurn) {
             switch (prevTagState) {
             case TAGS_BOTH_GE_TWO:
@@ -411,10 +411,10 @@ float Camera::centerError(int color, bool *turn) {
                 avgCenterDistCertainty += 0.10;
                 break;
             case TAGS_BOTH_ONE:
-                avgCenterDistCertainty += 0.10;
+                //no-op
                 break;
             case TAGS_ONE_OR_NONE:
-                avgCenterDistCertainty -= 0.10;
+                avgCenterDistCertainty += 0.10;
                 break;
             case TAGS_LESS_LEFT:
                 avgCenterDistCertainty += 0.10;
@@ -452,7 +452,6 @@ float Camera::centerError(int color, bool *turn) {
     }
 
     // TODO: if necessary, modify total error based on each certainty
-    //
     float totalError = 0.0;
     int numErrors = 0;
     if (*turn) {
@@ -577,13 +576,13 @@ float Camera::centerDistanceError(int color, bool *turn, float *certainty) {
         // the left seems to be out of view, so we're
         // probably too far left. we should move right
         *certainty = 0.40; 
-        return -0.5;
+        return 0.5;
     } 
     else if (rightSquare == NULL) {
         // the right seems to be out of view, so we're
         // probably too far right. we should move left
         *certainty = 0.40;
-        return 0.5;
+        return -0.5;
     }
 
     // otherwise, we have two squares, so find the difference
@@ -593,7 +592,7 @@ float Camera::centerDistanceError(int color, bool *turn, float *certainty) {
     // return the difference in errors in range [-1, 1]
     *turn = false;
     *certainty = 0.70; // should be high-ish
-    return (float)(leftError + rightError) / (2.0*(float)center);
+    return (float)(leftError + rightError) / ((float)center);
 }
 
 /**************************************

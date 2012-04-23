@@ -38,14 +38,14 @@
 #define PROC_THETA_UNCERTAIN 0.10
 
 // north star uncertainties
-#define NS_X_UNCERTAIN 0.15
+#define NS_X_UNCERTAIN 0.25
 #define NS_Y_UNCERTAIN 0.25
 #define NS_THETA_UNCERTAIN 0.05
 
 // wheel encoder uncertainties
-#define WE_X_UNCERTAIN 0.05
-#define WE_Y_UNCERTAIN 0.05
-#define WE_THETA_UNCERTAIN 0.15
+#define WE_X_UNCERTAIN 0.025
+#define WE_Y_UNCERTAIN 0.025
+#define WE_THETA_UNCERTAIN 0.10
 
 // Distance PID
 #define PID_MOVE_KP 0.8
@@ -116,7 +116,7 @@ const float NS_ROOM_SCALE[6][4][2] = {
 	 {59.6, 36.7}, 
 	 {37.4, 53.5}},
 	// Bender
-	{{58.1, 52.3},		
+	{{49.2, 37.1}, //{58.1, 52.3}		
 	 {58.8, 47.5},
 	 {59.6, 36.7},
 	 {53.6, 71.7}},

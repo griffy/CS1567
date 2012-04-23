@@ -562,9 +562,9 @@ void Robot::moveHead(int position){
 bool Robot::_centerTurn(float centerError) {
     bool success;
 
-    float centerTurnGain = _centerTurnPID->updatePID(centerError);
-    LOG.write(LOG_LOW, "centerTurn", "center error: %f", centerError);
-    LOG.write(LOG_LOW, "centerTurn", "center turn gain: %f", centerTurnGain);
+    //float centerTurnGain = _centerTurnPID->updatePID(centerError);
+    //LOG.write(LOG_LOW, "centerTurn", "center error: %f", centerError);
+    //LOG.write(LOG_LOW, "centerTurn", "center turn gain: %f", centerTurnGain);
 
     if (fabs(centerError) < MAX_TURN_CENTER_ERROR) {
         success = true;
@@ -576,7 +576,7 @@ bool Robot::_centerTurn(float centerError) {
     else {
         success = false;
 
-        int turnSpeed = (int)(10 - 9 * centerTurnGain);
+        int turnSpeed = (int)(10 - 5 * fabs(centerError));
         turnSpeed = Util::capSpeed(turnSpeed, 10);
         
         LOG.write(LOG_LOW, "pid_speeds", "turn speed: %d", turnSpeed);
@@ -630,9 +630,9 @@ bool Robot::_centerTurn(float centerError) {
 bool Robot::_centerStrafe(float centerError) {
     bool success;
 
-    float centerStrafeGain = _centerStrafePID->updatePID(centerError);
-    LOG.write(LOG_LOW, "centerStrafe", "center error: %f", centerError);
-    LOG.write(LOG_LOW, "centerStrafe", "center strafe gain: %f", centerStrafeGain);
+    //float centerStrafeGain = _centerStrafePID->updatePID(centerError);
+    //LOG.write(LOG_LOW, "centerStrafe", "center error: %f", centerError);
+    //LOG.write(LOG_LOW, "centerStrafe", "center strafe gain: %f", centerStrafeGain);
 
     if (fabs(centerError) < MAX_STRAFE_CENTER_ERROR) {
         success = true;
@@ -644,7 +644,7 @@ bool Robot::_centerStrafe(float centerError) {
     else {
         success = false;
 
-        int strafeSpeed = (int)(10 - 9 * centerStrafeGain);
+        int strafeSpeed = (int)(10 - 5 * fabs(centerError));
         strafeSpeed = Util::capSpeed(strafeSpeed, 10);
         
         LOG.write(LOG_LOW, "pid_speeds", "strafe speed: %d", strafeSpeed);
@@ -696,7 +696,7 @@ void Robot::center() {
         attempts++;
         
         if(attempts > 1){
-			moveHead(RI_HEAD_MIDDLE);
+			moveHead(RI_HEAD_DOWN);
 
 			// make sure we are close to our desired heading, in case we didn't move correctly
 			updatePose(false);
@@ -720,22 +720,19 @@ void Robot::center() {
 			float theta = _pose->getTheta();
 			float thetaError = thetaHeading - theta;
 			thetaError = Util::normalizeThetaError(thetaError);
-			if (fabs(thetaError) > DEGREE_45) {
-				// if we turned beyond 45 degrees from our
+			if (fabs(thetaError) > DEGREE_30) {
+				// if we turned beyond 30 degrees from our
 				// heading, this was a mistake. let's turn
-				// back just enough so we're 45 degrees from
+				// back just enough so we're 30 degrees from
 				// our heading.
-				float thetaGoal = Util::normalizeTheta(theta + (DEGREE_45 + thetaError));
+				float thetaGoal = Util::normalizeTheta(theta + (DEGREE_30 + thetaError));
 				turnTo(thetaGoal, MAX_THETA_ERROR);
 			}
 			attempts = 0;
-		}
+        		moveHead(RI_HEAD_MIDDLE);
+	}
     }
 
-    _robotInterface->Move(RI_HEAD_DOWN, 1);
-    sleep(1);
-    _robotInterface->Move(RI_HEAD_DOWN, 1);
-    sleep(2);
 
     _centerTurnPID->flushPID();
     _centerStrafePID->flushPID();
@@ -789,7 +786,7 @@ void Robot::updatePose(bool useWheelEncoders) {
 
     // if we're in room 2, don't trust north star so much
     if (getRoom() == ROOM_2) {
-        _kalmanFilter->setNSUncertainty(NS_X_UNCERTAIN+0.025, 
+        _kalmanFilter->setNSUncertainty(NS_X_UNCERTAIN+0.05, 
                                         NS_Y_UNCERTAIN+0.05, 
                                         NS_THETA_UNCERTAIN+0.025);
     } 
