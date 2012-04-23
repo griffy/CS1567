@@ -171,7 +171,10 @@ void Robot::move(int direction, int numCells) {
 		//}
 
         center();
-		updatePose(true);
+        //Turn to a cardinal direction 
+        turn(direction);
+        updatePose(true);
+
         // based on the direction, move in the global coord system
         float goalX = _pose->getX();
         float goalY = _pose->getY();
@@ -318,38 +321,6 @@ void Robot::turn(int relDirection, float radians) {
     }
 }
 
-/**************************************
- * Definition: Moves the robot to a cell in the global coord system located at
- *             the specified x and y, centering as needed
- *
- * Parameters: floats specifying x and y in global system
- **************************************/
-void Robot::moveToCell(float x, float y) {
-    LOG.write(LOG_LOW, "moveToCell", 
-              "moveToCell cur. location: %f, %f, %f", 
-              _pose->getX(), _pose->getY(), _northStar->getTheta());
-
-    printf("beginning move to cell at (%f, %f)\n", x, y);
-
-    float thetaError;
-    do {
-        // move to the location until theta is off by too much
-        thetaError = moveToUntil(x, y, MAX_THETA_ERROR);
-        float goal = Util::normalizeTheta(_northStar->getTheta() + thetaError);
-        if (thetaError != 0) {
-            // if we're off in theta, turn to adjust 
-            turnTo(goal, MAX_THETA_ERROR);
-            // finally, center between squares as a sanity check
-            // turnCenter();
-        }
-    } while (thetaError != 0);
-
-    _movePID->flushPID();
-    _turnPID->flushPID();
-
-    // reset wheel encoder pose to be Kalman pose since we hit our base
-    _wheelEncoders->resetPose(_pose);
-}
 
 /**************************************
  * Definition: Moves the robot to the specified location in the global
@@ -466,7 +437,10 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
 			printf("theta error of %f too great\n", thetaError);
             return thetaError;
         }
-        int moveSpeed = (int)(10 - 9 * moveGain);
+        //FIXME: change this back
+        //int moveSpeed = (int)(10 - 9 * moveGain);
+
+        int moveSpeed = (int) (10 - (9 * (fmin(1.0, (distError+25)/65.0))));
         moveSpeed = Util::capSpeed(moveSpeed, 10);
 
         LOG.write(LOG_MED, "pid_speeds", "forward speed: %d", moveSpeed);
