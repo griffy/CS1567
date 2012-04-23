@@ -205,14 +205,16 @@ void Robot::move(int direction, int numCells) {
             _camera->update();
             int newLeftSquareCount = _camera->squareCount(COLOR_PINK, IMAGE_LEFT);
             int newRightSquareCount = _camera->squareCount(COLOR_PINK, IMAGE_RIGHT);
+            int i = 0;
             while (newLeftSquareCount + 1 < leftSquareCount &&
-                   newRightSquareCount + 1 < rightSquareCount) {
+                   newRightSquareCount + 1 < rightSquareCount &&
+                   i < 5) {
                 moveBackward(10);
-                stop();
                 _robotInterface->reset_state();
                 _camera->update();
                 newLeftSquareCount = _camera->squareCount(COLOR_PINK, IMAGE_LEFT);
                 newRightSquareCount = _camera->squareCount(COLOR_PINK, IMAGE_RIGHT);
+                i++;
             }
             moveHead(RI_HEAD_DOWN);
         }
