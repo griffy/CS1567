@@ -166,6 +166,12 @@ void Robot::move(int direction, int numCells) {
         center();
         // turn once more to fix any odd angling 
         turn(direction);
+        // count how many squares we see down the hall
+        moveHead(RI_HEAD_MIDDLE);
+        _camera->update();
+        int leftSquareCount = _camera->squareCount(COLOR_PINK, IMAGE_LEFT);
+        int rightSquareCount = _camera->squareCount(COLOR_PINK, IMAGE_RIGHT);
+        moveHead(RI_HEAD_DOWN);
         // update our pose estimates now, ignoring
         // wheel encoders and setting them to be north star's
         updatePose(false);
@@ -192,6 +198,24 @@ void Robot::move(int direction, int numCells) {
         moveTo(goalX, goalY);
         // make sure we stop once we're there
 		stop();
+        if (leftSquareCount > 1 && rightSquareCount > 1) {
+            // count how many squares we see down the hall now and
+            // back up if we over-shot the goal
+            moveHead(RI_HEAD_MIDDLE);
+            _camera->update();
+            int newLeftSquareCount = _camera->squareCount(COLOR_PINK, IMAGE_LEFT);
+            int newRightSquareCount = _camera->squareCount(COLOR_PINK, IMAGE_RIGHT);
+            while (newLeftSquareCount + 1 < leftSquareCount &&
+                   newRightSquareCount + 1 < rightSquareCount) {
+                moveBackward(10);
+                stop();
+                _robotInterface->reset_state();
+                _camera->update();
+                newLeftSquareCount = _camera->squareCount(COLOR_PINK, IMAGE_LEFT);
+                newRightSquareCount = _camera->squareCount(COLOR_PINK, IMAGE_RIGHT);
+            }
+            moveHead(RI_HEAD_DOWN);
+        }
         // we made it!
         cellsTraveled++;
         LOG.write(LOG_LOW, "move", "Made it to cell %d", cellsTraveled);
@@ -743,6 +767,12 @@ void Robot::moveForward(int speed) {
 	_movingForward = true;
     _speed = speed;
     _robotInterface->Move(RI_MOVE_FORWARD, speed);
+}
+
+void Robot::moveBackward(int speed) {
+    _movingForward = false;
+    _speed = speed;
+    _robotInterface->Move(RI_MOVE_BACKWARD, speed);
 }
 
 /**************************************

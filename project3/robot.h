@@ -116,6 +116,7 @@ public:
     void prefillData();
     void updatePose(bool useWheelEncoders);
     void moveForward(int speed);
+    void moveBackward(int speed);
     void turnLeft(int speed);
     void turnRight(int speed);
     void strafeLeft(int speed);
