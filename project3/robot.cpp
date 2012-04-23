@@ -184,21 +184,33 @@ void Robot::move(int direction, int numCells) {
         switch (direction) {
         case DIR_NORTH:
             goalY += CELL_SIZE;
+            if (_pose->getX() > 150) {
+                goalY -= 5; // north star is bad in that half of the room..
+            }
             break;
         case DIR_SOUTH:
             goalY -= CELL_SIZE;
+            if (_pose->getX() > 150) {
+                goalY -= 5; // north star is bad in that half of the room..
+            }
             break;
         case DIR_EAST:
             goalX += CELL_SIZE;
+            if (_pose->getX() > 150) {
+                goalX -= 15; // north star is bad in that half of the room..
+            }
             break;
         case DIR_WEST:
             goalX -= CELL_SIZE;
+            if (_pose->getX() > 150) {
+                goalX -= 15; // north star is bad in that half of the room..
+            }
             break;
         }
         moveTo(goalX, goalY);
         // make sure we stop once we're there
 		stop();
-        if (leftSquareCount > 1 && rightSquareCount > 1) {
+        //if (leftSquareCount > 1 && rightSquareCount > 1) {
             // count how many squares we see down the hall now and
             // back up if we over-shot the goal
             moveHead(RI_HEAD_MIDDLE);
@@ -217,7 +229,7 @@ void Robot::move(int direction, int numCells) {
                 i++;
             }
             moveHead(RI_HEAD_DOWN);
-        }
+        //}
         // we made it!
         cellsTraveled++;
         LOG.write(LOG_LOW, "move", "Made it to cell %d", cellsTraveled);
