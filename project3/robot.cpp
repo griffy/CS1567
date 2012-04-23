@@ -170,6 +170,8 @@ void Robot::move(int direction, int numCells) {
         // wheel encoders and setting them to be north star's
         updatePose(false);
         _wheelEncoders->resetPose(_northStar->getPose());
+        // finally, update our pose one more time so kalman isn't wonky
+        updatePose(true);
         // based on the direction, move in the global coord system
         float goalX = _pose->getX();
         float goalY = _pose->getY();
