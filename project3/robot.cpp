@@ -24,6 +24,7 @@ Robot::Robot(std::string address, int id) {
     _name = Util::nameFrom(address);
     
     // initialize movement variables
+    _numCellsTraveled = 0;
     _turnDirection = 0;
     _movingForward = true;
     _speed = 0;
@@ -144,7 +145,7 @@ void Robot::eatShit() {
         }
 
         _map->occupyCell(nextCell->x, nextCell->y);
-
+        _numCellsTraveled++;
 		nextCell = _mapStrategy->nextCell();
     }
 }
@@ -160,22 +161,28 @@ void Robot::move(int direction, int numCells) {
 
     int cellsTraveled = 0;
     while (cellsTraveled < numCells) {
-        // make sure we're facing the right direction first
-        turn(direction);
-        // center ourselves between the walls
-        center();
-        // turn once more to fix any odd angling 
-        turn(direction);
+        if(_numCellsTraveled != 0) {
+            // make sure we're facing the right direction first
+            if(nsThetaReliable()) {
+                turn(direction);
+            }
+            // center ourselves between the walls
+            center();
+            // turn once more to fix any odd angling 
+            if(nsThetaReliable()) {
+                turn(direction);
+            }
+        }
         // count how many squares we see down the hall
         moveHead(RI_HEAD_MIDDLE);
-        int leftSquareCount = _camera->avgSquareCount(COLOR_PINK, IMAGE_LEFT);
-        int rightSquareCount = _camera->avgSquareCount(COLOR_PINK, IMAGE_RIGHT);
+        float leftSquareCount = _camera->avgSquareCount(COLOR_PINK, IMAGE_LEFT);
+        float rightSquareCount = _camera->avgSquareCount(COLOR_PINK, IMAGE_RIGHT);
         moveHead(RI_HEAD_DOWN);
-        if (leftSquareCount > 4.0) {
-            leftSquareCount = 4.0;
+        if (leftSquareCount > 3.0) {
+            leftSquareCount = 3.0;
         }
-        if (rightSquareCount > 4.0) {
-            rightSquareCount = 4.0;
+        if (rightSquareCount > 3.0) {
+            rightSquareCount = 3.0;
         }
         // update our pose estimates now, ignoring
         // wheel encoders and setting them to be north star's
@@ -190,30 +197,22 @@ void Robot::move(int direction, int numCells) {
         switch (direction) {
         case DIR_NORTH:
             goalY += CELL_SIZE;
-            if (_pose->getX() > 150) {
-                goalY -= 5.0; // north star is bad in that half of the room..
-                distErrorLimit += 5.0;
-            }
             break;
         case DIR_SOUTH:
             goalY -= CELL_SIZE;
-            if (_pose->getX() > 150) {
-                goalY -= 5.0; // north star is bad in that half of the room..
-                distErrorLimit += 5.0;
-            }
             break;
         case DIR_EAST:
             goalX += CELL_SIZE;
-            if (_pose->getX() > 150) {
-                goalX -= 20.0; // north star is bad in that half of the room..
-                distErrorLimit += 20.0;
+            if (_map->getCurrentCell()->x == 0) {
+                goalX -= 30.0;
+                LOG.write(LOG_HIGH, "nsHardFix", "cell fix");
             }
             break;
         case DIR_WEST:
             goalX -= CELL_SIZE;
-            if (_pose->getX() > 150) {
-                goalX -= 20.0; // north star is bad in that half of the room..
-                distErrorLimit += 20.0;
+            if (_map->getCurrentCell()->x == 0) {
+                goalX += 30.0;
+                LOG.write(LOG_HIGH, "nsHardFix", "cell fix");
             }
             break;
         }
@@ -224,14 +223,15 @@ void Robot::move(int direction, int numCells) {
             // count how many squares we see down the hall now and
             // back up if we over-shot the goal
             moveHead(RI_HEAD_MIDDLE);
-            int newLeftSquareCount = _camera->avgSquareCount(COLOR_PINK, IMAGE_LEFT);
-            int newRightSquareCount = _camera->avgSquareCount(COLOR_PINK, IMAGE_RIGHT);
-            if (newLeftSquareCount > 4.0) {
-                newLeftSquareCount = 4.0;
+            float newLeftSquareCount = _camera->avgSquareCount(COLOR_PINK, IMAGE_LEFT);
+            float newRightSquareCount = _camera->avgSquareCount(COLOR_PINK, IMAGE_RIGHT);
+            if (newLeftSquareCount > 3.0) {
+                newLeftSquareCount = 3.0;
             }
-            if (newRightSquareCount > 4.0) {
-                newRightSquareCount = 4.0;
+            if (newRightSquareCount > 3.0) {
+                newRightSquareCount = 3.0;
             }
+            LOG.write(LOG_HIGH, "cameraSquareCounts", "New left: %f \t New right: %f \t Old left: %f \t Old right: %f \t",newLeftSquareCount, newRightSquareCount, leftSquareCount, rightSquareCount);
             int i = 0;
             while (newLeftSquareCount + 1.0 < leftSquareCount &&
                    newRightSquareCount + 1.0 < rightSquareCount &&
@@ -911,6 +911,18 @@ void Robot::stop() {
  **************************************/
 int Robot::getRoom() {
     return _robotInterface->RoomID() - 2;
+}
+
+bool Robot::nsThetaReliable() {
+    int x = _map->getCurrentCell()->x;
+    int y = _map->getCurrentCell()->y;
+
+    if(y == 0 && x < 5) {
+        return false;
+    }
+    else {
+        return true;
+    }
 }
 
 /**************************************

@@ -34,7 +34,7 @@ Path* MapStrategy::getBestPath(int length) {
 
 	createPaths(curPath, length);
 
-	float bestPathVal = 0.0;
+	float bestPathVal = -10000.0;
 	int bestPathIndex = -1;
 	for (int i = 0; i < _pathList.size(); i++) {
 		float pathVal = _pathList[i]->getValue();

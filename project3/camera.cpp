@@ -44,7 +44,7 @@ Camera::~Camera() {
         delete _pinkSquares;
     if (_yellowSquares != NULL)
         delete _yellowSquares;
-    // TODO: close windows
+    
     // place the head back down since the camera is no longer being used
     _robotInterface->Move(RI_HEAD_DOWN, 1);
 }
@@ -140,8 +140,6 @@ void Camera::update() {
         cvReleaseImage(&_yellowThresholded);
     }
 
-    // TODO: free the old squares memory
-
     // get a red and pink thresholded image and or them together to 
     // have an improved pink thresholded image
     IplImage *redThresholded = getThresholdedImage(RED_LOW, RED_HIGH);
@@ -174,6 +172,11 @@ void Camera::update() {
     cvWaitKey(10);
 }
 
+/*************************************
+ * Definition: getTagState determimes the state 
+ *
+ *
+ *************************************/
 int Camera::getTagState(int color) {
     int leftSquareCount = squareCount(color, IMAGE_LEFT);
     int rightSquareCount = squareCount(color, IMAGE_RIGHT);

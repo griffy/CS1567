@@ -52,16 +52,16 @@ const float TIME_DISTANCE = 116.0; // cm
 // average speed to move forward TIME_DISTANCE at integer robot speeds
 const float SPEED_FORWARD[NUM_SPEEDS] = {
     0.0,
-    TIME_DISTANCE/3.5,
-    TIME_DISTANCE/3.5,
-    TIME_DISTANCE/3.5,
-    TIME_DISTANCE/3.7,
-    TIME_DISTANCE/3.7,
+    TIME_DISTANCE/2.8,
+    TIME_DISTANCE/2.8,
+    TIME_DISTANCE/2.8,
+    TIME_DISTANCE/3.0,
+    TIME_DISTANCE/3.0,
+    TIME_DISTANCE/3.2,
     TIME_DISTANCE/3.9,
-    TIME_DISTANCE/4.6,
-    TIME_DISTANCE/4.6,
-    TIME_DISTANCE/4.8,
-    TIME_DISTANCE/4.9
+    TIME_DISTANCE/3.9,
+    TIME_DISTANCE/4.1,
+    TIME_DISTANCE/4.2
 };
 /*
  * Old stuff
@@ -135,11 +135,13 @@ public:
     void printFailPhrase();
     void rockOut();
 	bool sideCenter(int direction);
+    bool nsThetaReliable();
 
     Camera *_camera;
     NorthStar *_northStar;
     bool _updateInterface();
 private:
+    int _numCellsTraveled;
     bool _centerTurn(float centerError);
     bool _centerStrafe(float centerError);
     
