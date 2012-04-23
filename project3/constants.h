@@ -17,6 +17,7 @@
 #define PI 3.14159265358979323846
 
 #define DEGREE_0 0.0
+#define DEGREE_15 0.261799388
 #define DEGREE_20 0.34906585
 #define DEGREE_25 0.436332313
 #define DEGREE_30 0.523598776 // pi/6
@@ -81,7 +82,7 @@
 
 // acceptable proximities from base
 #define MAX_DIST_ERROR 20.0 // in cm
-#define MAX_THETA_ERROR DEGREE_20/2.0
+#define MAX_THETA_ERROR DEGREE_15
 
 // acceptable threshold for being in the center of squares (out of 1)
 #define MAX_STRAFE_CENTER_ERROR 0.1
@@ -163,8 +164,8 @@ const float NS_ROOM_SCALE[6][4][2] = {
 const float NS_ROOM_ROTATION[6][4] = {
 	// Rosie
 	{0.0, 
-     1.5708, 
-     0.0, 
+     1.6708, // was 1.5708
+     0.15, // was 0.0
      1.6005},
 	// Bender
 	{0.0, 
@@ -214,12 +215,12 @@ const float NS_ROOM_ORIGINS_FROM_COL[6][4][2] = {
 	 {-144.0, 25.0}, 
 	 {32.0, 200.0}, 
 	 {195.0, 32.0}},
-	// Optimus (using Bender's)
-	{{36.0,-125.0}, 
-	 {-116.0,18.0}, 
+	// Optimus
+	{{20.3,-167.6}, 
+	 {-193.0,38.1}, 
 	 {62.0, 174.0}, 
-	 {193.0, 36.0}},
-	// WallE (using Bender's)
+	 {109.2, 40.6}},
+	// Wall E (using Bender's)
 	{{36.0,-125.0}, 
 	 {-116.0,18.0}, 
 	 {62.0, 174.0}, 
