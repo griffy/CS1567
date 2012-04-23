@@ -105,6 +105,7 @@ float WheelEncoders::_getRobotDeltaY() {
     // some robots have bad wheel encoders for one side,
     // so account for this by faking the data on the opposite
     // wheel
+    
     switch (_robot->getName()) {
     case ROSIE:
     	rightRobotDeltaY = leftRobotDeltaY;

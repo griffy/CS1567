@@ -23,17 +23,26 @@ int main(int argc, char *argv[]) {
 		printf("ERROR: need argument for robot name\n");
 		return -1;
 	}
+	if (argc < 3){
+		printf("need argument for rovio man id (1 or 2)\n");
+		return -1;
+	}
 
-    LOG.setImportanceLevel(LOG_LOW);
+        LOG.setImportanceLevel(LOG_HIGH);
+	
+	Robot *robot = new Robot(argv[1], atoi(argv[2]));
 
-	Robot *robot = new Robot(argv[1], 0);
+        while(1) {
+            robot->_updateInterface();
+            robot->_northStar->updatePose();
+        }
+ 
+	//robot->move(DIR_NORTH, 2);
+	//robot->move(DIR_EAST, 2); // cells
+	//robot->move(DIR_SOUTH, 2);
+	//robot->move(DIR_WEST, 2);
 
-//	robot->move(DIR_EAST, 2); // cells
-//	robot->move(DIR_SOUTH, 2);
-//	robot->move(DIR_WEST, 2);
-//	robot->move(DIR_NORTH, 2);
-
-	robot->eatShit();
+//	robot->eatShit();
 
 	delete robot;
 

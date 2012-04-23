@@ -115,8 +115,14 @@ Robot::~Robot() {
     delete _mapStrategy;
 }
 
+/**************************************
+ * Definition:	Perform the calculations for the Rovio-Man project (project 3)
+ * 				get the next cell from the path created by map_strategy
+ * 				and perform the 'move' function in the desired direction
+ *************************************/
 void Robot::eatShit() {
     Cell *nextCell = _mapStrategy->nextCell();
+	sleep(10);
 
     while (nextCell != NULL) {
         Cell *curCell = _map->getCurrentCell();
@@ -141,6 +147,7 @@ void Robot::eatShit() {
 
         _map->occupyCell(nextCell->x, nextCell->y);
 		nextCell = _mapStrategy->nextCell();
+		sleep(10);
     }
 }
 
@@ -159,9 +166,9 @@ void Robot::move(int direction, int numCells) {
     int cellsTraveled = 0;
     while (cellsTraveled < numCells) {
         // first attempt to center ourselves before moving (except not first)
-        if (sideCenter(direction)) {
-			turn(direction);
-		}
+        //if (sideCenter(direction)) {
+		//	turn(direction);
+		//}
 
         center();
 		updatePose(true);
@@ -190,6 +197,11 @@ void Robot::move(int direction, int numCells) {
     }
 }
 
+/************************************
+ * Definition:	Center the robot in the North/South and East/West
+ * 				directions based on the state of the cell that the
+ * 				robot is in
+ ***********************************/
 bool Robot::sideCenter(int direction) {
     Cell *curCell = _map->getCurrentCell();
     if (curCell->getCellType() == CELL_HALL) {
@@ -262,6 +274,13 @@ bool Robot::sideCenter(int direction){
 }
 */
 
+/************************************
+ * Definition:	Turns the robot in the cardinal direction
+ * 				given as the parameter
+ * 
+ * Parameters:	A cardinal direction constant as follows
+ * 				DIR_NORTH, DIR_SOUTH, DIR_EAST, DIR_WEST
+ ***********************************/
 void Robot::turn(int direction) {
     switch (direction) {
     case DIR_NORTH:
@@ -531,11 +550,8 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
 }
 
 /*******************************
- * 
- * Moves the robot head (camera) to the position given as the argument
- * 
+ * Definition: Moves the robot head (camera) to the position given as the argument
  * *****************************/
-
 void Robot::moveHead(int position){
     _robotInterface->Move(position, 1);
     sleep(1);
@@ -543,14 +559,12 @@ void Robot::moveHead(int position){
     sleep(2);
 }
 
-
-
 bool Robot::_centerTurn(float centerError) {
     bool success;
 
-    float centerTurnGain = _centerTurnPID->updatePID(centerError);
-    LOG.write(LOG_LOW, "centerTurn", "center error: %f", centerError);
-    LOG.write(LOG_LOW, "centerTurn", "center turn gain: %f", centerTurnGain);
+    //float centerTurnGain = _centerTurnPID->updatePID(centerError);
+    //LOG.write(LOG_LOW, "centerTurn", "center error: %f", centerError);
+    //LOG.write(LOG_LOW, "centerTurn", "center turn gain: %f", centerTurnGain);
 
     if (fabs(centerError) < MAX_TURN_CENTER_ERROR) {
         success = true;
@@ -562,7 +576,7 @@ bool Robot::_centerTurn(float centerError) {
     else {
         success = false;
 
-        int turnSpeed = (int)(10 - 9 * centerTurnGain);
+        int turnSpeed = (int)(10 - 5 * fabs(centerError));
         turnSpeed = Util::capSpeed(turnSpeed, 10);
         
         LOG.write(LOG_LOW, "pid_speeds", "turn speed: %d", turnSpeed);
@@ -616,9 +630,9 @@ bool Robot::_centerTurn(float centerError) {
 bool Robot::_centerStrafe(float centerError) {
     bool success;
 
-    float centerStrafeGain = _centerStrafePID->updatePID(centerError);
-    LOG.write(LOG_LOW, "centerStrafe", "center error: %f", centerError);
-    LOG.write(LOG_LOW, "centerStrafe", "center strafe gain: %f", centerStrafeGain);
+    //float centerStrafeGain = _centerStrafePID->updatePID(centerError);
+    //LOG.write(LOG_LOW, "centerStrafe", "center error: %f", centerError);
+    //LOG.write(LOG_LOW, "centerStrafe", "center strafe gain: %f", centerStrafeGain);
 
     if (fabs(centerError) < MAX_STRAFE_CENTER_ERROR) {
         success = true;
@@ -630,7 +644,7 @@ bool Robot::_centerStrafe(float centerError) {
     else {
         success = false;
 
-        int strafeSpeed = (int)(10 - 9 * centerStrafeGain);
+        int strafeSpeed = (int)(10 - 5 * fabs(centerError));
         strafeSpeed = Util::capSpeed(strafeSpeed, 10);
         
         LOG.write(LOG_LOW, "pid_speeds", "strafe speed: %d", strafeSpeed);
@@ -682,7 +696,7 @@ void Robot::center() {
         attempts++;
         
         if(attempts > 1){
-			moveHead(RI_HEAD_MIDDLE);
+			moveHead(RI_HEAD_DOWN);
 
 			// make sure we are close to our desired heading, in case we didn't move correctly
 			updatePose(false);
@@ -706,22 +720,19 @@ void Robot::center() {
 			float theta = _pose->getTheta();
 			float thetaError = thetaHeading - theta;
 			thetaError = Util::normalizeThetaError(thetaError);
-			if (fabs(thetaError) > DEGREE_45) {
-				// if we turned beyond 45 degrees from our
+			if (fabs(thetaError) > DEGREE_30) {
+				// if we turned beyond 30 degrees from our
 				// heading, this was a mistake. let's turn
-				// back just enough so we're 45 degrees from
+				// back just enough so we're 30 degrees from
 				// our heading.
-				float thetaGoal = Util::normalizeTheta(theta + (DEGREE_45 + thetaError));
+				float thetaGoal = Util::normalizeTheta(theta + (DEGREE_30 + thetaError));
 				turnTo(thetaGoal, MAX_THETA_ERROR);
 			}
 			attempts = 0;
-		}
+        		moveHead(RI_HEAD_MIDDLE);
+	}
     }
 
-    _robotInterface->Move(RI_HEAD_DOWN, 1);
-    sleep(1);
-    _robotInterface->Move(RI_HEAD_DOWN, 1);
-    sleep(2);
 
     _centerTurnPID->flushPID();
     _centerStrafePID->flushPID();
@@ -775,7 +786,7 @@ void Robot::updatePose(bool useWheelEncoders) {
 
     // if we're in room 2, don't trust north star so much
     if (getRoom() == ROOM_2) {
-        _kalmanFilter->setNSUncertainty(NS_X_UNCERTAIN+0.025, 
+        _kalmanFilter->setNSUncertainty(NS_X_UNCERTAIN+0.05, 
                                         NS_Y_UNCERTAIN+0.05, 
                                         NS_THETA_UNCERTAIN+0.025);
     } 
@@ -796,6 +807,9 @@ RobotInterface* Robot::getInterface() {
     return _robotInterface;
 }
 
+/************************************
+ * Definition:	Returns the name of the robot being used
+ ***********************************/
 int Robot::getName() {
     return _name;
 }

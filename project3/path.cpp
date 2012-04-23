@@ -10,9 +10,9 @@ float NS_PENALTY[MAP_WIDTH][MAP_HEIGHT] = {
 	 0.50},
 	// col 2
 	{0.35,
-	 0.30,
+	 1000,
 	 0.25,
-	 0.25,
+	 1000,
 	 0.25},
 	// col 3
 	{0.10,
@@ -22,9 +22,9 @@ float NS_PENALTY[MAP_WIDTH][MAP_HEIGHT] = {
 	 0.00},
 	// col 4
 	{0.10,
-	 0.05,
+	 1000,
 	 0.01,
-	 0.00,
+	 1000,
 	 0.00},
 	// col 5
 	{0.10,
@@ -34,9 +34,9 @@ float NS_PENALTY[MAP_WIDTH][MAP_HEIGHT] = {
 	 0.00},
 	// col 6
 	{0.15,
-	 0.10,
+	 1000,
 	 0.01,
-	 0.00,
+	 1000,
 	 0.00},
 	// col 7
 	{0.20,
@@ -104,12 +104,14 @@ int Path::getHeading(int upTo) {
 	return heading;
 }
 
-// The value of a path is calculated as follows:
-// For each cell in the path, a NS penalty is applied, 
-// which knocks the points for that cell down by a 
-// percentage. Then, the amount of times the robot
-// must change directions is summed and subtracted
-// from the final path value.
+/** 
+ * The value of a path is calculated as follows:
+ * For each cell in the path, a NS penalty is applied, 
+ * which knocks the points for that cell down by a 
+ * percentage. Then, the amount of times the robot
+ * must change directions is summed and subtracted
+ * from the final path value.
+**/
 float Path::getValue() {
 	float value = 0.0;
 
@@ -123,15 +125,21 @@ float Path::getValue() {
 		{false, false, false, false, false}
 	};
 
+	int opponentX=-1, opponentY=-1;
+
+	LOG.write(LOG_LOW, "path", "\n\nPATH:\n");
 	int directionChanges = 0;
 	for (int i = 0; i < length(); i++) {
 		Cell *nextCell = getCell(i);
+
 		int nextX = nextCell->x;
 		int nextY = nextCell->y;
 
+		LOG.write(LOG_LOW, "path", "%d, %d", nextX,nextY);
+
 		if (!used[nextX][nextY]) {
 			int points = nextCell->getPoints();
-			value += (float)points * NS_PENALTY[nextX][nextY];
+			value += (float)points * (1-NS_PENALTY[nextX][nextY]);
 			used[nextX][nextY] = true;
 		}
 
@@ -163,11 +171,19 @@ float Path::getValue() {
 				}
 				break;
 			}
+			//apply penalty based on the location of the other robot
+			// to the cell iff they are fairly close
+			/*
+			int diff = abs(curX-)+abs(curY-opponentY);
+			if(diff != 0 && diff <= 3)
+				value -= (1-(1/(2*diff)))*nextCell->getPoints();
+			*/
 		}
 	}
 
 	value -= (float)directionChanges;
 
+	LOG.printfScreen(LOG_LOW, "path", "Path Value = %f\n", value);
 	return value;
 }
 
@@ -179,7 +195,7 @@ Cell* Path::getCell(int i) {
 }
 
 Cell* Path::getFirstCell() {
-	return getCell(0);
+	return getCell(1);
 }
 
 Cell* Path::getLastCell() {

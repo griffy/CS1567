@@ -2,6 +2,7 @@
 #define CS1567_PATH_H
 
 #include "cell.h"
+#include "logger.h"
 #include <vector>
 
 class Path {

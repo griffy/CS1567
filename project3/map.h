@@ -25,12 +25,15 @@ public:
 	Cell* cellAt(int x, int y);
 	bool occupyCell(int x, int y);
 	bool reserveCell(int x, int y);
+	
+	Cell* getOpponentCell();
 
 	Cell *cells[MAP_WIDTH][MAP_HEIGHT];
 private:
 	void _claimRobotAt(int x, int y);
 	void _loadMap();
         
+	void _setOpponentLoc(int x, int y);
     void _adjustOpenings();
 
 	RobotInterface *_robotInterface;
@@ -39,6 +42,7 @@ private:
 	int _score2;
 
 	Cell *_curCell;
+	Cell *_opponentCell;
 };
 
 #endif

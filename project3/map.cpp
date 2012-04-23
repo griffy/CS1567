@@ -31,6 +31,10 @@ void Map::update() {
 		int y = map->y;
 
 		cells[x][y]->update(map);
+		
+		if(map->type == MAP_OBJ_ROBOT_1 && cells[x][y]->robot==1){
+			_setOpponentLoc(x,y);
+		}
 
 		map = map->next;
 	}
@@ -53,14 +57,17 @@ Cell* Map::getCurrentCell() {
 bool Map::canOccupy(int x, int y) {
 	Cell *moveCell = NULL;
 	moveCell = cellAt(x, y);
+	LOG.printfScreen(LOG_LOW, "path", "canOccupy (%d, %d) = %d\n", x,y, moveCell);
 	if (moveCell == NULL) {
 		return false;
 	}
-	return moveCell->isBlocked();
+	LOG.printfScreen(LOG_LOW, "path", "moveCell->blocked = %d\n", moveCell->isBlocked());
+	return !moveCell->isBlocked();
 }
 
 Cell* Map::cellAt(int x, int y) {
-	if (x < 0 || y < 0 || x > MAP_WIDTH || y > MAP_HEIGHT) {
+	if (x < 0 || y < 0 || x >= MAP_WIDTH || y >= MAP_HEIGHT) {
+		LOG.printfScreen(LOG_LOW, "path", "out of bounds ... %d, %d\n", x, y);
 		return NULL;
 	}
 	return cells[x][y];
@@ -72,6 +79,14 @@ bool Map::occupyCell(int x, int y) {
 		return true;
 	}
 	return false;
+}
+
+void Map::_setOpponentLoc(int x, int y){
+	_opponentCell = cells[x][y];
+}
+
+Cell* Map::getOpponentCell(){
+	return _opponentCell;
 }
 
 bool Map::reserveCell(int x, int y) {
@@ -124,8 +139,8 @@ void Map::_loadMap() {
 void Map::_adjustOpenings(){
 	for (int x = 0; x < MAP_WIDTH; x++) {
 	    for (int y = 0; y < MAP_HEIGHT; y++) {
-		    if (cells[x][y]->isBlocked())
-		    	continue;
+		    //if (cells[x][y]->isBlocked())
+		    //	continue;
 		      
 		    if (x+1 < MAP_WIDTH) {
 		        if (!cells[x+1][y]->isBlocked()) {

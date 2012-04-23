@@ -13,6 +13,7 @@
 
 #include "utilities.h"
 #include "constants.h"
+#include "logger.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -89,12 +90,12 @@ namespace Util {
      **************************************/
     int nameFrom(std::string address) {
         for (int i = 0; i < NUM_ROBOTS; i++) {
-            if (ROBOTS[i] == address) {
+            if (address.compare(ROBOTS[i]) == 0) {
                 return i;
             }
         }
         for (int i = 0; i < NUM_ROBOTS; i++) {
-            if (ROBOT_ADDRESSES[i] == address) {
+            if (address.compare(ROBOT_ADDRESSES[i]) == 0) {
                 return i;
             }
         }
