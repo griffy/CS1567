@@ -191,7 +191,7 @@ void Robot::move(int direction, int numCells) {
         }
         moveTo(goalX, goalY); // was moveToCell
 		stop();
-		usleep(5000000);
+		sleep(1);
         cellsTraveled++;
         LOG.write(LOG_LOW, "move", "Made it to cell %d", cellsTraveled);
     }
