@@ -186,33 +186,38 @@ void Robot::move(int direction, int numCells) {
         // based on the direction, move in the global coord system
         float goalX = _pose->getX();
         float goalY = _pose->getY();
+        float distErrorLimit = MAX_DIST_ERROR;
         switch (direction) {
         case DIR_NORTH:
             goalY += CELL_SIZE;
             if (_pose->getX() > 150) {
                 goalY -= 5; // north star is bad in that half of the room..
+                distErrorLimit += 5;
             }
             break;
         case DIR_SOUTH:
             goalY -= CELL_SIZE;
             if (_pose->getX() > 150) {
                 goalY -= 5; // north star is bad in that half of the room..
+                distErrorLimit += 5;
             }
             break;
         case DIR_EAST:
             goalX += CELL_SIZE;
             if (_pose->getX() > 150) {
                 goalX -= 15; // north star is bad in that half of the room..
+                distErrorLimit += 15;
             }
             break;
         case DIR_WEST:
             goalX -= CELL_SIZE;
             if (_pose->getX() > 150) {
                 goalX -= 15; // north star is bad in that half of the room..
+                distErrorLimit += 15;
             }
             break;
         }
-        moveTo(goalX, goalY);
+        moveTo(goalX, goalY, distErrorLimit);
         // make sure we stop once we're there
 		stop();
         //if (leftSquareCount > 1 && rightSquareCount > 1) {
@@ -228,8 +233,8 @@ void Robot::move(int direction, int numCells) {
                 newRightSquareCount = 3.0;
             }
             int i = 0;
-            while (newLeftSquareCount + 0.5 < leftSquareCount &&
-                   newRightSquareCount + 0.5 < rightSquareCount &&
+            while (newLeftSquareCount + 0.25 < leftSquareCount &&
+                   newRightSquareCount + 0.25 < rightSquareCount &&
                    i < 5) {
                 moveBackward(10);
                 _robotInterface->reset_state();
@@ -336,13 +341,13 @@ void Robot::turn(int relDirection, float radians) {
  *
  * Parameters: floats specifying x and y in global system
  **************************************/
-void Robot::moveTo(float x, float y) {
+void Robot::moveTo(float x, float y, float distErrorLimit) {
     printf("beginning move\n");
 
     float thetaError;
     do {
         // move to the location until theta is off by too much
-        thetaError = moveToUntil(x, y, MAX_THETA_ERROR);
+        thetaError = moveToUntil(x, y, distErrorLimit, MAX_THETA_ERROR);
 		float goal = Util::normalizeTheta(_northStar->getTheta() + thetaError);
         if (thetaError != 0) {
             // if we're off in theta, turn to adjust 
@@ -366,7 +371,7 @@ void Robot::moveTo(float x, float y) {
  * Parameters: floats specifying x and y in global system, and 
  *             a float specifying the theta error limit
  **************************************/
-float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
+float Robot::moveToUntil(float x, float y, float distErrorLimit, float thetaErrorLimit) {
     float yError;
     float xError;
     float thetaDesired;
@@ -447,7 +452,7 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
         LOG.write(LOG_MED, "pid_speeds", "forward speed: %d", moveSpeed);
 
         moveForward(moveSpeed);
-    } while (distError > MAX_DIST_ERROR);
+    } while (distError > distErrorLimit);
 
     return 0; // no error when we've finished
 }

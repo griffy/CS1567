@@ -95,7 +95,7 @@
 
 // how many images should be taken and processed to find (average)
 // center error 
-#define NUM_CAMERA_ERRORS 5
+#define NUM_CAMERA_ERRORS 4
 
 #define TAGS_BOTH_GE_TWO 0 // >= 2 tags on both sides
 #define TAGS_BOTH_ONE 1 // 1 tag on both sides
