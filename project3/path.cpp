@@ -40,8 +40,8 @@ float NS_PENALTY[MAP_WIDTH][MAP_HEIGHT] = {
 	 1.00,
 	 0.00},
 	// col 7
-	{0.20,
-	 0.15,
+	{0.40,
+	 0.35,
 	 0.01,
 	 0.00,
 	 0.00}
