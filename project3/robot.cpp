@@ -71,8 +71,7 @@ Robot::Robot(std::string address, int id) {
     printf("pid controllers initialized\n");
     
     // Put robot head down for NorthStar use
-    _robotInterface->Move(RI_HEAD_DOWN, 1);
-    sleep(2);
+    moveHead(RI_HEAD_DOWN);
 
     // fill our sensors with data
     prefillData();
@@ -122,7 +121,6 @@ Robot::~Robot() {
  *************************************/
 void Robot::eatShit() {
     Cell *nextCell = _mapStrategy->nextCell();
-	sleep(10);
 
     while (nextCell != NULL) {
         Cell *curCell = _map->getCurrentCell();
@@ -147,7 +145,6 @@ void Robot::eatShit() {
 
         _map->occupyCell(nextCell->x, nextCell->y);
 		nextCell = _mapStrategy->nextCell();
-		sleep(10);
     }
 }
 
@@ -173,8 +170,7 @@ void Robot::move(int direction, int numCells) {
         center();
         //Turn to a cardinal direction 
         turn(direction);
-        updatePose(true);
-
+        updatePose(false);
         // based on the direction, move in the global coord system
         float goalX = _pose->getX();
         float goalY = _pose->getY();
@@ -194,7 +190,6 @@ void Robot::move(int direction, int numCells) {
         }
         moveTo(goalX, goalY); // was moveToCell
 		stop();
-		sleep(1);
         cellsTraveled++;
         LOG.write(LOG_LOW, "move", "Made it to cell %d", cellsTraveled);
     }
@@ -466,7 +461,7 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
  
     printf("adjusting theta\n");
     do {
-	updatePose(false);
+	    updatePose(false);
 
         LOG.write(LOG_LOW, "turn_we_pose",
                   "x: %f \t y: %f \t theta: %f", 
@@ -530,7 +525,7 @@ void Robot::moveHead(int position){
     _robotInterface->Move(position, 1);
     sleep(1);
     _robotInterface->Move(position, 1);
-    sleep(2);
+    sleep(1);
 }
 
 bool Robot::_centerTurn(float centerError) {
@@ -563,37 +558,6 @@ bool Robot::_centerTurn(float centerError) {
             LOG.write(LOG_LOW, "centerTurn", "Center error: %f, move left", centerError);
             turnLeft(turnSpeed);
         }
-
-        // make sure we haven't turned beyond 45 degrees (our max adjustment)
-        /*updatePose();
-
-        float thetaHeading;
-        switch (_heading) {
-        case DIR_NORTH:
-            thetaHeading = DEGREE_90;
-            break;
-        case DIR_SOUTH:
-            thetaHeading = DEGREE_270;
-            break;
-        case DIR_EAST:
-            thetaHeading = DEGREE_0;
-            break;
-        case DIR_WEST:
-            thetaHeading = DEGREE_180;
-            break;
-        }
-
-        float theta = _pose->getTheta();
-        float thetaError = thetaHeading - theta;
-        thetaError = Util::normalizeThetaError(thetaError);
-        if (fabs(thetaError) > DEGREE_45) {
-            // if we turned beyond 45 degrees from our
-            // heading, this was a mistake. let's turn
-            // back just enough so we're 45 degrees from
-            // our heading.
-            float thetaGoal = Util::normalizeTheta(theta + (DEGREE_45 + thetaError));
-            turnTo(thetaGoal, MAX_THETA_ERROR);
-        }*/
 
         _robotInterface->reset_state();
     }
@@ -645,12 +609,9 @@ bool Robot::_centerStrafe(float centerError) {
  *             between two squares in a corridor
  **************************************/
 void Robot::center() {
-    _robotInterface->Move(RI_HEAD_MIDDLE, 1);
-    sleep(1);
-    _robotInterface->Move(RI_HEAD_MIDDLE, 1);
-    sleep(2);
+    moveHead(RI_HEAD_MIDDLE);
 	
-	int attempts = 0;
+	int turnAttempts = 0;
 
     Camera::prevTagState = -1;
     while (true) {
@@ -661,15 +622,15 @@ void Robot::center() {
             if (_centerTurn(centerError)) {
                 break;
             }
+            turnAttempts++;
         }
         else {
             if (_centerStrafe(centerError)) {
                 break;
             }
         }
-        attempts++;
         
-        if(attempts > 1){
+        if (turnAttempts > 1) {
 			moveHead(RI_HEAD_DOWN);
 
 			// make sure we are close to our desired heading, in case we didn't move correctly
@@ -694,19 +655,19 @@ void Robot::center() {
 			float theta = _pose->getTheta();
 			float thetaError = thetaHeading - theta;
 			thetaError = Util::normalizeThetaError(thetaError);
-			if (fabs(thetaError) > DEGREE_30) {
-				// if we turned beyond 30 degrees from our
+			if (fabs(thetaError) > DEGREE_45) {
+				// if we turned beyond 45 degrees from our
 				// heading, this was a mistake. let's turn
-				// back just enough so we're 30 degrees from
+				// back just enough so we're 45 degrees from
 				// our heading.
-				float thetaGoal = Util::normalizeTheta(theta + (DEGREE_30 + thetaError));
+				float thetaGoal = Util::normalizeTheta(theta + (DEGREE_45 + thetaError));
 				turnTo(thetaGoal, MAX_THETA_ERROR);
 			}
-			attempts = 0;
-        		moveHead(RI_HEAD_MIDDLE);
-	}
-    }
 
+			turnAttempts = 0;
+        	moveHead(RI_HEAD_MIDDLE);
+	    }
+    }
 
     _centerTurnPID->flushPID();
     _centerStrafePID->flushPID();
@@ -879,6 +840,10 @@ void Robot::strafeLeft(int speed) {
     _robotInterface->Move(RI_MOVE_LEFT, 10);
     usleep(sleepLength);
     _robotInterface->Move(RI_STOP, 0);
+
+    if (getName() == BENDER) {
+        turnLeft(10);
+    }
 }
 
 /**************************************
@@ -898,6 +863,10 @@ void Robot::strafeRight(int speed) {
     _robotInterface->Move(RI_MOVE_RIGHT, 10);
     usleep(sleepLength);
     _robotInterface->Move(RI_STOP, 0);
+
+    if (getName() == BENDER) {
+        turnRight(10);
+    }
 }
 
 /**************************************
@@ -908,6 +877,7 @@ void Robot::stop() {
 	_movingForward = true;
 	_speed = 0;
     _robotInterface->Move(RI_STOP, 0);
+    sleep(1);
 }
 
 /**************************************
