@@ -228,8 +228,8 @@ void Robot::move(int direction, int numCells) {
                 newRightSquareCount = 3.0;
             }
             int i = 0;
-            while (newLeftSquareCount + 1.0 < leftSquareCount &&
-                   newRightSquareCount + 1.0 < rightSquareCount &&
+            while (newLeftSquareCount + 0.5 < leftSquareCount &&
+                   newRightSquareCount + 0.5 < rightSquareCount &&
                    i < 5) {
                 moveBackward(10);
                 _robotInterface->reset_state();
