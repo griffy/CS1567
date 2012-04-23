@@ -10,9 +10,9 @@ float NS_PENALTY[MAP_WIDTH][MAP_HEIGHT] = {
 	 0.50},
 	// col 2
 	{0.35,
-	 1000,
+	 1.00,
 	 0.25,
-	 1000,
+	 1.00,
 	 0.25},
 	// col 3
 	{0.10,
@@ -22,9 +22,9 @@ float NS_PENALTY[MAP_WIDTH][MAP_HEIGHT] = {
 	 0.00},
 	// col 4
 	{0.10,
-	 1000,
+	 1.00,
 	 0.01,
-	 1000,
+	 1.00,
 	 0.00},
 	// col 5
 	{0.10,
@@ -34,9 +34,9 @@ float NS_PENALTY[MAP_WIDTH][MAP_HEIGHT] = {
 	 0.00},
 	// col 6
 	{0.15,
-	 1000,
+	 1.00,
 	 0.01,
-	 1000,
+	 1.00,
 	 0.00},
 	// col 7
 	{0.20,
@@ -125,17 +125,12 @@ float Path::getValue() {
 		{false, false, false, false, false}
 	};
 
-	int opponentX=-1, opponentY=-1;
-
-	LOG.write(LOG_LOW, "path", "\n\nPATH:\n");
 	int directionChanges = 0;
 	for (int i = 0; i < length(); i++) {
 		Cell *nextCell = getCell(i);
 
 		int nextX = nextCell->x;
 		int nextY = nextCell->y;
-
-		LOG.write(LOG_LOW, "path", "%d, %d", nextX,nextY);
 
 		if (!used[nextX][nextY]) {
 			int points = nextCell->getPoints();
@@ -171,19 +166,11 @@ float Path::getValue() {
 				}
 				break;
 			}
-			//apply penalty based on the location of the other robot
-			// to the cell iff they are fairly close
-			/*
-			int diff = abs(curX-)+abs(curY-opponentY);
-			if(diff != 0 && diff <= 3)
-				value -= (1-(1/(2*diff)))*nextCell->getPoints();
-			*/
 		}
 	}
 
 	value -= (float)directionChanges;
 
-	LOG.printfScreen(LOG_LOW, "path", "Path Value = %f\n", value);
 	return value;
 }
 
@@ -200,4 +187,16 @@ Cell* Path::getFirstCell() {
 
 Cell* Path::getLastCell() {
 	return getCell(length()-1);
+}
+
+char* Path::toString() {
+	char *str = (char *)malloc(length()*6);
+	str[0] = '\0';
+	for (int i = 1; i < length(); i++) {
+		Cell *cell = getCell(i);
+		char cellCoord[7];
+		sprintf(cellCoord, "(%d,%d) ", cell->x, cell->y);
+		strcat(str, cellCoord);
+	}
+	return str;
 }
