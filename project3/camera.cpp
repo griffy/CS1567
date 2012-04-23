@@ -1049,6 +1049,15 @@ squares_t* Camera::biggestSquare(int color, int side) {
     return largestSquare;
 }
 
+float Camera::avgSquareCount(int color, int side) {
+    int totalSquareCount = 0;
+    for (int i = 0; i < NUM_CAMERA_ERRORS; i++) {
+        update();
+        totalSquareCount += squareCount(color, side);
+    }
+
+    return (float)totalSquareCount / (float)NUM_CAMERA_ERRORS;
+}
 /**************************************
  * Definition: Counts the number of squares of the specified color
  *             on the specified side of the image there are

@@ -95,7 +95,7 @@
 
 // how many images should be taken and processed to find (average)
 // center error 
-#define NUM_CAMERA_ERRORS 3
+#define NUM_CAMERA_ERRORS 5
 
 #define TAGS_BOTH_GE_TWO 0 // >= 2 tags on both sides
 #define TAGS_BOTH_ONE 1 // 1 tag on both sides
@@ -128,6 +128,7 @@ public:
 	bool onSamePlane(squares_t *leftSquare, squares_t *rightSquare);
 	squares_t* biggestSquare(int color, int side);
 	int squareCount(int color, int side);
+	float avgSquareCount(int color, int side);
 	IplImage* thresholdedOf(int color);
     squares_t* rmOverlappingSquares(squares_t *inputSquares);
     squares_t* squaresOf(int color);

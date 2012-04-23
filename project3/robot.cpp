@@ -168,10 +168,15 @@ void Robot::move(int direction, int numCells) {
         turn(direction);
         // count how many squares we see down the hall
         moveHead(RI_HEAD_MIDDLE);
-        _camera->update();
-        int leftSquareCount = _camera->squareCount(COLOR_PINK, IMAGE_LEFT);
-        int rightSquareCount = _camera->squareCount(COLOR_PINK, IMAGE_RIGHT);
+        int leftSquareCount = _camera->avgSquareCount(COLOR_PINK, IMAGE_LEFT);
+        int rightSquareCount = _camera->avgSquareCount(COLOR_PINK, IMAGE_RIGHT);
         moveHead(RI_HEAD_DOWN);
+        if (leftSquareCount > 3.0) {
+            leftSquareCount = 3.0;
+        }
+        if (rightSquareCount > 3.0) {
+            rightSquareCount = 3.0;
+        }
         // update our pose estimates now, ignoring
         // wheel encoders and setting them to be north star's
         updatePose(false);
@@ -214,18 +219,22 @@ void Robot::move(int direction, int numCells) {
             // count how many squares we see down the hall now and
             // back up if we over-shot the goal
             moveHead(RI_HEAD_MIDDLE);
-            _camera->update();
-            int newLeftSquareCount = _camera->squareCount(COLOR_PINK, IMAGE_LEFT);
-            int newRightSquareCount = _camera->squareCount(COLOR_PINK, IMAGE_RIGHT);
+            int newLeftSquareCount = _camera->avgSquareCount(COLOR_PINK, IMAGE_LEFT);
+            int newRightSquareCount = _camera->avgSquareCount(COLOR_PINK, IMAGE_RIGHT);
+            if (newLeftSquareCount > 3.0) {
+                newLeftSquareCount = 3.0;
+            }
+            if (newRightSquareCount > 3.0) {
+                newRightSquareCount = 3.0;
+            }
             int i = 0;
-            while (newLeftSquareCount + 1 < leftSquareCount &&
-                   newRightSquareCount + 1 < rightSquareCount &&
+            while (newLeftSquareCount + 1.0 < leftSquareCount &&
+                   newRightSquareCount + 1.0 < rightSquareCount &&
                    i < 5) {
                 moveBackward(10);
                 _robotInterface->reset_state();
-                _camera->update();
-                newLeftSquareCount = _camera->squareCount(COLOR_PINK, IMAGE_LEFT);
-                newRightSquareCount = _camera->squareCount(COLOR_PINK, IMAGE_RIGHT);
+                newLeftSquareCount = _camera->avgSquareCount(COLOR_PINK, IMAGE_LEFT);
+                newRightSquareCount = _camera->avgSquareCount(COLOR_PINK, IMAGE_RIGHT);
                 i++;
             }
             moveHead(RI_HEAD_DOWN);
