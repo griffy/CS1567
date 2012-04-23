@@ -19,6 +19,7 @@ public:
 	Cell* getCell(int i);
 	Cell* getFirstCell();
 	Cell* getLastCell();
+	char* toString();
 private:
 	std::vector<Cell*> _cells;
 };

@@ -123,6 +123,8 @@ void Robot::eatShit() {
     Cell *nextCell = _mapStrategy->nextCell();
 
     while (nextCell != NULL) {
+        _map->reserveCell(nextCell->x, nextCell->y);
+        
         Cell *curCell = _map->getCurrentCell();
 
         int xDiff = nextCell->x - curCell->x;
@@ -144,6 +146,7 @@ void Robot::eatShit() {
         }
 
         _map->occupyCell(nextCell->x, nextCell->y);
+
 		nextCell = _mapStrategy->nextCell();
     }
 }
