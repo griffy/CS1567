@@ -32,15 +32,14 @@ int main(int argc, char *argv[]) {
 	
 	Robot *robot = new Robot(argv[1], atoi(argv[2]));
 
-        /*while(1) {
-            robot->_updateInterface();
-            robot->_northStar->updatePose();
-        }*/
+        //while(1) {
+        //    robot->updatePose(true);
+        //}
  
+//	robot->move(DIR_EAST, 2); // cells
+//	robot->move(DIR_SOUTH, 2);
 	robot->move(DIR_WEST, 2);
-	robot->move(DIR_NORTH, 2);
-	robot->move(DIR_EAST, 2); // cells
-	robot->move(DIR_SOUTH, 2);
+//	robot->move(DIR_NORTH, 2);
 
 //	robot->eatShit();
 

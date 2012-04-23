@@ -432,10 +432,10 @@ float Robot::moveToUntil(float x, float y, float thetaErrorLimit) {
 			printf("theta error of %f too great\n", thetaError);
             return thetaError;
         }
-        //FIXME: change this back
-        //int moveSpeed = (int)(10 - 9 * moveGain);
+        
+        int moveSpeed = (int)(10 - 9 * moveGain);
 
-        int moveSpeed = (int) (10 - (9 * (fmin(1.0, (distError+25)/65.0))));
+        //int moveSpeed = (int) (10 - (9 * (fmin(1.0, (distError)/65.0))));
         moveSpeed = Util::capSpeed(moveSpeed, 10);
 
         LOG.write(LOG_MED, "pid_speeds", "forward speed: %d", moveSpeed);
