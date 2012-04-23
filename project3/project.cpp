@@ -36,12 +36,14 @@ int main(int argc, char *argv[]) {
         //    robot->updatePose(true);
         //}
  
+
+//	robot->move(DIR_NORTH, 2);
 //	robot->move(DIR_EAST, 2); // cells
 //	robot->move(DIR_SOUTH, 2);
-	robot->move(DIR_WEST, 2);
+//	robot->move(DIR_WEST, 2);
 //	robot->move(DIR_NORTH, 2);
 
-//	robot->eatShit();
+	robot->eatShit();
 
 	delete robot;
 

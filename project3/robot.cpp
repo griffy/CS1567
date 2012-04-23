@@ -95,6 +95,7 @@ Robot::Robot(std::string address, int id) {
         startingY = 2;
     }
     
+    //FIXME: Undo this
     _map = new Map(_robotInterface, startingX, startingY);
     _mapStrategy = new MapStrategy(_map);
 }
@@ -173,7 +174,9 @@ void Robot::move(int direction, int numCells) {
         center();
         //Turn to a cardinal direction 
         turn(direction);
+        moveHead(RI_HEAD_DOWN);
         updatePose(false);
+        _wheelEncoders->resetPose(_northStar->getPose());
         // based on the direction, move in the global coord system
         float goalX = _pose->getX();
         float goalY = _pose->getY();
@@ -345,6 +348,7 @@ void Robot::moveTo(float x, float y) {
 
     // reset wheel encoder pose to be Kalman pose since we hit our base
     _wheelEncoders->resetPose(_pose);
+    _wheelEncoders->setTheta(_northStar->getTheta());
 }
 
 /**************************************

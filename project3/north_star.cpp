@@ -136,6 +136,7 @@ void NorthStar::updatePose() {
  **************************************/
 float NorthStar::_getFilteredX() {
     int x = _robot->getInterface()->X();
+    //return x;
     return _filterX->filter((float) x);
 }
 
@@ -146,6 +147,7 @@ float NorthStar::_getFilteredX() {
  **************************************/
 float NorthStar::_getFilteredY() {
     int y = _robot->getInterface()->Y();
+    //return y;
     return _filterY->filter((float) y);
 }
 

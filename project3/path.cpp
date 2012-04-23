@@ -1,5 +1,6 @@
 #include "path.h"
 #include "map.h"
+#include <cstdio>
 
 float NS_PENALTY[MAP_WIDTH][MAP_HEIGHT] = {
 	// col 1 (starting from left of room)
