@@ -787,7 +787,7 @@ float Camera::corridorSlopeError(int color, bool *turn, float *certainty) {
     if (leftSide.numSquares >= 2 && rightSide.numSquares >= 2) { 
         float difference = leftSide.slope + rightSide.slope;
          
-        if(xIntersect > -900 && xIntersect < .85*center) {
+        /*if(xIntersect > -900 && xIntersect < .85*center) {
             //we're probably looking left
             //turn right
             softRightTurn = true;
@@ -797,26 +797,26 @@ float Camera::corridorSlopeError(int color, bool *turn, float *certainty) {
             //probably looking right
             //turn left
             softLeftTurn = true;
-        }
+        }*/
 
         if (difference > MAX_SLOPE_DIFFERENCE) {
             // the difference is large enough that we can say
             // the error is at its max, so we should move right
-            if(softRightTurn) {
+           /* if(softRightTurn) {
                 *certainty = 0.70;
                 *turn = true;
                 return -.5; //less magnitude of a turn than strafe
-            }
+            }*/
             *certainty = 0.70;
             return -1; //1 indicates full magnitude and SOME uncertainty
         } 
         else if (difference < -MAX_SLOPE_DIFFERENCE) {
             // we should move left
-            if(softLeftTurn) {
+            /*if(softLeftTurn) {
                 *certainty = 0.70;
                 *turn = true;
                 return .5;
-            }
+            }*/
             *certainty = 0.70;
             return 1;
         } 
