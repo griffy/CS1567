@@ -4,8 +4,8 @@
 
 float NS_PENALTY[MAP_WIDTH][MAP_HEIGHT] = {
 	// col 1 (starting from left of room)
-	{0.60,
-	 0.55,
+	{0.80,
+	 0.75,
 	 0.50,
 	 0.50,
 	 0.50},
