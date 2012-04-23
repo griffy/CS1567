@@ -191,29 +191,29 @@ void Robot::move(int direction, int numCells) {
         case DIR_NORTH:
             goalY += CELL_SIZE;
             if (_pose->getX() > 150) {
-                goalY -= 5; // north star is bad in that half of the room..
-                distErrorLimit += 5;
+                goalY -= 5.0; // north star is bad in that half of the room..
+                distErrorLimit += 5.0;
             }
             break;
         case DIR_SOUTH:
             goalY -= CELL_SIZE;
             if (_pose->getX() > 150) {
-                goalY -= 5; // north star is bad in that half of the room..
-                distErrorLimit += 5;
+                goalY -= 5.0; // north star is bad in that half of the room..
+                distErrorLimit += 5.0;
             }
             break;
         case DIR_EAST:
             goalX += CELL_SIZE;
             if (_pose->getX() > 150) {
-                goalX -= 15; // north star is bad in that half of the room..
-                distErrorLimit += 15;
+                goalX -= 20.0; // north star is bad in that half of the room..
+                distErrorLimit += 20.0;
             }
             break;
         case DIR_WEST:
             goalX -= CELL_SIZE;
             if (_pose->getX() > 150) {
-                goalX -= 15; // north star is bad in that half of the room..
-                distErrorLimit += 15;
+                goalX -= 20.0; // north star is bad in that half of the room..
+                distErrorLimit += 20.0;
             }
             break;
         }
