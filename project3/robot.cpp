@@ -146,7 +146,7 @@ void Robot::eatShit() {
 
         _map->occupyCell(nextCell->x, nextCell->y);
         _numCellsTraveled++;
-		nextCell = _mapStrategy->nextCell();
+        nextCell = _mapStrategy->nextCell();
     }
 }
 
@@ -218,32 +218,32 @@ void Robot::move(int direction, int numCells) {
         }
         moveTo(goalX, goalY, distErrorLimit);
         // make sure we stop once we're there
-		stop();
-        //if (leftSquareCount > 1 && rightSquareCount > 1) {
-            // count how many squares we see down the hall now and
-            // back up if we over-shot the goal
-            moveHead(RI_HEAD_MIDDLE);
-            float newLeftSquareCount = _camera->avgSquareCount(COLOR_PINK, IMAGE_LEFT);
-            float newRightSquareCount = _camera->avgSquareCount(COLOR_PINK, IMAGE_RIGHT);
-            if (newLeftSquareCount > 3.0) {
-                newLeftSquareCount = 3.0;
-            }
-            if (newRightSquareCount > 3.0) {
-                newRightSquareCount = 3.0;
-            }
-            LOG.write(LOG_HIGH, "cameraSquareCounts", "New left: %f \t New right: %f \t Old left: %f \t Old right: %f \t",newLeftSquareCount, newRightSquareCount, leftSquareCount, rightSquareCount);
-            int i = 0;
-            while (newLeftSquareCount + 1.0 < leftSquareCount &&
-                   newRightSquareCount + 1.0 < rightSquareCount &&
-                   i < 5) {
-                moveBackward(10);
-                _robotInterface->reset_state();
-                newLeftSquareCount = _camera->avgSquareCount(COLOR_PINK, IMAGE_LEFT);
-                newRightSquareCount = _camera->avgSquareCount(COLOR_PINK, IMAGE_RIGHT);
+        stop();
+        moveHead(RI_HEAD_MIDDLE);
+        float newLeftSquareCount = _camera->avgSquareCount(COLOR_PINK, IMAGE_LEFT);
+        float newRightSquareCount = _camera->avgSquareCount(COLOR_PINK, IMAGE_RIGHT);
+        if (newLeftSquareCount > 3.0) {
+            newLeftSquareCount = 3.0;
+        }
+        if (newRightSquareCount > 3.0) {
+            newRightSquareCount = 3.0;
+        }
+        LOG.write(LOG_HIGH, "cameraSquareCounts", "New left: %f \t New right: %f \t Old left: %f \t Old right: %f \t",newLeftSquareCount, newRightSquareCount, leftSquareCount, rightSquareCount);
+        int i = 0;
+        while ((newLeftSquareCount + 1.0 < leftSquareCount ||
+                newRightSquareCount + 1.0 < rightSquareCount) &&
+                i < 5) {
+            moveBackward(10);
+            _robotInterface->reset_state();
+            newLeftSquareCount = _camera->avgSquareCount(COLOR_PINK, IMAGE_LEFT);
+            newRightSquareCount = _camera->avgSquareCount(COLOR_PINK, IMAGE_RIGHT);
+            if (newLeftSquareCount + 1.0 < leftSquareCount &&
+                newRightSquareCount + 1.0 < rightSquareCount) {
                 i++;
-            }
-            moveHead(RI_HEAD_DOWN);
-        //}
+            }     
+            i++;
+        }
+        moveHead(RI_HEAD_DOWN);
         // we made it!
         cellsTraveled++;
         LOG.write(LOG_LOW, "move", "Made it to cell %d", cellsTraveled);
@@ -539,12 +539,15 @@ void Robot::moveHead(int position){
     sleep(1);
 }
 
+/*************************************
+ * Definition: Determines what speed of turn to make based on a measure of center error
+ *
+ * Parameters: float value of centerError
+ * 
+ * Returns: boolean value false if a move was made, true if corrections not required
+ ************************************/
 bool Robot::_centerTurn(float centerError) {
     bool success;
-
-    //float centerTurnGain = _centerTurnPID->updatePID(centerError);
-    //LOG.write(LOG_LOW, "centerTurn", "center error: %f", centerError);
-    //LOG.write(LOG_LOW, "centerTurn", "center turn gain: %f", centerTurnGain);
 
     if (fabs(centerError) < MAX_TURN_CENTER_ERROR) {
         success = true;
@@ -554,12 +557,13 @@ bool Robot::_centerTurn(float centerError) {
                   centerError, MAX_TURN_CENTER_ERROR);
     }
     else {
+        //We needed to make a move, so centering not YET successful
         success = false;
-
+        
+        // Not using a PID
+        // Corrections are not inherently linked in time, so use of a PID isn't exactly proper
         int turnSpeed = (int)(10 - 5 * fabs(centerError));
         turnSpeed = Util::capSpeed(turnSpeed, 10);
-        
-        LOG.write(LOG_LOW, "pid_speeds", "turn speed: %d", turnSpeed);
 
         if (centerError < 0) {
             LOG.write(LOG_LOW, "centerTurn", "Center error: %f, move right", centerError);
@@ -578,12 +582,15 @@ bool Robot::_centerTurn(float centerError) {
     return success;
 }
 
+/*************************************
+ * Definition: Determines what speed of strafe to make based on a measure of center error
+ *
+ * Parameters: float value of centerError
+ * 
+ * Returns: boolean value false if a move was made, true if corrections not required
+ ************************************/
 bool Robot::_centerStrafe(float centerError) {
     bool success;
-
-    //float centerStrafeGain = _centerStrafePID->updatePID(centerError);
-    //LOG.write(LOG_LOW, "centerStrafe", "center error: %f", centerError);
-    //LOG.write(LOG_LOW, "centerStrafe", "center strafe gain: %f", centerStrafeGain);
 
     if (fabs(centerError) < MAX_STRAFE_CENTER_ERROR) {
         success = true;
@@ -593,13 +600,14 @@ bool Robot::_centerStrafe(float centerError) {
                   centerError, MAX_STRAFE_CENTER_ERROR);
     }
     else {
+        //We needed to make a move, so centering not YET successful
         success = false;
 
+        // Not using a PID
+        // Corrections are not inherently linked in time, so use of a PID isn't exactly proper
         int strafeSpeed = (int)(10 - 5 * fabs(centerError));
         strafeSpeed = Util::capSpeed(strafeSpeed, 10);
         
-        LOG.write(LOG_LOW, "pid_speeds", "strafe speed: %d", strafeSpeed);
-
         if (centerError < 0) {
             LOG.write(LOG_LOW, "centerStrafe", "Center error: %f, move right", centerError);
             strafeRight(strafeSpeed);
@@ -624,7 +632,7 @@ bool Robot::_centerStrafe(float centerError) {
 void Robot::center() {
     moveHead(RI_HEAD_MIDDLE);
 	
-	int turnAttempts = 0;
+    int turnAttempts = 0;
 
     Camera::prevTagState = -1;
     while (true) {
@@ -644,43 +652,42 @@ void Robot::center() {
         }
         
         if (turnAttempts > 2) {
-			moveHead(RI_HEAD_DOWN);
+            moveHead(RI_HEAD_DOWN);
 
-			// make sure we are close to our desired heading, in case we didn't move correctly
-			updatePose(false);
+            // make sure we are close to our desired heading, in case we didn't move correctly
+            updatePose(false);
 
-			float thetaHeading;
-			switch (_heading) {
-			case DIR_NORTH:
-				thetaHeading = DEGREE_90;
-				break;
-			case DIR_SOUTH:
-				thetaHeading = DEGREE_270;
-				break;
-			case DIR_EAST:
-				thetaHeading = DEGREE_0;
-				break;
-			case DIR_WEST:
-				thetaHeading = DEGREE_180;
-				break;
-			}
+            float thetaHeading;
+            switch (_heading) {
+            case DIR_NORTH:
+	        thetaHeading = DEGREE_90;
+                break;
+            case DIR_SOUTH:
+                thetaHeading = DEGREE_270;
+                break; 
+            case DIR_EAST:
+                thetaHeading = DEGREE_0;
+                break;
+            case DIR_WEST:
+                thetaHeading = DEGREE_180;
+                break;
+            }
 
-			float theta = _pose->getTheta();
-			float thetaError = thetaHeading - theta;
-			thetaError = Util::normalizeThetaError(thetaError);
-			if (fabs(thetaError) > DEGREE_45) {
-				// if we turned beyond 45 degrees from our
-				// heading, this was a mistake. let's turn
-				// back just enough so we're 45 degrees from
-				// our heading.
-				float thetaGoal = Util::normalizeTheta(theta + (DEGREE_45 + thetaError));
-				turnTo(thetaGoal, MAX_THETA_ERROR);
-			}
+            float theta = _pose->getTheta();
+            float thetaError = thetaHeading - theta;
+            thetaError = Util::normalizeThetaError(thetaError);
+            if (fabs(thetaError) > DEGREE_45) {
+                // if we turned beyond 45 degrees from our
+                // heading, this was a mistake. let's turn
+                // back just enough so we're 45 degrees from
+                // our heading.
+		float thetaGoal = Util::normalizeTheta(theta + (DEGREE_45 + thetaError));
+		turnTo(thetaGoal, MAX_THETA_ERROR);
+            }
 
-			turnAttempts = 0;
-
-        	moveHead(RI_HEAD_MIDDLE);
-	    }
+            turnAttempts = 0;
+            moveHead(RI_HEAD_MIDDLE);
+        }
     }
 
     moveHead(RI_HEAD_DOWN);
@@ -754,6 +761,9 @@ void Robot::updatePose(bool useWheelEncoders) {
     LOG.write(LOG_LOW, "position_data", "Room:\t%d\tNS:\t%f\t%f\t%f\tWE:\t%f\t%f\t%f\tKalman:\t%f\t%f\t%f\t", getRoom(), _northStar->getX(), _northStar->getY(), _northStar->getTheta(), _wheelEncoders->getX(), _wheelEncoders->getY(), _wheelEncoders->getTheta(), _pose->getX(), _pose->getY(), _pose->getTheta());
 }
 
+/************************************
+ * Definition: Returns the robot interface
+ ***********************************/
 RobotInterface* Robot::getInterface() {
     return _robotInterface;
 }
@@ -792,11 +802,18 @@ void Robot::prefillData() {
  * Parameters: int specifying speed to move at
  **************************************/
 void Robot::moveForward(int speed) {
-	_movingForward = true;
+    _movingForward = true;
     _speed = speed;
     _robotInterface->Move(RI_MOVE_FORWARD, speed);
 }
 
+
+/**************************************
+ * Definition: Moves the robot backward, keeping track of movement.
+ *             (Wrapper around robot interface)
+ *
+ * Parameters: int specifying speed to move at
+ **************************************/
 void Robot::moveBackward(int speed) {
     _movingForward = false;
     _speed = speed;
@@ -913,6 +930,11 @@ int Robot::getRoom() {
     return _robotInterface->RoomID() - 2;
 }
 
+/**************************************
+ * Definition: Specifies whether the North Star theta value can be trusted based on call location
+ *
+ * Returns: bool value specifying validity of NS theta data
+ *************************************/
 bool Robot::nsThetaReliable() {
     int x = _map->getCurrentCell()->x;
     int y = _map->getCurrentCell()->y;

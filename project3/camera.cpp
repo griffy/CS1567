@@ -173,9 +173,10 @@ void Camera::update() {
 }
 
 /*************************************
- * Definition: getTagState determimes the state 
+ * Definition: Determines enumerated state variable based on the square counts 
+ *             last observed by the camera
  *
- *
+ * Returns: enumerated int corresponding to camera state
  *************************************/
 int Camera::getTagState(int color) {
     int leftSquareCount = squareCount(color, IMAGE_LEFT);
@@ -201,6 +202,18 @@ int Camera::getTagState(int color) {
     }
 }
 
+/*************************************
+ * Definition:	- This function determines the 'error' corresponding to the distance of the robot from the center of a cell
+ *		based on camera images
+ *		- A number of images are taken and analyzed to determine an ideal move and the certainty that the move will actually help us
+ *		- These individual errors are averaged and a decision made to maximize the confidence in the overall move
+ *
+ * Parameters: 	color of squares to determine error from
+ *              boolean pointer corresponding to whether a move is a turn or a strafe
+ *
+ * Returns: 	An error measure in between [-1, 1] telling what direction to move in and to what degree
+ *              boolean value passed by reference into function will be modified for external use
+ ************************************/
 float Camera::centerError(int color, bool *turn) {
     *turn = false;
    
@@ -251,8 +264,6 @@ float Camera::centerError(int color, bool *turn) {
 
         float slopeError = corridorSlopeError(color, &slopeTurn, &slopeCertainty);
         float centerDistError = centerDistanceError(color, &centerDistTurn, &centerDistCertainty);
-
-        LOG.write(LOG_LOW, "centerError", "\n\nslopeError: %f\ncenter: %f\n\n", slopeError, centerDistError);
 
 	//Find and store the best (aka. lowest) tag state seen
         curTagState = getTagState(color) < curTagState ? getTagState(color) : curTagState;
@@ -336,17 +347,8 @@ float Camera::centerError(int color, bool *turn) {
         numGoodCenterDistErrors = numCenterDistStrafeErrors;
     }
 
-    LOG.write(LOG_LOW, "centerError", "Avg. slope error: %f", avgSlopeError);
-    LOG.write(LOG_LOW, "centerError", "Avg. center dist. error: %f", avgCenterDistError);
-
-    LOG.write(LOG_LOW, "centerError", "Avg. slope certainty: %f", avgSlopeCertainty);
-    LOG.write(LOG_LOW, "centerError", "Avg. center dist. certainty: %f", avgCenterDistCertainty);
-    
-
     // based on our previous state, let's modify
     // the certainties based on empirical data
-    // TODO: find actual certainty increments/decrements based
-    //       off empirical data
     if (numGoodSlopeErrors > 0) {
         if (avgSlopeTurn) {
             switch (prevTagState) {
@@ -370,19 +372,7 @@ float Camera::centerError(int color, bool *turn) {
         else {
             switch (prevTagState) {
             case TAGS_BOTH_GE_TWO:
-                avgSlopeCertainty += 0.30; //Strafing good!
-                break;
-            case TAGS_BOTH_ONE:
-                //no-op
-                break;
-            case TAGS_ONE_OR_NONE:
-                avgSlopeCertainty -= 0.10;
-                break;
-            case TAGS_LESS_LEFT:
-                avgSlopeCertainty -= 0.10;
-                break;
-            case TAGS_LESS_RIGHT:
-                avgSlopeCertainty -= 0.10;
+                avgSlopeCertainty += 0.30; //Strafing is likely what we want here
                 break;
             }
         }
@@ -392,16 +382,16 @@ float Camera::centerError(int color, bool *turn) {
         if (avgCenterDistTurn) {
             switch (prevTagState) {
             case TAGS_BOTH_GE_TWO:
-                avgCenterDistCertainty -= 0.10;
+                avgCenterDistCertainty -= 0.10; //don't turn away from squares!
                 break;
             case TAGS_BOTH_ONE:
-                //no-op
+                avgCenterDistCertainty += 0.05; //if we're turning, its due to seeing the two largest squares out of plane
                 break;
             case TAGS_ONE_OR_NONE:
-                avgCenterDistCertainty += 0.10; 
+                avgCenterDistCertainty -= 0.10; //we should probably be strafing tbh
                 break;
             case TAGS_LESS_LEFT:
-                avgCenterDistCertainty += 0.10;
+                avgCenterDistCertainty += 0.10; //turn to balance squares
                 break;
             case TAGS_LESS_RIGHT:
                 avgCenterDistCertainty += 0.10;
@@ -411,10 +401,10 @@ float Camera::centerError(int color, bool *turn) {
         else {
             switch (prevTagState) {
             case TAGS_BOTH_GE_TWO:
-                avgCenterDistCertainty += 0.10;
-                break;
+                avgCenterDistCertainty -= 0.10; //if we're seeing lots of squares, strafing based on center distance error
+                break;                          //is not likely what we want to do
             case TAGS_BOTH_ONE:
-                //no-op
+                avgCenterDistCertainty += 0.10; //if this is all we've got, we probably can rely more on center distance error alone
                 break;
             case TAGS_ONE_OR_NONE:
                 avgCenterDistCertainty += 0.10;
@@ -454,7 +444,7 @@ float Camera::centerError(int color, bool *turn) {
         *turn = false;
     }
 
-    // TODO: if necessary, modify total error based on each certainty
+    // Combine the two error measures (agreeing on the dominant move TYPE [turn/strafe])
     float totalError = 0.0;
     int numErrors = 0;
     if (*turn) {
@@ -479,15 +469,6 @@ float Camera::centerError(int color, bool *turn) {
             totalError += avgCenterDistError;
         }
     }
-
-    LOG.write(LOG_LOW, "centerError", "avgSlopeError: %f",
-              avgSlopeError);
-    LOG.write(LOG_LOW, "centerError", "avgCenterDistError: %f",
-              avgCenterDistError);
-    LOG.write(LOG_LOW, "centerError", "totalError: %f",
-              totalError);
-    LOG.write(LOG_LOW, "centerError", "numErrors: %d",
-              numErrors);
 
     prevTagState = curTagState;
 
@@ -630,27 +611,11 @@ float Camera::corridorSlopeError(int color, bool *turn, float *certainty) {
     float xIntersect = 0;
     float yIntersect = 0;
 
-    LOG.write(LOG_LOW, "slopeError", 
-              "Left squares found: %d", leftSide.numSquares);
-    LOG.write(LOG_LOW, "slopeError", 
-              "Right squares found: %d", rightSide.numSquares);
-    LOG.write(LOG_LOW, "slopeError",
-              "All squares found: %d", wholeImage.numSquares);
-    LOG.write(LOG_LOW, "slopeError", 
-              "Left equation: y = %f*x + %f, r^2 = %f", leftSide.slope, leftSide.intercept, leftSide.rSquared);
-    LOG.write(LOG_LOW, "slopeError", 
-              "Right equation: y = %f*x + %f, r^2 = %f", rightSide.slope, rightSide.intercept, rightSide.rSquared);
-    LOG.write(LOG_LOW, "slopeError", 
-              "Total equation: y = %f*x + %f, r^2 = %f", wholeImage.slope, wholeImage.intercept, wholeImage.rSquared); 
-
 
     if(leftSide.numSquares >= 2 && rightSide.numSquares >= 2) {
        xIntersect = (rightSide.intercept - leftSide.intercept)/(leftSide.slope - rightSide.slope);
        yIntersect = leftSide.slope*xIntersect + leftSide.intercept;
-
-       LOG.write(LOG_LOW, "slopeError",
-      	         "Line intersection: (%f, %f)", xIntersect, yIntersect);
-    } 
+    }
     else {
        xIntersect = -999;
        yIntersect = -999;
@@ -703,7 +668,6 @@ float Camera::corridorSlopeError(int color, bool *turn, float *certainty) {
     // did we find a line across the entire screen?
     if (wholeImage.numSquares >= 3) {
         if((leftSide.numSquares < 2 || rightSide.numSquares < 2) && (leftSide.numSquares != 0 && rightSide.numSquares != 0)) { //No line on either side
-            //TODO: .9? - REPLACE WITH SOMETHING REASONABLE
             if(wholeImage.rSquared > .9) {
                 //we can be fairly sure that we should make a turn move here
                 *turn = true;
@@ -790,36 +754,14 @@ float Camera::corridorSlopeError(int color, bool *turn, float *certainty) {
     if (leftSide.numSquares >= 2 && rightSide.numSquares >= 2) { 
         float difference = leftSide.slope + rightSide.slope;
          
-        /*if(xIntersect > -900 && xIntersect < .85*center) {
-            //we're probably looking left
-            //turn right
-            softRightTurn = true;
-        }
-        
-        if(xIntersect > 1.15*center) {
-            //probably looking right
-            //turn left
-            softLeftTurn = true;
-        }*/
-
         if (difference > MAX_SLOPE_DIFFERENCE) {
             // the difference is large enough that we can say
             // the error is at its max, so we should move right
-           /* if(softRightTurn) {
-                *certainty = 0.70;
-                *turn = true;
-                return -.5; //less magnitude of a turn than strafe
-            }*/
             *certainty = 0.70;
             return -1; //1 indicates full magnitude and SOME uncertainty
         } 
         else if (difference < -MAX_SLOPE_DIFFERENCE) {
             // we should move left
-            /*if(softLeftTurn) {
-                *certainty = 0.70;
-                *turn = true;
-                return .5;
-            }*/
             *certainty = 0.70;
             return 1;
         } 
@@ -847,7 +789,6 @@ float Camera::corridorSlopeError(int color, bool *turn, float *certainty) {
     }
 
     // we didn't have enough squares to be useful (no certainty)
-    LOG.write(LOG_LOW, "slopeError", "no slopes!");
     *certainty = 0.0;
     return -999.0;
 }
@@ -869,8 +810,6 @@ regressionLine Camera::leastSquaresRegression(int color, int side) {
 
     int width = thresholdedOf(color)->width;
     int center = width / 2;
-
-    LOG.write(LOG_LOW, "regression", "image center: %d", center);
 
     result.numSquares = squareCount(color, side);
     
@@ -940,7 +879,6 @@ regressionLine Camera::leastSquaresRegression(int color, int side) {
  *
  * Parameters: 	squares_t containing a list of squares (from findSquares() call)
  * 		
- *
  * Returns: 	a squares_t containing the largest non-overlapping (distinct) squares
  * 		null if inputSquares is null
  * ************************************/
@@ -1052,6 +990,14 @@ squares_t* Camera::biggestSquare(int color, int side) {
     return largestSquare;
 }
 
+/**************************************
+ * Definition:	Returns how many squares are being seen as we record camera images to determine error (typical case)
+ *
+ * Parameters: 	int flag giving color of squares to count
+ *             	int flag giving side of image to observe
+ *
+ * Returns:	average square count
+ *************************************/
 float Camera::avgSquareCount(int color, int side) {
     int totalSquareCount = 0;
     for (int i = 0; i < NUM_CAMERA_ERRORS; i++) {
@@ -1061,6 +1007,7 @@ float Camera::avgSquareCount(int color, int side) {
 
     return (float)totalSquareCount / (float)NUM_CAMERA_ERRORS;
 }
+
 /**************************************
  * Definition: Counts the number of squares of the specified color
  *             on the specified side of the image there are
@@ -1082,17 +1029,11 @@ int Camera::squareCount(int color, int side) {
         switch (side) {
         case IMAGE_LEFT: 
             if (curSquare->center.x < center) { 
-                LOG.write(LOG_LOW, "squareCount",
-                          "Left square - x: %d y: %d area: %d",
-                          curSquare->center.x, curSquare->center.y, curSquare->area);
                 squareCount++;
             }
             break;
         case IMAGE_RIGHT:
             if (curSquare->center.x > center) {
-                LOG.write(LOG_HIGH, "squareCount",
-                          "Right square - x: %d y: %d area: %d", 
-                          curSquare->center.x, curSquare->center.y, curSquare->area);
                 squareCount++;
             }
             break;
@@ -1191,7 +1132,6 @@ squares_t* Camera::findSquares(IplImage *img, int areaThreshold) {
     
     // Pyramid images for blurring the result
     IplImage* pyr = cvCreateImage(cvSize(sz.width/2, sz.height/2), 8, 1);
-    IplImage* pyr2 = cvCreateImage(cvSize(sz.width/4, sz.height/4), 8, 1);
 
     CvSeq* result;
     double s, t;
@@ -1204,8 +1144,6 @@ squares_t* Camera::findSquares(IplImage *img, int areaThreshold) {
     
     // Down and up scale the image to reduce noise
     cvPyrDown( img, pyr, CV_GAUSSIAN_5x5 );
-    //cvPyrDown( pyr, pyr2, CV_GAUSSIAN_5x5 );
-    //cvPyrUp( pyr2, pyr, CV_GAUSSIAN_5x5 );
     cvPyrUp( pyr, img, CV_GAUSSIAN_5x5 );
 
     // Apply the canny edge detector and set the lower to 0 (which forces edges merging) 
@@ -1224,19 +1162,14 @@ squares_t* Camera::findSquares(IplImage *img, int areaThreshold) {
         // Approximate a contour with accuracy proportional to the contour perimeter
         result = cvApproxPoly(contours, sizeof(CvContour), storage, 
                               CV_POLY_APPROX_DP, cvContourPerimeter(contours)*0.1, 0 );
-        // Square contours should have
-        //  * 4 vertices after approximation
-        //  * Relatively large area (to filter out noisy contours)
-        //  * Ne convex.
         // Note: absolute value of an area is used because
         // area may be positive or negative - in accordance with the
         // contour orientation
         if (result->total >= 4 && 
-            fabs(cvContourArea(result,CV_WHOLE_SEQ,0)) > areaThreshold /*&& 
-            cvCheckContourConvexity(result)*/) {
+            fabs(cvContourArea(result,CV_WHOLE_SEQ,0)) > areaThreshold) {
             s=0;
             for(i=0; i<5; i++) {
-                            // Find the minimum angle between joint edges (maximum of cosine)
+                // Find the minimum angle between joint edges (maximum of cosine)
                 if(i >= 2) {
                     t = fabs(ri_angle((CvPoint*)cvGetSeqElem(result, i),
                                       (CvPoint*)cvGetSeqElem(result, i-2),
@@ -1245,12 +1178,9 @@ squares_t* Camera::findSquares(IplImage *img, int areaThreshold) {
                 }
             }
 
-            // If cosines of all angles are small (all angles are ~90 degree) then write the vertices to the sequence 
-            //if( s < 0.2 ) {
-                for( i = 0; i < 4; i++ ) {
-                    cvSeqPush(squares, (CvPoint*)cvGetSeqElem(result, i));
-                }
-            //}
+            for( i = 0; i < 4; i++ ) {
+                cvSeqPush(squares, (CvPoint*)cvGetSeqElem(result, i));
+            }
         }    
         // Get the next contour
         contours = contours->h_next;
@@ -1301,7 +1231,6 @@ squares_t* Camera::findSquares(IplImage *img, int areaThreshold) {
     // Release the temporary images and data
     cvReleaseImage(&canny);
     cvReleaseImage(&pyr);
-    cvReleaseImage(&pyr2);
     cvReleaseMemStorage(&storage);
     return sq_head;
 }
@@ -1318,7 +1247,7 @@ IplImage* Camera::getHSVImage() {
         return NULL;
     }
 
-	IplImage *hsv = cvCreateImage(cvGetSize(bgr), IPL_DEPTH_8U, 3);
+    IplImage *hsv = cvCreateImage(cvGetSize(bgr), IPL_DEPTH_8U, 3);
     // convert the image from BGR to HSV
     cvCvtColor(bgr, hsv, CV_BGR2HSV);
     // free the bgr image
@@ -1373,8 +1302,6 @@ IplImage* Camera::getBGRImage() {
     IplImage *bgr = cvCreateImage(size, IPL_DEPTH_8U, 3);
 
     if (_robotInterface->getImage(bgr) != RI_RESP_SUCCESS) {
-        LOG.write(LOG_HIGH, "camera image", 
-                  "Unable to get an image!");
         bgr = NULL;
     }
     return bgr;
