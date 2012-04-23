@@ -166,32 +166,32 @@ const float NS_ROOM_ROTATION[6][4] = {
 	{0.0, 
      1.6708, // was 1.5708
      0.15, // was 0.0
-     1.6705},
+     1.6005},
 	// Bender
 	{0.0, 
      1.6708,
      0.15, 
-     1.6705},
+     1.6005},
 	// Johnny5 (using Bender's)
 	{0.0, 
      1.6708, 
      0.15, 
-     1.6705},
+     1.6005},
 	// Optimus (using Bender's)
 	{0.0, 
      1.6708, 
      0.15, 
-     1.6705},
+     1.6005},
 	// WallE (using Bender's)
 	{0.0, 
      1.6708, 
      0.15, 
-     1.6705},
+     1.6005},
     // Gort (using Bender's)
     {0.0,
      1.6708,
      0.15,
-     1.6705} // was 1.6005
+     1.6005}
 };
 
 // the distance of column top-right corner from base 0 in cm
