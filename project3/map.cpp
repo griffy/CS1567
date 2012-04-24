@@ -25,8 +25,6 @@ Map::Map(RobotInterface *robotInterface, int startingX, int startingY) {
 	// we are the robot at this cell
 	_claimRobotAt(startingX, startingY);
 	_curCell = cells[startingX][startingY];
-	LOG.write(LOG_LOW, "map", "starting cell: %d, %d",
-			  startingX, startingY);
 }
 
 Map::~Map() {

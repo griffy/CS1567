@@ -891,10 +891,8 @@ void Robot::strafeLeft(int speed) {
     usleep(sleepLength);
     _robotInterface->Move(RI_STOP, 0);
 
-    if (getName() == BENDER ||
-        getName() == OPTIMUS) {
-        turnLeft(10);
-    }
+    // no robot strafes nicely, so turn a bit to fix it
+    turnLeft(10);
 }
 
 /**************************************
@@ -915,10 +913,8 @@ void Robot::strafeRight(int speed) {
     usleep(sleepLength);
     _robotInterface->Move(RI_STOP, 0);
 
-    if (getName() == BENDER ||
-        getName() == OPTIMUS) {
-        turnRight(10);
-    }
+    // no robot strafes nicely, so turn a bit to fix it
+    turnRight(10);
 }
 
 /**************************************

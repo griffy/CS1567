@@ -54,9 +54,6 @@ void NorthStar::updatePose() {
 
 	// if we've changed rooms, prepare filters for this
 	if (_lastRoom != -1 && _lastRoom != room) {
-
-		LOG.write(LOG_MED, "NS_room_change", "Room change occurring.\n");
-
 		// assume X and Y fir filters are of the same order
 		int order = _filterX->getOrder(); 
 		Pose *tempPose = new Pose(0.0, 0.0, 0.0);
@@ -84,10 +81,6 @@ void NorthStar::updatePose() {
 	float x = _getFilteredX();
 	float y = _getFilteredY();
 	float theta = _getFilteredTheta();
-
-	LOG.write(LOG_LOW, "northStarUpdate", 
-			  "north star (filtered) room %d: (%f, %f, %f)",
-			  room+2, x, y, theta);
 
 	// transform the data into global coord system
 	Pose *estimate = new Pose(x, y, theta);
@@ -117,10 +110,6 @@ void NorthStar::updatePose() {
 	_pose->setY(estimate->getY());
 	_pose->setTheta(estimate->getTheta());
 	delete estimate;
-
-	LOG.write(LOG_LOW, "northStarUpdate", 
-			  "north star (pose) room %d: (%f, %f, %f)",
-		      room+2, _pose->getX(), _pose->getY(), _pose->getTheta());
 
 	// store the global x and y for future use
 	_oldX.insert(_oldX.begin(), _pose->getX());

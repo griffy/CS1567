@@ -55,10 +55,6 @@ void KalmanFilter::filter(Pose *nsPose, Pose *wePose) {
 	float wePoseArr[3];
 	nsPose->toArray(nsPoseArr);
 	wePose->toArray(wePoseArr);
-	
-	LOG.write(LOG_LOW, "kalmanFilter", 
-		      "Kalman filter input: WE theta: %f NS theta: %f", 
-		      wePoseArr[2], nsPoseArr[2]);
 
 	// store the sin of the thetas so they'll match up even if
 	// they're not the same value (ie, 0 == 2PI)
@@ -72,9 +68,6 @@ void KalmanFilter::filter(Pose *nsPose, Pose *wePose) {
 	// which is in range -pi/2 to pi/2. finally, normalize it
 	// back into 0, 2PI range
 	_track[2] = Util::normalizeTheta(asin(_track[2]));
-
-	LOG.write(LOG_LOW, "kalmanFilter", 
-              "Kalman pose: %f,%f,%f", _track[0], _track[1], _track[2]);
 
     // update the stored pose to its new estimate
     _pose->setX(_track[0]);

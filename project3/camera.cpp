@@ -63,8 +63,7 @@ void Camera::setQuality(int quality) {
                                    5, 
                                    _resolution, 
                                    quality)) {
-        LOG.write(LOG_HIGH, "camera settings", 
-                  "Failed to change the quality to %d", quality);
+        printf("Failed to change the quality to %d\n", quality);
     }
     else {
         _quality = quality;
@@ -85,8 +84,7 @@ void Camera::setResolution(int resolution) {
                                    5, 
                                    resolution, 
                                    _quality)) {
-        LOG.write(LOG_HIGH, "camera settings", 
-                  "Failed to change the resolution to %d", resolution);
+        printf("Failed to change the resolution to %d\n", resolution);
     }
     else {
         _resolution = resolution;

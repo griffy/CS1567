@@ -71,10 +71,6 @@ float PID::updatePID(float error) {
     // get differential term by multiplying by the change in error 
 	float dTerm = _constants.kd * (error - prevError);
 
-    LOG.write(LOG_LOW, "pid terms", "pTerm = %f", pTerm);
-	LOG.write(LOG_LOW, "pid terms", "iTerm = %f", iTerm);
-	LOG.write(LOG_LOW, "pid terms", "dTerm = %f", dTerm);
-
 	float gain = pTerm + iTerm + dTerm;
 	if (gain > 1.0) {
 		gain = 1.0;

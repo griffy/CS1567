@@ -42,13 +42,6 @@ WheelEncoders::~WheelEncoders() {
 * Note:       Requires the interface be updated prior to calling 
 ************************************************/
 void WheelEncoders::updatePose() {
-	LOG.write(LOG_LOW, "WE_positions_raw", 
-		      "we update (raw): left: %f right: %f rear: %f", 
-		      _getFilteredDeltaLeft(), _getFilteredDeltaRight(), _getFilteredDeltaRear());
-	LOG.write(LOG_LOW, "wheelEncodersUpdate", 
-		      "we update: x: %f deltaX: %f y: %f deltaY: %f", 
-		      getX(), _getDeltaX(), getY(), _getDeltaY());
-
 	float x = getX() + _getDeltaX();
 	float y = getY() + _getDeltaY();
 	float theta = Util::normalizeTheta(getTheta() + _getDeltaTheta());
@@ -102,10 +95,10 @@ float WheelEncoders::_getDeltaTheta() {
 float WheelEncoders::_getRobotDeltaY() {
     float leftRobotDeltaY = -_getFilteredDeltaLeft() * cos(DEGREE_150);
     float rightRobotDeltaY = _getFilteredDeltaRight() * cos(DEGREE_30);
+    
     // some robots have bad wheel encoders for one side,
     // so account for this by faking the data on the opposite
     // wheel
-    
     switch (_robot->getName()) {
     case ROSIE:
     	rightRobotDeltaY = leftRobotDeltaY;

@@ -20,12 +20,12 @@
 
 int main(int argc, char *argv[]) {
 	if (argc < 2) {
-		printf("ERROR: need argument for robot name\n");
+		printf("Error: Need argument for robot name\n");
 		return -1;
 	}
 
 	if (argc < 3) {
-		printf("Need argument for rovio man id (1 or 2)\n");
+		printf("Error: Need argument for Rovio-Man ID (1 or 2)\n");
 		return -1;
 	}
 

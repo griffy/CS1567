@@ -39,11 +39,6 @@ Cell* MapStrategy::nextCell() {
 			return NULL;
 		}
 	}
-	
-	LOG.write(LOG_LOW, "nextCell",
-		      "best path value: %f", path->getValue());
-	LOG.write(LOG_LOW, "nextCell", 
-			  "best path: %s", path->toString());
 
 	return path->getFirstCell();
 }

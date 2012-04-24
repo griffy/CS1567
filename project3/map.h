@@ -19,12 +19,14 @@
 #include <robot_if++.h>
 #include "cell.h"
 
+// game map size in cells
 #define MAP_WIDTH 7
 #define MAP_HEIGHT 5
 
+// cardinal directions
 #define DIR_NORTH 1
-#define DIR_EAST 2
-#define DIR_SOUTH 4
+#define DIR_SOUTH 2
+#define DIR_EAST 4
 #define DIR_WEST 8
 
 class Map {
