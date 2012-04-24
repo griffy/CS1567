@@ -215,7 +215,6 @@ void Robot::move(int direction, int numCells) {
             if (_map->getCurrentCell()->x == 0 ||
                 _map->getCurrentCell()->x == 1) {
                 goalX -= 30.0;
-                LOG.write(LOG_HIGH, "nsHardFix", "cell fix");
             }
             break;
         case DIR_WEST:
@@ -223,7 +222,6 @@ void Robot::move(int direction, int numCells) {
             if (_map->getCurrentCell()->x == 0 ||
                 _map->getCurrentCell()->x == 1) {
                 goalX += 30.0;
-                LOG.write(LOG_HIGH, "nsHardFix", "cell fix");
             }
             break;
         }
@@ -241,7 +239,6 @@ void Robot::move(int direction, int numCells) {
         if (newRightSquareCount > 3.0) {
             newRightSquareCount = 3.0;
         }
-        LOG.write(LOG_HIGH, "cameraSquareCounts", "New left: %f \t New right: %f \t Old left: %f \t Old right: %f \t",newLeftSquareCount, newRightSquareCount, leftSquareCount, rightSquareCount);
         int i = 0;
         while ((newLeftSquareCount + 1.0 < leftSquareCount ||
                 newRightSquareCount + 1.0 < rightSquareCount) &&
@@ -260,7 +257,7 @@ void Robot::move(int direction, int numCells) {
 
         // we made it!
         cellsTraveled++;
-        LOG.write(LOG_LOW, "move", "Made it to cell %d", cellsTraveled);
+        printf("Made it to cell %d\n", cellsTraveled);
     }
 }
 
@@ -277,22 +274,18 @@ bool Robot::sideCenter(int direction) {
     case DIR_SOUTH:
         if (_map->canOccupy(curCell->x-1, curCell->y)) {
             turn(DIR_EAST);
-			printf("Opening is: EAST\n");
         }
         else if (_map->canOccupy(curCell->x+1, curCell->y)) {
             turn(DIR_WEST);
-			printf("Opening is: WEST\n");
         }
         break;
     case DIR_EAST:
     case DIR_WEST:
         if (_map->canOccupy(curCell->x, curCell->y+1)) {
             turn(DIR_NORTH);
-			printf("Opening is: NORTH\n");
         }
         else if (_map->canOccupy(curCell->x, curCell->y-1)) {
             turn(DIR_SOUTH);
-			printf("Opening is: SOUTH\n");
         }
         break;
     }
@@ -364,7 +357,8 @@ void Robot::moveTo(float x, float y, float distErrorLimit) {
             // if we're off in theta, turn to adjust 
             turnTo(goal, MAX_THETA_ERROR);
         }
-    } while (thetaError != 0);
+    } 
+    while (thetaError != 0);
 
     _movePID->flushPID();
     _turnPID->flushPID();
@@ -372,6 +366,8 @@ void Robot::moveTo(float x, float y, float distErrorLimit) {
     // reset wheel encoder pose to be Kalman pose since we hit our base
     _wheelEncoders->resetPose(_pose);
     _wheelEncoders->setTheta(_northStar->getTheta());
+
+    printf("done moving\n");
 }
 
 /**************************************
@@ -394,22 +390,6 @@ float Robot::moveToUntil(float x, float y, float distErrorLimit, float thetaErro
     printf("heading toward (%f, %f)\n", x, y);
     do {
         updatePose(true);
-
-        LOG.write(LOG_HIGH, "move_we_pose",
-                  "x: %f \t y: %f \t theta: %f", 
-                  _wheelEncoders->getPose()->getX(),
-                  _wheelEncoders->getPose()->getY(),
-                  _wheelEncoders->getPose()->getTheta());
-        LOG.write(LOG_HIGH, "move_ns_pose",
-                  "x: %f \t y: %f \t theta: %f", 
-                  _northStar->getPose()->getX(),
-                  _northStar->getPose()->getY(),
-                  _northStar->getPose()->getTheta()); 
-        LOG.write(LOG_HIGH, "move_kalman_pose",
-                  "x: %f \t y: %f \t theta: %f", 
-                  _pose->getX(),
-                  _pose->getY(),
-                  _pose->getTheta()); 
 
         yError = y - _pose->getY();
         xError = x - _pose->getX();
@@ -436,19 +416,8 @@ float Robot::moveToUntil(float x, float y, float distErrorLimit, float thetaErro
         thetaError = thetaDesired - _northStar->getTheta();
         thetaError = Util::normalizeThetaError(thetaError);
 
-        LOG.write(LOG_MED, "move_error_estimates",
-                  "x err: %f \t y err: %f \t distance err: %f \t "
-                  "theta err: %f \t theta desired: %f \t", 
-                  xError,
-                  yError,
-                  distError,
-                  thetaError,
-                  thetaDesired);
-
         moveGain = _movePID->updatePID(distError);
         _turnPID->updatePID(thetaError);
-
-        LOG.write(LOG_LOW, "move_gain", "move gain: %f", moveGain);
 
         if (fabs(thetaError) > thetaErrorLimit) {
 			printf("theta error of %f too great\n", thetaError);
@@ -456,14 +425,11 @@ float Robot::moveToUntil(float x, float y, float distErrorLimit, float thetaErro
         }
         
         int moveSpeed = (int)(10 - 9 * moveGain);
-
-        //int moveSpeed = (int) (10 - (9 * (fmin(1.0, (distError)/65.0))));
         moveSpeed = Util::capSpeed(moveSpeed, 10);
 
-        LOG.write(LOG_MED, "pid_speeds", "forward speed: %d", moveSpeed);
-
         moveForward(moveSpeed);
-    } while (distError > distErrorLimit);
+    } 
+    while (distError > distErrorLimit);
 
     return 0; // no error when we've finished
 }
@@ -485,69 +451,28 @@ void Robot::turnTo(float thetaGoal, float thetaErrorLimit) {
     do {
 	    updatePose(false);
 
-        LOG.write(LOG_LOW, "turn_we_pose",
-                  "x: %f \t y: %f \t theta: %f", 
-                  _wheelEncoders->getPose()->getX(),
-                  _wheelEncoders->getPose()->getY(),
-                  _wheelEncoders->getPose()->getTheta()); 
-        LOG.write(LOG_LOW, "turn_ns_pose",
-                  "x: %f \t y: %f \t theta: %f", 
-                  _northStar->getPose()->getX(),
-                  _northStar->getPose()->getY(),
-                  _northStar->getPose()->getTheta()); 
-        LOG.write(LOG_LOW, "turn_kalman_pose",
-                  "x: %f \t y: %f \t theta: %f", 
-                  _pose->getX(),
-                  _pose->getY(),
-                  _pose->getTheta()); 
-
         theta = _northStar->getTheta();
         thetaError = thetaGoal - theta;
         thetaError = Util::normalizeThetaError(thetaError);
 
-        LOG.write(LOG_MED, "turn_error_estimates",
-                  "theta err: %f \t theta goal: %f",
-                  thetaError,
-                  thetaGoal);
-
         turnGain = _turnPID->updatePID(thetaError);
 
-        LOG.write(LOG_LOW, "turn_gain", "turn gain: %f", turnGain);
-
         if (thetaError < -thetaErrorLimit) {
-            LOG.write(LOG_MED, "turn_adjust", 
-                      "direction: right, since theta error < -limit");
             int turnSpeed = (int)(10 - 9 * turnGain);
             turnSpeed = Util::capSpeed(turnSpeed, 10);
-
-            LOG.write(LOG_MED, "pid_speeds", "turn speed: %d", turnSpeed);
 
             turnRight(turnSpeed);
         }
         else if(thetaError > thetaErrorLimit){
-            LOG.write(LOG_MED, "turn_adjust", 
-                      "direction: left, since theta error > limit");
             int turnSpeed = (int)(10 - 9 * turnGain);
             turnSpeed = Util::capSpeed(turnSpeed, 10);
 
-            LOG.write(LOG_MED, "pid_speeds", "turn speed: %d", turnSpeed);
-
             turnLeft(turnSpeed);
         }
-    } while (fabs(thetaError) > thetaErrorLimit);
-
+    } 
+    while (fabs(thetaError) > thetaErrorLimit);
 
     printf("theta acceptable\n");
-}
-
-/*******************************
- * Definition: Moves the robot head (camera) to the position given as the argument
- * *****************************/
-void Robot::moveHead(int position){
-    _robotInterface->Move(position, 1);
-    sleep(1);
-    _robotInterface->Move(position, 1);
-    sleep(1);
 }
 
 /*************************************
@@ -563,9 +488,9 @@ bool Robot::_centerTurn(float centerError) {
     if (fabs(centerError) < MAX_TURN_CENTER_ERROR) {
         success = true;
         // we're close enough to centered, so stop adjusting
-        LOG.write(LOG_LOW, "centerTurn", 
-                  "Center error: |%f| < %f, stop correcting.", 
-                  centerError, MAX_TURN_CENTER_ERROR);
+        printf("Center error: |%f| < %f, stop correcting.\n", 
+               centerError, 
+               MAX_TURN_CENTER_ERROR);
     }
     else {
         //We needed to make a move, so centering not YET successful
@@ -577,11 +502,11 @@ bool Robot::_centerTurn(float centerError) {
         turnSpeed = Util::capSpeed(turnSpeed, 10);
 
         if (centerError < 0) {
-            LOG.write(LOG_LOW, "centerTurn", "Center error: %f, move right", centerError);
+            printf("Center error: %f, move right\n", centerError);
             turnRight(turnSpeed);
         }
         else {
-            LOG.write(LOG_LOW, "centerTurn", "Center error: %f, move left", centerError);
+            printf("Center error: %f, move left\n", centerError);
             turnLeft(turnSpeed);
         }
 
@@ -606,9 +531,9 @@ bool Robot::_centerStrafe(float centerError) {
     if (fabs(centerError) < MAX_STRAFE_CENTER_ERROR) {
         success = true;
         // we're close enough to centered, so stop adjusting
-        LOG.write(LOG_LOW, "centerStrafe", 
-                  "Center error: |%f| < %f, stop correcting.", 
-                  centerError, MAX_STRAFE_CENTER_ERROR);
+        printf("Center error: |%f| < %f, stop correcting.\n", 
+               centerError, 
+               MAX_STRAFE_CENTER_ERROR);
     }
     else {
         //We needed to make a move, so centering not YET successful
@@ -620,11 +545,11 @@ bool Robot::_centerStrafe(float centerError) {
         strafeSpeed = Util::capSpeed(strafeSpeed, 10);
         
         if (centerError < 0) {
-            LOG.write(LOG_LOW, "centerStrafe", "Center error: %f, move right", centerError);
+            printf("Center error: %f, move right\n", centerError);
             strafeRight(strafeSpeed);
         }
         else {
-            LOG.write(LOG_LOW, "centerStrafe", "Center error: %f, move left", centerError);
+            printf("Center error: %f, move left\n", centerError);
             strafeLeft(strafeSpeed);
         }
 
@@ -692,8 +617,8 @@ void Robot::center() {
                 // heading, this was a mistake. let's turn
                 // back just enough so we're 45 degrees from
                 // our heading.
-		float thetaGoal = Util::normalizeTheta(theta + (DEGREE_45 + thetaError));
-		turnTo(thetaGoal, MAX_THETA_ERROR);
+		        float thetaGoal = Util::normalizeTheta(theta + (DEGREE_45 + thetaError));
+		        turnTo(thetaGoal, MAX_THETA_ERROR);
             }
 
             turnAttempts = 0;
@@ -731,22 +656,13 @@ void Robot::updatePose(bool useWheelEncoders) {
     }
     else {
         if (_movingForward) {
-            printf("Speed: %d\n", _speed);
             float speedX = SPEED_FORWARD[_speed];
             float speedY = SPEED_FORWARD[_speed];
-
-            LOG.write(LOG_MED, "update_predictions", 
-                      "speed x (cm/s): %f \t speed y (cm/s): %f",
-                      speedX,
-                      speedY);
 
             _kalmanFilter->setVelocity(speedX, speedY, 0.0);
         }
         else {
             float speedTheta = SPEED_TURN[_turnDirection][_speed]; //Fetch turning speed in radians per second
-
-            LOG.write(LOG_MED, "update_predictions", 
-                      "speed theta (cm/s): %f", speedTheta);
 
             //_kalmanFilter->setVelocity(0.0, 0.0, 0.0);
             _kalmanFilter->setVelocity(0.0, 0.0, speedTheta);
@@ -768,8 +684,6 @@ void Robot::updatePose(bool useWheelEncoders) {
     // pass updated poses to kalman filter and update main pose
     _kalmanFilter->filter(_northStar->getPose(), 
                           _wheelEncoders->getPose());
-
-    LOG.write(LOG_LOW, "position_data", "Room:\t%d\tNS:\t%f\t%f\t%f\tWE:\t%f\t%f\t%f\tKalman:\t%f\t%f\t%f\t", getRoom(), _northStar->getX(), _northStar->getY(), _northStar->getTheta(), _wheelEncoders->getX(), _wheelEncoders->getY(), _wheelEncoders->getTheta(), _pose->getX(), _pose->getY(), _pose->getTheta());
 }
 
 /************************************
@@ -799,11 +713,21 @@ Pose* Robot::getPose() {
  * Definition: Fills sensor filters entirely
  **************************************/
 void Robot::prefillData() {
-    printf("prefilling data...\n");
+    printf("prefilling data\n");
     for (int i = 0; i < MAX_FILTER_TAPS; i++){
         updatePose(true);
     }
     printf("sufficient data collected\n");
+}
+
+/*******************************
+ * Definition: Moves the robot head (camera) to the position given as the argument
+ * *****************************/
+void Robot::moveHead(int position){
+    _robotInterface->Move(position, 1);
+    sleep(1);
+    _robotInterface->Move(position, 1);
+    sleep(1);
 }
 
 /**************************************
@@ -946,7 +870,7 @@ bool Robot::nsThetaReliable() {
     int x = _map->getCurrentCell()->x;
     int y = _map->getCurrentCell()->y;
 
-    if(y == 0 && x < 5) {
+    if (y == 0 && x < 5) {
         return false;
     }
     else {
