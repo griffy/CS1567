@@ -257,10 +257,7 @@ void Robot::move(int direction, int numCells) {
  ***********************************/
 bool Robot::sideCenter(int direction) {
     Cell *curCell = _map->getCurrentCell();
-    if (curCell->getCellType() == CELL_HALL) {
-        return false;
-    }
-
+    
     switch (direction) {
     case DIR_NORTH:
     case DIR_SOUTH:

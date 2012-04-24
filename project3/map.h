@@ -1,3 +1,18 @@
+/**
+ * map.h
+ * 
+ * @brief 
+ * 		This class represents the map given to us by the game server,
+ *      and all operations on that map. It is self-updating, and
+ *      has a public 2D array of cells for such things as path-finding.
+ *
+ * @author
+ * 		Shawn Hanna
+ * 		Tom Nason
+ * 		Joel Griffith
+ *
+ **/
+
 #ifndef CS1567_MAP_H
 #define CS1567_MAP_H
 
@@ -12,7 +27,6 @@
 #define DIR_SOUTH 4
 #define DIR_WEST 8
 
-
 class Map {
 public:
 	Map(RobotInterface *robotInterface, int startingX, int startingY);
@@ -25,16 +39,11 @@ public:
 	Cell* cellAt(int x, int y);
 	bool occupyCell(int x, int y);
 	bool reserveCell(int x, int y);
-	
-	Cell* getOpponentCell();
 
 	Cell *cells[MAP_WIDTH][MAP_HEIGHT];
 private:
 	void _claimRobotAt(int x, int y);
 	void _loadMap();
-        
-	void _setOpponentLoc(int x, int y);
-    void _adjustOpenings();
 
 	RobotInterface *_robotInterface;
 
@@ -42,7 +51,6 @@ private:
 	int _score2;
 
 	Cell *_curCell;
-	Cell *_opponentCell;
 };
 
 #endif

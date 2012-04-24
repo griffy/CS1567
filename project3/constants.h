@@ -30,9 +30,10 @@
 
 #define ROBOT_DIAMETER 29 // cm
 
-#define MAX_UPDATE_FAILS 5 // max allowable fails to update robot interface
+// max allowable fails to update robot interface
+#define MAX_UPDATE_FAILS 5 
 
-// Kalman uncertainties
+/* Kalman uncertainties */
 // process uncertainties
 #define PROC_X_UNCERTAIN 0.10
 #define PROC_Y_UNCERTAIN 0.10
@@ -91,12 +92,14 @@
 // the largest filter size (used for prefilling data)
 #define MAX_FILTER_TAPS 7
 
+// north star room constants
 #define ROOM_2 0
 #define ROOM_3 1
 #define ROOM_4 2
 #define ROOM_5 3
 
-#define WE_SCALE 4.0 // (avg) ticks per cm
+// (avg) ticks per cm for wheel encoders
+#define WE_SCALE 4.0
 
 /* north star transformation constants */
 
@@ -117,7 +120,7 @@ const float NS_ROOM_SCALE[6][4][2] = {
 	 {59.6, 36.7}, 
 	 {37.4, 53.5}},
 	// Bender
-	{{49.1, 45.0}, //{58.1, 52.3}		
+	{{49.1, 45.0},
 	 {58.8, 47.5},
 	 {59.6, 36.7},
 	 {53.6, 71.7}},
@@ -164,8 +167,8 @@ const float NS_ROOM_SCALE[6][4][2] = {
 const float NS_ROOM_ROTATION[6][4] = {
 	// Rosie
 	{0.0, 
-     1.6708, // was 1.5708
-     0.15, // was 0.0
+     1.6708,
+     0.15,
      1.6005},
 	// Bender
 	{0.0, 
@@ -198,18 +201,17 @@ const float NS_ROOM_ROTATION[6][4] = {
 const float COL_OFFSET[2] = {193.0, 234.0};
 
 // the distances of ns origins from column corner (labeled with a * in above map)
-// Note: Don't trust room 4 for Gort or Bender
 const float NS_ROOM_ORIGINS_FROM_COL[6][4][2] = {
 	// Rosie
-	{{30.0, -175.0}, //18, -124
-	 {-180.0, 20.0}, //-147, 8
+	{{30.0, -175.0},
+	 {-180.0, 20.0},
 	 {41.0, 168.0},
-	 {182.0, 25.0}}, //196, 30
+	 {182.0, 25.0}},
 	// Bender
-	{{48.0,-182.0}, //36.0, -125 
-	 {-161.0,20.0}, //-116, 18 
+	{{48.0,-182.0},
+	 {-161.0,20.0},
 	 {62.0, 174.0}, 
-	 {188.0, 28.0}},//193, 36
+	 {188.0, 28.0}},
 	// Johnny5
 	{{5.0, -104.0}, 
 	 {-144.0, 25.0}, 

@@ -54,7 +54,7 @@
 #define YELLOW_HIGH cvScalar(35, 255, 255)
 #define PINK_LOW cvScalar(160, 85, 85)
 #define PINK_HIGH cvScalar(179, 255, 255)
-// since pink wraps around, we also need to threshold red and or with pink
+// since pink wraps around, we also need to threshold red and OR with pink
 #define RED_LOW cvScalar(0, 85, 85)
 #define RED_HIGH cvScalar(7, 255, 255)
 
@@ -76,6 +76,7 @@
 // center error 
 #define NUM_CAMERA_ERRORS 3
 
+// tag states that the camera can be in
 #define TAGS_BOTH_GE_TWO 0 // >= 2 tags on both sides
 #define TAGS_BOTH_ONE 1 // 1 tag on both sides
 #define TAGS_ONE_OR_NONE 2 // 1 or no tags
@@ -108,15 +109,15 @@ public:
 	int squareCount(int color, int side);
 	float avgSquareCount(int color, int side);
 	IplImage* thresholdedOf(int color);
-        squares_t* rmOverlappingSquares(squares_t *inputSquares);
-        squares_t* squaresOf(int color);
+    squares_t* rmOverlappingSquares(squares_t *inputSquares);
+    squares_t* squaresOf(int color);
 	squares_t* findSquaresOf(int color, int areaThreshold);
 	squares_t* findSquares(IplImage *img, int areaThreshold);
 	IplImage* getHSVImage();
 	IplImage* getBGRImage();
 	IplImage* getThresholdedImage(CvScalar low, CvScalar high);
  
-        static int prevTagState;
+    static int prevTagState;
 private:
 	RobotInterface *_robotInterface;
 	int _quality;
@@ -125,7 +126,6 @@ private:
 	IplImage *_yellowThresholded;
 	squares_t *_pinkSquares;
 	squares_t *_yellowSquares;
- 
 };
 
 #endif

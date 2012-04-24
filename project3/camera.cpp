@@ -173,10 +173,10 @@ void Camera::update() {
 }
 
 /*************************************
- * Definition: Determines enumerated state variable based on the square counts 
+ * Definition: Determines state variable based on the square counts 
  *             last observed by the camera
  *
- * Returns: enumerated int corresponding to camera state
+ * Returns:    int corresponding to camera state
  *************************************/
 int Camera::getTagState(int color) {
     int leftSquareCount = squareCount(color, IMAGE_LEFT);
@@ -315,7 +315,7 @@ float Camera::centerError(int color, bool *turn) {
         avgCenterDistTurn = true;
     }
 
-    if(numSlopeTurnErrors == 0 && numSlopeStrafeErrors == 0) {
+    if (numSlopeTurnErrors == 0 && numSlopeStrafeErrors == 0) {
         avgSlopeError = 0;
         avgSlopeCertainty = 0;
         numGoodSlopeErrors = 0;
@@ -331,7 +331,7 @@ float Camera::centerError(int color, bool *turn) {
         numGoodSlopeErrors = numSlopeStrafeErrors;
     }
 
-    if(numCenterDistTurnErrors == 0 && numCenterDistStrafeErrors == 0) {
+    if (numCenterDistTurnErrors == 0 && numCenterDistStrafeErrors == 0) {
         avgCenterDistError = 0;
         avgCenterDistCertainty = 0;
         numGoodCenterDistErrors = 0;
@@ -354,9 +354,6 @@ float Camera::centerError(int color, bool *turn) {
             switch (prevTagState) {
             case TAGS_BOTH_GE_TWO:
                 avgSlopeCertainty -= 0.10; //Don't turn away from a good state
-                break;
-            case TAGS_BOTH_ONE:
-                //no-op: Kinda a wash?
                 break;
             case TAGS_ONE_OR_NONE:
                 avgSlopeCertainty += 0.10; //Turn to find more squares
@@ -422,14 +419,14 @@ float Camera::centerError(int color, bool *turn) {
     float turnCertainty = 0.0;
     float strafeCertainty = 0.0;
 
-    if(avgSlopeTurn) {
+    if (avgSlopeTurn) {
         turnCertainty += numSlopeTurnErrors * avgSlopeCertainty;
     } 
     else {
         strafeCertainty += numSlopeStrafeErrors * avgSlopeCertainty;
     }
 
-    if(avgCenterDistTurn) {
+    if (avgCenterDistTurn) {
         turnCertainty +=  numCenterDistTurnErrors * avgCenterDistCertainty;
     } 
     else {
@@ -612,7 +609,7 @@ float Camera::corridorSlopeError(int color, bool *turn, float *certainty) {
     float yIntersect = 0;
 
 
-    if(leftSide.numSquares >= 2 && rightSide.numSquares >= 2) {
+    if (leftSide.numSquares >= 2 && rightSide.numSquares >= 2) {
        xIntersect = (rightSide.intercept - leftSide.intercept)/(leftSide.slope - rightSide.slope);
        yIntersect = leftSide.slope*xIntersect + leftSide.intercept;
     }
@@ -642,13 +639,6 @@ float Camera::corridorSlopeError(int color, bool *turn, float *certainty) {
         cvReleaseImage(&bgr);
     }
 
-    //LOTS OF ARBITRARY CASES!!!
-    //
-    //STILL TO ACCOUNT FOR: REALLY HIGH (correct sign) slopes in hallways indicating turning towards that side
-    //	Unsure of how to factor in what is seen on the other side
-
-
-
     if (wholeImage.numSquares == 2) {
         if(leftSide.numSquares == 1 && rightSide.numSquares == 1) {
             if(fabs(wholeImage.slope) > MAX_PLANE_SLOPE) {
@@ -667,13 +657,13 @@ float Camera::corridorSlopeError(int color, bool *turn, float *certainty) {
 
     // did we find a line across the entire screen?
     if (wholeImage.numSquares >= 3) {
-        if((leftSide.numSquares < 2 || rightSide.numSquares < 2) && (leftSide.numSquares != 0 && rightSide.numSquares != 0)) { //No line on either side
-            if(wholeImage.rSquared > .9) {
+        if ((leftSide.numSquares < 2 || rightSide.numSquares < 2) && (leftSide.numSquares != 0 && rightSide.numSquares != 0)) { //No line on either side
+            if (wholeImage.rSquared > .9) {
                 //we can be fairly sure that we should make a turn move here
                 *turn = true;
                 *certainty = 1.0;
                 //if positive slope, turn right and vice versa
-                if(wholeImage.slope > 0) {
+                if (wholeImage.slope > 0) {
                     //turn right
                     return -1; 
                 } 
@@ -686,16 +676,16 @@ float Camera::corridorSlopeError(int color, bool *turn, float *certainty) {
     }
 
     //look for extra squares on either side 
-    if(leftSide.numSquares >= 2) {
+    if (leftSide.numSquares >= 2) {
         if (leftSide.rSquared < .9 && !(rightSide.numSquares >= 2 && (fabs(rightSide.slope-leftSide.slope) < .15))) { //bad values up to .9?
             //turn left
             *turn = true;
             *certainty = 0.70;
-            if(leftSide.slope < .14) {
+            if (leftSide.slope < .14) {
                 *certainty += 0.10;
             }
 
-            if(rightSide.numSquares < 2) {
+            if (rightSide.numSquares < 2) {
                 *certainty += 0.10;
             }
  
@@ -709,7 +699,7 @@ float Camera::corridorSlopeError(int color, bool *turn, float *certainty) {
             *turn = true;
             *certainty = 0.50;
  
-            if(leftSide.slope < 0) {
+            if (leftSide.slope < 0) {
                 *certainty += 0.15;
             }
 
@@ -717,17 +707,17 @@ float Camera::corridorSlopeError(int color, bool *turn, float *certainty) {
         }
     }
 
-    if(rightSide.numSquares >= 2) {
+    if (rightSide.numSquares >= 2) {
         if (rightSide.rSquared < .9 && !(leftSide.numSquares >= 2 && (fabs(leftSide.slope-rightSide.slope) < .15))) {
             //turn right
             *turn = true;
             *certainty = 0.70;
  
-            if(rightSide.slope > -.1) {
+            if (rightSide.slope > -.1) {
                 *certainty += 0.10;
             }
  
-            if(leftSide.numSquares < 2) {
+            if (leftSide.numSquares < 2) {
                 *certainty += 0.10;
             }
 
@@ -740,7 +730,7 @@ float Camera::corridorSlopeError(int color, bool *turn, float *certainty) {
             *turn = true;
             *certainty = 0.50;
             
-            if(rightSide.slope > 0) {
+            if (rightSide.slope > 0) {
                 *certainty += 0.15;
             }
            
@@ -766,14 +756,14 @@ float Camera::corridorSlopeError(int color, bool *turn, float *certainty) {
             return 1;
         } 
         else {
-            if(fabs(difference) > MAX_SLOPE_DIFFERENCE*.75) {
-                if(softLeftTurn && difference < 0) {
+            if (fabs(difference) > MAX_SLOPE_DIFFERENCE*.75) {
+                if (softLeftTurn && difference < 0) {
                     //turn left
                     *turn = true;
                     *certainty = 0.55;
                     return .4;
                 }
-                if(softRightTurn && difference > 0) {
+                if (softRightTurn && difference > 0) {
                     //turn right
                     *turn = true;
                     *certainty = 0.55;
@@ -819,18 +809,18 @@ regressionLine Camera::leastSquaresRegression(int color, int side) {
         float ySum = 0.0;
         float xSqSum = 0.0;
         float xySum = 0.0;
-	float ySqSum = 0.0;
+	    float ySqSum = 0.0;
 
         squares_t *curSquare = squaresOf(color);
         while (curSquare != NULL) {
 	        switch (side) {
 	        case IMAGE_LEFT:	
         	    if (curSquare->center.x < center) {
-                            xSum += curSquare->center.x;
-                            ySum += curSquare->center.y;
+                    xSum += curSquare->center.x;
+                    ySum += curSquare->center.y;
 	    		    xSqSum += curSquare->center.x * curSquare->center.x;
 	    		    xySum += curSquare->center.x * curSquare->center.y;
-			    ySqSum += curSquare->center.y * curSquare->center.y;
+			        ySqSum += curSquare->center.y * curSquare->center.y;
 		        }
 		        break;
 	        case IMAGE_RIGHT:
@@ -839,16 +829,16 @@ regressionLine Camera::leastSquaresRegression(int color, int side) {
 	    		    ySum += curSquare->center.y;
 	    		    xSqSum += curSquare->center.x * curSquare->center.x;
 	    		    xySum += curSquare->center.x * curSquare->center.y;
-			    ySqSum += curSquare->center.y * curSquare->center.y;
+			        ySqSum += curSquare->center.y * curSquare->center.y;
 		        } 
 		        break;
-		case IMAGE_ALL:
+    		case IMAGE_ALL:
 	    		xSum += curSquare->center.x;
 	    		ySum += curSquare->center.y;
 	    		xSqSum += curSquare->center.x * curSquare->center.x;
 	    		xySum += curSquare->center.x * curSquare->center.y;
-			ySqSum += curSquare->center.y * curSquare->center.y;
-			break;
+			    ySqSum += curSquare->center.y * curSquare->center.y;
+    			break;
 	        }
 	        curSquare = curSquare->next;
         }   
@@ -860,14 +850,17 @@ regressionLine Camera::leastSquaresRegression(int color, int side) {
                            (xSqSum - (result.numSquares * xAvg * xAvg));
         result.slope = (xySum - (result.numSquares * xAvg * yAvg)) / 
                        (xSqSum - (result.numSquares * xAvg * xAvg));
-	result.rSquared = ((xySum - (result.numSquares * xAvg * yAvg))*(xySum - (result.numSquares * xAvg * yAvg)) / ((xSqSum - (result.numSquares * xAvg * xAvg)) * (ySqSum - (result.numSquares * yAvg * yAvg))));
+	    result.rSquared = ((xySum - (result.numSquares * xAvg * yAvg)) * 
+                           (xySum - (result.numSquares * xAvg * yAvg)) / 
+                          ((xSqSum - (result.numSquares * xAvg * xAvg)) * 
+                           (ySqSum - (result.numSquares * yAvg * yAvg))));
     
     } 
     else {
         // there aren't enough squares, so we error out the intercept and slope
         result.intercept = -999;
-	result.slope = -999;
-	result.rSquared = 0;
+    	result.slope = -999;
+    	result.rSquared = 0;
     }
 
     return result;
@@ -888,10 +881,9 @@ squares_t* Camera::rmOverlappingSquares(squares_t *inputSquares) {
     squares_t *iterator = NULL;
     squares_t *preIterator = NULL;
 
-
     while (inputSquares != NULL) { //Loop through all input squares once!
-        if(sqHead == NULL) { //if clean list has not been started
-	    sqHead = new squares_t;
+        if (sqHead == NULL) { //if clean list has not been started
+	        sqHead = new squares_t;
             sqHead->area = inputSquares->area;
             sqHead->center.x = inputSquares->center.x;
             sqHead->center.y = inputSquares->center.y;
@@ -900,15 +892,16 @@ squares_t* Camera::rmOverlappingSquares(squares_t *inputSquares) {
         else {
             //iterate through the clean list
             iterator = sqHead;
-            while(iterator != NULL) {
+            while (iterator != NULL) {
                 //check distance cutoff
-                if(sqrt(pow(fabs(iterator->center.x - inputSquares->center.x),2.0)+pow(fabs(iterator->center.y - inputSquares->center.y),2.0)) < SQUARE_OVERLAP_DIST) {
-                    if(inputSquares->area > iterator->area) {
+                if (sqrt(pow(fabs(iterator->center.x - inputSquares->center.x),2.0)+
+                         pow(fabs(iterator->center.y - inputSquares->center.y),2.0)) < SQUARE_OVERLAP_DIST) {
+                    if (inputSquares->area > iterator->area) {
                         newSquare = new squares_t;
                         newSquare->area = inputSquares->area;
                         newSquare->center.x = inputSquares->center.x;
                         newSquare->center.y = inputSquares->center.y;
-                        if(iterator == sqHead) { //if we must replace the head
+                        if (iterator == sqHead) { //if we must replace the head
                             newSquare->next = sqHead->next;
                             sqHead = newSquare;
                         } 
@@ -923,7 +916,7 @@ squares_t* Camera::rmOverlappingSquares(squares_t *inputSquares) {
                 else {
                     //if not end of list (iterator while loop), continue
                     //if end of list, insert on end and break
-                    if(iterator->next == NULL) {
+                    if (iterator->next == NULL) {
                         newSquare = new squares_t;
                         newSquare->area = inputSquares->area;
                         newSquare->center.x = inputSquares->center.x;

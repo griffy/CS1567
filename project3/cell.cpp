@@ -1,3 +1,18 @@
+/**
+ * cell.cpp
+ * 
+ * @brief 
+ * 		This class is used to represent a single cell in a grid, and
+ *      all the operations on that cell (including updates from the
+ *      game server)
+ * 
+ * @author
+ * 		Shawn Hanna
+ * 		Tom Nason
+ * 		Joel Griffith
+ * 
+ **/
+
 #include "cell.h"
 
 // we don't know what robot we are yet in the game 
@@ -33,6 +48,11 @@ Cell::Cell(map_obj_t *mapObj) {
 
 Cell::~Cell() {}
 
+/**************************************
+ * Definition: When called, sets the static variable we
+ *             use to determine what robot we are to be
+ *             the robot at this cell
+ **************************************/
 void Cell::claimRobot() {
 	if (_type == MAP_OBJ_ROBOT_1) {
 		robot = 1;
@@ -49,9 +69,6 @@ void Cell::claimRobot() {
  * Parameters: map_obj_t object at this cell's x and y
  **************************************/
 void Cell::update(map_obj_t *mapObj) {
-	// TODO: check this to make sure it's correct
-	_openings=0;
-
 	switch (mapObj->type) {
 	case MAP_OBJ_EMPTY:
 		setPoints(0);
@@ -131,11 +148,6 @@ void Cell::setPoints(int points) {
 	_points = points;
 }
 
-int Cell::getCellType(){
-	return _type;
-}
-
-
 /**************************************
  * Definition: Determines if the cell is blocked.
  *             A cell can be blocked by being:
@@ -158,38 +170,56 @@ bool Cell::isBlocked() {
 	return false;
 }
 
+/**************************************
+ * Definition: Returns whether or not this cell is a post
+ *
+ * Returns:    true if post, false otherwise
+ **************************************/
 bool Cell::isPost() {
 	return _post;
 }
 
+/**************************************
+ * Definition: Sets this cell's post attribute
+ *
+ * Parameters: bool specifying if post or not
+ **************************************/
 void Cell::setPost(bool post) {
 	_post = post;
 }
 
+/**************************************
+ * Definition: Returns whether or not this cell is occupied
+ *
+ * Returns:    true if occupied, false otherwise
+ **************************************/
 bool Cell::isOccupied() {
 	return _occupied;
 }
 
+/**************************************
+ * Definition: Sets this cell's occupied attribute
+ *
+ * Parameters: bool specifying if occupied or not
+ **************************************/
 void Cell::setOccupied(bool occupied) {
 	_occupied = occupied;
 }
 
+/**************************************
+ * Definition: Returns whether or not this cell is reserved
+ *
+ * Returns:    true if reserved, false otherwise
+ **************************************/
 bool Cell::isReserved() {
 	return _reserved;
 }
 
+/**************************************
+ * Definition: Sets this cell's reserved attribute
+ *
+ * Parameters: bool specifying if reserved or not
+ **************************************/
 void Cell::setReserved(bool reserved) {
 	_reserved = reserved;
-}
-
-void Cell::addOpening(unsigned char direction) {
-	_openings = _openings | direction;
-}
-
-void Cell::deleteOpening(unsigned char direction) {
-	_openings = _openings & (~direction);
-}
-
-int Cell::getOpenings() {
-	return _openings;
 }

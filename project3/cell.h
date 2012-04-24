@@ -1,17 +1,22 @@
+/**
+ * cell.h
+ * 
+ * @brief 
+ * 		This class is used to represent a single cell in a grid, and
+ *      all the operations on that cell (including updates from the
+ *      game server)
+ * 
+ * @author
+ * 		Shawn Hanna
+ * 		Tom Nason
+ * 		Joel Griffith
+ * 
+ **/
+
 #ifndef CS1567_CELL_H
 #define CS1567_CELL_H
 
 #include <robot_if++.h>
-
-#define CELL_T 1
-#define CELL_CORNER 2
-#define CELL_HALL 4
-#define CELL_INTERSECTION 8
-
-#define RIGHT 1
-#define DOWN 2
-#define LEFT 4
-#define UP 8
 
 class Cell {
 public:
@@ -31,11 +36,6 @@ public:
 	bool isReserved();
 	void setReserved(bool reserved);
 	
-	void addOpening(unsigned char dir);
-	void deleteOpening(unsigned char direction);
-    int getOpenings();
-	int getCellType();
-	
 	static int robot;
 	
 	int x;
@@ -48,8 +48,6 @@ private:
 	bool _post;
 	bool _occupied;
 	bool _reserved;
-
-	char _openings;
 };
 
 #endif
