@@ -63,24 +63,6 @@ const float SPEED_FORWARD[NUM_SPEEDS] = {
     TIME_DISTANCE/4.1,
     TIME_DISTANCE/4.2
 };
-/*
- * Old stuff
-// average speed for left and right turns at integer robot speeds
-const float SPEED_TURN[][NUM_SPEEDS] = {
-    {0.0, 0.0},
-    {(2*PI)/1.8, -(2*PI)/1.6},
-    {(2*PI)/1.9, -(2*PI)/2.0},
-    {(2*PI)/2.23, -(2*PI)/2.2},
-    {(2*PI)/2.36, -(2*PI)/2.3},
-    {(2*PI)/2.87, -(2*PI)/2.8},
-    {(2*PI)/2.8, -(2*PI)/2.8},
-    {(2*PI)/4.6, -(2*PI)/4.75},
-    {(2*PI)/4.75, -(2*PI)/4.75},
-    {(2*PI)/5.35, -(2*PI)/5.35},
-    {(2*PI)/5.35, -(2*PI)/5.45}
-};
-*/
-
 
 // average speed for left and right turns at integer robot speeds
 const float SPEED_TURN[][NUM_SPEEDS] = {
@@ -101,7 +83,7 @@ class Robot {
 public:
     Robot(std::string address, int id);
     ~Robot();
-    void eatShit();
+    void playGame();
     void move(int direction, int numCells);
     void turn(int direction);
     void turn(int relDirection, float radians);
@@ -136,42 +118,38 @@ public:
     void rockOut();
 	bool sideCenter(int direction);
     bool nsThetaReliable();
-
-    Camera *_camera;
-    NorthStar *_northStar;
-    bool _updateInterface();
 private:
-    int _numCellsTraveled;
+    bool _updateInterface();
     bool _centerTurn(float centerError);
     bool _centerStrafe(float centerError);
-    
+
     RobotInterface *_robotInterface;
     int _name;
+    
+    int _failLimit;
 
 	int _speed;	
 	char _turnDirection;
 	bool _movingForward;
     int _heading;
 
+    int _numCellsTraveled;
+
     PID* _movePID;
     PID* _turnPID;
     PID* _centerTurnPID;
     PID* _centerStrafePID;
 
-    int _failLimit;
-
     Pose *_pose;
-
-    //Camera *_camera;
-    WheelEncoders *_wheelEncoders;
-    //NorthStar *_northStar;
 
     KalmanFilter *_kalmanFilter;
 
     Map *_map;
     MapStrategy *_mapStrategy;
     
-    //bool _updateInterface();
+    Camera *_camera;
+    NorthStar *_northStar;
+    WheelEncoders *_wheelEncoders;
 };
 
 #endif

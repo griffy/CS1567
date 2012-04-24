@@ -1,3 +1,17 @@
+/**
+ * map_strategy.h
+ * 
+ * @brief 
+ *      This class is used to implement path-finding for an instance
+ *      of the Map class. 
+ *
+ * @author
+ * 		Shawn Hanna
+ * 		Tom Nason
+ * 		Joel Griffith
+ *
+ **/
+
 #ifndef CS1567_MAPSTRATEGY_H
 #define CS1567_MAPSTRATEGY_H
 
@@ -5,28 +19,22 @@
 #include "cell.h"
 #include "path.h"
 
+// maximum search depth for path-finding
 #define PATH_LENGTH 5
-
-#define CELL_NORTH 0
-#define CELL_SOUTH 1
-#define CELL_EAST 2
-#define CELL_WEST 3
 
 class MapStrategy {
 public:
 	MapStrategy(Map *map);
 	~MapStrategy();
 	Cell* nextCell();
-	Path* getBestPath(int length);
-	void createPaths(Path *parentPath, int length);
-	void clearPaths();
 	
 private:
 	Map *_map;
-	
 	std::vector<Path *> _pathList;
 	
-	void createPath(Path parentPath, int num);
+	Path* _getBestPath(int length);
+	void _createPaths(Path *parentPath, int length);
+	void _clearPaths();
 };
 
 #endif

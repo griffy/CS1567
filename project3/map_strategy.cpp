@@ -1,3 +1,17 @@
+/**
+ * map_strategy.cpp
+ * 
+ * @brief 
+ *      This class is used to implement path-finding for an instance
+ *      of the Map class. 
+ *
+ * @author
+ * 		Shawn Hanna
+ * 		Tom Nason
+ * 		Joel Griffith
+ *
+ **/
+
 #include "map_strategy.h"
 #include "logger.h"
 
@@ -6,15 +20,21 @@ MapStrategy::MapStrategy(Map *map) {
 }
 
 MapStrategy::~MapStrategy() {
-	clearPaths();
+	_clearPaths();
 }
 
+/**************************************
+ * Definition: Returns the next cell that should be occupied by
+ *             our robot in the game
+ *
+ * Returns:    pointer to cell
+ **************************************/
 Cell* MapStrategy::nextCell() {
 	_map->update();
 
-	Path *path = getBestPath(PATH_LENGTH);
+	Path *path = _getBestPath(PATH_LENGTH);
 	if (path == NULL || path->getValue() == 0) {
-		path = getBestPath(10);
+		path = _getBestPath(10);
 		if (path == NULL || path->getValue() == 0) {
 			return NULL;
 		}
@@ -28,11 +48,19 @@ Cell* MapStrategy::nextCell() {
 	return path->getFirstCell();
 }
 
-Path* MapStrategy::getBestPath(int length) {
+/**************************************
+ * Definition: Returns the best path possible from this point in
+ *             the game
+ *
+ * Parameters: length of path as int (search depth)
+ *
+ * Returns:    pointer to Path
+ **************************************/
+Path* MapStrategy::_getBestPath(int length) {
 	Path *bestPath = NULL;
 	Path *curPath = new Path(_map->getCurrentCell());
 
-	createPaths(curPath, length);
+	_createPaths(curPath, length);
 
 	float bestPathVal = -10000.0;
 	int bestPathIndex = -1;
@@ -48,12 +76,18 @@ Path* MapStrategy::getBestPath(int length) {
 		bestPath = _pathList[bestPathIndex];
 		_pathList.erase(_pathList.begin()+bestPathIndex);
 	}
-	clearPaths();
+	_clearPaths();
 	
 	return bestPath;
 }
 
-void MapStrategy::createPaths(Path *parentPath, int length) {
+/**************************************
+ * Definition: Creates a list of all possible paths branching from
+ *             the parent path
+ *
+ * Parameters: pointer to parent path and length of path as int (search depth)
+ **************************************/
+void MapStrategy::_createPaths(Path *parentPath, int length) {
 	Path *curPath = new Path(parentPath);
 
 	if (length == 0) {
@@ -70,7 +104,7 @@ void MapStrategy::createPaths(Path *parentPath, int length) {
 	for (int i = 0; i < 4; i++) {
 		if (_map->canOccupy(newX[i], newY[i])) {
 			curPath->push(_map->cells[newX[i]][newY[i]]);
-			createPaths(curPath, length-1);
+			_createPaths(curPath, length-1);
 			curPath->pop();
 		}
 	}
@@ -78,7 +112,10 @@ void MapStrategy::createPaths(Path *parentPath, int length) {
 	delete curPath;
 }
 
-void MapStrategy::clearPaths() {
+/**************************************
+ * Definition: Clears the current list of paths
+ **************************************/
+void MapStrategy::_clearPaths() {
 	for (int i = 0; i < _pathList.size(); i++) {
 		delete _pathList[i];
 	}

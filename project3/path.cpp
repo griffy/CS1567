@@ -1,7 +1,24 @@
+/**
+ * path.cpp
+ * 
+ * @brief 
+ * 		This class represents a path the robot could travel in the
+ *      game, and all the operations necessary to work with it, including
+ *      calculating its value.
+ * 
+ * @author
+ * 		Shawn Hanna
+ * 		Tom Nason
+ * 		Joel Griffith
+ *
+ **/
+
 #include "path.h"
 #include "map.h"
 #include <cstdio>
 
+// penalty to be applied to a given cell's points based on
+// how bad that cell is in terms of north star
 float NS_PENALTY[MAP_WIDTH][MAP_HEIGHT] = {
 	// col 1 (starting from left of room)
 	{1.00,
@@ -65,18 +82,39 @@ Path::Path(Path *path)
 
 Path::~Path() {}
 
+/**************************************
+ * Definition: Adds the given cell to the end of the path
+ *
+ * Parameters: pointer to cell
+ **************************************/
 void Path::push(Cell *cell) {
 	_cells.push_back(cell);
 }
 
+/**************************************
+ * Definition: Removes the last cell in the path
+ **************************************/
 void Path::pop() {
 	_cells.pop_back();
 }
 
+/**************************************
+ * Definition: Returns the path's length in terms of cells
+ *
+ * Returns:    an int specifying length
+ **************************************/
 int Path::length() {
 	return _cells.size();
 }
 
+/**************************************
+ * Definition: Returns what the heading of the robot would be
+ *             after going to the given index in the path
+ *
+ * Parameters: an int specifying the index upto which we are checking
+ *
+ * Returns:    an int specifying the heading
+ **************************************/
 int Path::getHeading(int upTo) {
 	int heading = -1;
 
@@ -105,17 +143,25 @@ int Path::getHeading(int upTo) {
 	return heading;
 }
 
-/** 
- * The value of a path is calculated as follows:
- * For each cell in the path, a NS penalty is applied, 
- * which knocks the points for that cell down by a 
- * percentage. Then, the amount of times the robot
- * must change directions is summed and subtracted
- * from the final path value.
-**/
+/**************************************
+ * Definition: Calculates the value of the path and returns it
+ *
+ *             Value of a path is calculated as follows:
+ *                For each cell in the path, a NS penalty is
+ *                applied which knocks the points for that cell
+ *                down by a percentage. 
+ *                Then, the amount of times the robot must change
+ *                directions is summed and subtracted from the
+ *                final path value.
+ *
+ * Returns: a float specifying the value
+ **************************************/
 float Path::getValue() {
 	float value = 0.0;
 
+	// keep track of which cells we already used
+	// at least once in our path so we don't count
+	// their points twice
 	bool used[MAP_WIDTH][MAP_HEIGHT] = {
 		{false, false, false, false, false},
 		{false, false, false, false, false},
@@ -175,6 +221,13 @@ float Path::getValue() {
 	return value;
 }
 
+/**************************************
+ * Definition: Returns the cell at the given index
+ *
+ * Parameters: an int specifying the index in path
+ *
+ * Returns:    pointer to cell
+ **************************************/
 Cell* Path::getCell(int i) {
 	if (length() > i) {
 		return _cells[i];
@@ -182,14 +235,30 @@ Cell* Path::getCell(int i) {
 	return NULL;
 }
 
+/**************************************
+ * Definition: Returns the first cell in the path that will
+ *             actually move the robot (0 is the starting cell)
+ *
+ * Returns:    pointer to cell
+ **************************************/
 Cell* Path::getFirstCell() {
 	return getCell(1);
 }
 
+/**************************************
+ * Definition: Returns the last cell in the path
+ *
+ * Returns:    pointer to cell
+ **************************************/
 Cell* Path::getLastCell() {
 	return getCell(length()-1);
 }
 
+/**************************************
+ * Definition: Returns the path as a string
+ *
+ * Returns:    a char* representing the path as a string
+ **************************************/
 char* Path::toString() {
 	char *str = (char *)malloc(length()*6);
 	str[0] = '\0';

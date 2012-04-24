@@ -64,14 +64,19 @@ float PositionSensor::getTheta() {
 }
 
 /**************************************
+ * Definition: Sets theta as the given theta
+ *
+ * Parameters: theta as a float
+ **************************************/
+void PositionSensor::setTheta(float theta) {
+	_pose->setTheta(theta);
+}
+
+/**************************************
  * Definition: Returns the current pose
  *
  * Returns:    a pointer to the stored pose
  **************************************/
 Pose* PositionSensor::getPose() {
 	return _pose;
-}
-
-void PositionSensor::setTheta(float theta) {
-	_pose->setTheta(theta);
 }

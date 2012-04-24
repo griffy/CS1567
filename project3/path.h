@@ -1,3 +1,18 @@
+/**
+ * path.h
+ * 
+ * @brief 
+ * 		This class represents a path the robot could travel in the
+ *      game, and all the operations necessary to work with it, including
+ *      calculating its value.
+ * 
+ * @author
+ * 		Shawn Hanna
+ * 		Tom Nason
+ * 		Joel Griffith
+ *
+ **/
+
 #ifndef CS1567_PATH_H
 #define CS1567_PATH_H
 

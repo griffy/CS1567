@@ -74,6 +74,7 @@ Robot::Robot(std::string address, int id) {
     // Put robot head down for NorthStar use
     moveHead(RI_HEAD_DOWN);
 
+    printf("collecting initial data\n");
     // fill our sensors with data
     prefillData();
     // base the wheel encoder pose off north star to start,
@@ -98,6 +99,8 @@ Robot::Robot(std::string address, int id) {
     
     _map = new Map(_robotInterface, startingX, startingY);
     _mapStrategy = new MapStrategy(_map);
+
+    printf("map loaded\n");
 }
 
 Robot::~Robot() {
@@ -116,11 +119,13 @@ Robot::~Robot() {
 }
 
 /**************************************
- * Definition:	Perform the calculations for the Rovio-Man project (project 3)
- * 				get the next cell from the path created by map_strategy
- * 				and perform the 'move' function in the desired direction
+ * Definition:	Performs the calculations for the Rovio-Man project
+ *
+ * 				Continually gets a new cell to move to in the game,
+ * 				and performs the move in the desired direction until
+ *              the game is over.
  *************************************/
-void Robot::eatShit() {
+void Robot::playGame() {
     Cell *nextCell = _mapStrategy->nextCell();
 
     while (nextCell != NULL) {
@@ -146,6 +151,7 @@ void Robot::eatShit() {
 
         _map->occupyCell(nextCell->x, nextCell->y);
         _numCellsTraveled++;
+
         nextCell = _mapStrategy->nextCell();
     }
 }
@@ -163,16 +169,17 @@ void Robot::move(int direction, int numCells) {
     while (cellsTraveled < numCells) {
         if(_numCellsTraveled != 0) {
             // make sure we're facing the right direction first
-            if(nsThetaReliable()) {
+            if (nsThetaReliable()) {
                 turn(direction);
             }
             // center ourselves between the walls
             center();
             // turn once more to fix any odd angling 
-            if(nsThetaReliable()) {
+            if (nsThetaReliable()) {
                 turn(direction);
             }
         }
+
         // count how many squares we see down the hall
         moveHead(RI_HEAD_MIDDLE);
         float leftSquareCount = _camera->avgSquareCount(COLOR_PINK, IMAGE_LEFT);
@@ -184,12 +191,14 @@ void Robot::move(int direction, int numCells) {
         if (rightSquareCount > 3.0) {
             rightSquareCount = 3.0;
         }
+
         // update our pose estimates now, ignoring
         // wheel encoders and setting them to be north star's
         updatePose(false);
         _wheelEncoders->resetPose(_northStar->getPose());
         // finally, update our pose one more time so kalman isn't wonky
         updatePose(true);
+
         // based on the direction, move in the global coord system
         float goalX = _pose->getX();
         float goalY = _pose->getY();
@@ -203,22 +212,26 @@ void Robot::move(int direction, int numCells) {
             break;
         case DIR_EAST:
             goalX += CELL_SIZE;
-            if (_map->getCurrentCell()->x == 0) {
+            if (_map->getCurrentCell()->x == 0 ||
+                _map->getCurrentCell()->x == 1) {
                 goalX -= 30.0;
                 LOG.write(LOG_HIGH, "nsHardFix", "cell fix");
             }
             break;
         case DIR_WEST:
             goalX -= CELL_SIZE;
-            if (_map->getCurrentCell()->x == 0) {
+            if (_map->getCurrentCell()->x == 0 ||
+                _map->getCurrentCell()->x == 1) {
                 goalX += 30.0;
                 LOG.write(LOG_HIGH, "nsHardFix", "cell fix");
             }
             break;
         }
+
         moveTo(goalX, goalY, distErrorLimit);
         // make sure we stop once we're there
         stop();
+
         moveHead(RI_HEAD_MIDDLE);
         float newLeftSquareCount = _camera->avgSquareCount(COLOR_PINK, IMAGE_LEFT);
         float newRightSquareCount = _camera->avgSquareCount(COLOR_PINK, IMAGE_RIGHT);
@@ -244,6 +257,7 @@ void Robot::move(int direction, int numCells) {
             i++;
         }
         moveHead(RI_HEAD_DOWN);
+
         // we made it!
         cellsTraveled++;
         LOG.write(LOG_LOW, "move", "Made it to cell %d", cellsTraveled);
@@ -257,7 +271,7 @@ void Robot::move(int direction, int numCells) {
  ***********************************/
 bool Robot::sideCenter(int direction) {
     Cell *curCell = _map->getCurrentCell();
-    
+
     switch (direction) {
     case DIR_NORTH:
     case DIR_SOUTH:
@@ -930,7 +944,7 @@ int Robot::getRoom() {
 /**************************************
  * Definition: Specifies whether the North Star theta value can be trusted based on call location
  *
- * Returns: bool value specifying validity of NS theta data
+ * Returns:    bool value specifying validity of NS theta data
  *************************************/
 bool Robot::nsThetaReliable() {
     int x = _map->getCurrentCell()->x;
